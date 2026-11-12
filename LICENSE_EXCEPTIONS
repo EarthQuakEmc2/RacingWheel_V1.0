@@ -1,0 +1,26 @@
+Additional permissions under GNU GPL version 3, section 7
+
+Racing Wheel Pro (RacingWheel_V1.0) is based on Touch Racer by Vasiliy Shirkin
+(thelv), https://github.com/thelv/touchracer and https://touchracer.com/.
+Touch Racer is licensed under GPL-3.0 with the additional permissions below.
+This project is GPL-3.0 and carries the same additional permissions. The
+terms are reproduced here so they travel with this code.
+
+1. The original creator, Vasiliy Shirkin (thelv), retains the right to use
+   the Touch Racer codebase, and this derivative, in proprietary commercial
+   products without disclosure of additional modifications.
+
+2. Graphical assets (icons, images, illustrations) in any location within
+   the project may be replaced with proprietary alternatives without
+   disclosure. Proprietary assets must not be published alongside this
+   codebase if they are to remain proprietary.
+
+3. Code related to monetization (advertising, in-app purchases, donations,
+   premium features) may be kept proprietary without disclosure. Such code
+   must not be published alongside this codebase if it is to remain
+   proprietary. All features of the application must remain fully functional
+   in the published open-source version without requiring any proprietary code.
+
+These additional permissions apply to the whole of this program unless a
+later notice says otherwise for a particular file. They do not change the
+GPL-3.0 terms for anyone who receives the published source.
