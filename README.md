@@ -1,6 +1,12 @@
-# Racing Wheel Pro
+# RacingWheel_V1.0
 
-An Android app that turns a phone into a racing wheel for PC sim games, and a Windows receiver that exposes that input as a virtual game controller.
+A racing wheel for racing games built for Android devices with PC plug-in based on Touch Racer Github repo.
+
+Racing Wheel Pro is that program: an Android app that turns a phone into a racing wheel for PC sim games, and a Windows receiver that exposes that input as a virtual game controller.
+
+Copyright (C) 2026 Racing Wheel Pro contributors.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. The license text is in [LICENSE](LICENSE). It is based on [Touch Racer](https://github.com/thelv/touchracer) by Vasiliy Shirkin (thelv), which is GPL-3.0 with the additional permissions in that project's [LICENSE_EXCEPTIONS](https://github.com/thelv/touchracer/blob/master/LICENSE_EXCEPTIONS). See [Credit and license](#credit-and-license) below.
 
 Landscape, full screen. You hold the phone like a wheel, roll it to steer, and use the side of the screen for throttle and brake. Buttons and rotary knobs are hotspots on a wheel picture, so they stay under your thumbs when the picture rotates.
 
@@ -227,11 +233,19 @@ Hotspot centers were measured on the source renders (saturated-color peaks for t
 
 `tools/render_previews.py` draws the chrome and the rings from those JSON files. It is a preview, not an emulator capture.
 
-## Touch Racer
+## Credit and license
 
-The open-source project at [github.com/thelv/touchracer](https://github.com/thelv/touchracer) (Vasiliy Shirkin, [touchracer.com](https://touchracer.com/)) is the reference for this idea. Its published Android tree is GPL-3.0 with the extra permissions in that repo's `LICENSE_EXCEPTIONS` (the original author may use the code in a proprietary product, and unpublished art and monetization code can stay private).
+This project is released under the **GNU General Public License v3.0 only** (see [LICENSE](LICENSE)). There is no additional permission file in this repository.
 
-Racing Wheel Pro does not copy that source. It is an independent Apache-2.0 program that follows the same approach where it worked: UDP discovery then a small binary state packet, tilt steering with a game-rotation sensor and an unwrap past 180°, pedal travel in millimetres as one of the modes, and a virtual game controller on the PC. The on-screen controls are the part that was redesigned.
+It is based on **Touch Racer** by Vasiliy Shirkin (thelv):
+
+- Source: [github.com/thelv/touchracer](https://github.com/thelv/touchracer)
+- Site: [touchracer.com](https://touchracer.com/)
+- License: GPL-3.0, plus the additional permissions in [LICENSE_EXCEPTIONS](https://github.com/thelv/touchracer/blob/master/LICENSE_EXCEPTIONS)
+
+Those exceptions are part of Touch Racer's license, not a grant added by this repository. They say, in short, that the original author may keep a proprietary edition, that unpublished replacement art can stay private, and that monetization code can stay private as long as the published build still works without it.
+
+Racing Wheel Pro follows Touch Racer where that design worked: UDP discovery, then a small binary state packet; tilt steering from the accelerometer or the game-rotation vector, unwrapped past 180°; pedal travel measured in millimetres as one of the modes; and a virtual game controller on the PC. The phone-side touch model is the part that was redesigned. Touch Racer uses a swipe on each half of the screen. This app hits buttons and knobs drawn on a wheel picture, and those hotspots rotate with the wheel. The packet layout here is RWP1, because this app has separate pedals and more than eight buttons. Touch Racer's packets start with `ru.thelv.joy`.
 
 ## Roadmap
 
