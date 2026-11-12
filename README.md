@@ -277,6 +277,8 @@ dotnet publish -c Release -r win-x64 --self-contained true \
 
 Further wheel templates, loaded the same way as the MOZA set: current Formula 1 wheels, GT3 wheels, LMP and prototype wheels, and rally wheels. After those, Bluetooth for crowded Wi-Fi, a per-button keyboard map stored in the profile, game telemetry so the shift lights show RPM and the flag, force feedback beyond rumble, and a Linux build of the receiver using uinput.
 
+Version history is in [CHANGELOG.md](CHANGELOG.md).
+
 ## Credits
 
 Racing Wheel Pro is based on **Touch Racer** by Vasiliy Shirkin (thelv).
