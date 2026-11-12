@@ -1,5 +1,8 @@
 .gradle/
+.kotlin/
 build/
+bin/
+obj/
 agent-tools/
 uploads/
 app/build/
