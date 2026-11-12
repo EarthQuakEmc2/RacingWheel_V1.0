@@ -1,0 +1,16 @@
+.gradle/
+build/
+agent-tools/
+uploads/
+app/build/
+local.properties
+*.iml
+.idea/
+.DS_Store
+captures/
+pc/bin/
+pc/obj/
+pc/publish/
+artifacts/
+*.apk
+*.exe
