@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Install from './components/Install'
+import Manufacturers from './components/Manufacturers'
 import Screenshots from './components/Screenshots'
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
       <main id="content">
         <Hero />
         <Screenshots />
+        <Manufacturers />
         <Features />
         <Download />
         <Install />

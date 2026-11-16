@@ -8,7 +8,7 @@ Copyright (C) 2026 Racing Wheel Pro contributors. Licensed under the GNU General
 
 ## Website
 
-The promotional site lives in [`website/`](website/). After GitHub Pages is enabled (source: GitHub Actions), it is published at <https://earthquakemc2.github.io/RacingWheel_V1.0/>.
+The promotional site lives in [`website/`](website/). Its canonical address is <https://myracingwheel.site/>.
 
 ## Screenshots
 
@@ -29,7 +29,7 @@ Hotspot rings on the KS and GS templates:
 
 ## Features
 
-- Four MOZA wheel templates. Each one is a wheel image plus a JSON layout of every button and knob.
+- Wheel templates grouped by manufacturer: Porsche, McLaren, Audi, BMW, Ferrari, Mercedes, Alfa Romeo, KTM, and MOZA. Each one is a wheel image plus a JSON layout of every button and knob.
 - A layout editor. Drag a hotspot, nudge it, resize it, add a button or knob, delete one, save the layout on the phone, copy the JSON, or reset to the built-in map. The drive screen can draw the same rings.
 - Steering from the game-rotation sensor, the accelerometer, or a finger drag when the phone has no usable sensor. Range, sensitivity, dead zone, linearity, smoothing, invert, center calibration, and a haptic tick at full lock.
 - Separate throttle and brake, with position or relative travel, curves, dead zones, outer clamp, invert, instant or fade release, an exclusive-axis option, and an optional clutch strip.
@@ -116,13 +116,50 @@ A template is one PNG and one JSON file in `app/src/main/assets/wheels/`. The pi
 | `moza_fsr2` | FSR2-style formula wheel with a wide dash | 9 | 5 (MGU, MIX, ERS, TC, ABS) |
 | `moza_gs` | GS-style wheel | 10 | 5 (MAP, TURBO, TC, ABS, DIFF) |
 
-MOZA, the MOZA Racing name, and the wheel designs in these pictures are trademarks of MOZA. The images are here for layout testing only. They are not a MOZA product, and MOZA has not endorsed this project.
+Car wheels ship beside those four. A button counts as one programmable slot and a rotary counts as two. Every template stays between 4 and 18 slots.
+
+| Manufacturer | Id | Name | Buttons | Rotaries |
+| --- | --- | --- | --- | --- |
+| Porsche | `porsche_gt3r_screen` | Porsche GT3 R screen | 10 | 4 |
+| Porsche | `porsche_gt3r_grid` | Porsche GT3 R GRID | 10 | 4 |
+| Porsche | `porsche_gt3r_color` | Porsche GT3 R screen color | 10 | 4 |
+| Porsche | `porsche_rsr_f` | Porsche 911 RSR F-style | 8 | 5 |
+| Porsche | `porsche_911_rsr` | Porsche 911 RSR yellow | 11 | 2 |
+| Porsche | `porsche_gt_dash` | Porsche GT dash | 10 | 3 |
+| Porsche | `porsche_fanatec_gt3r` | Fanatec 911 GT3 R round | 13 | 2 |
+| Porsche | `porsche_gt3r` | Porsche GT3 R | 10 | 4 |
+| Porsche | `porsche_gt3_cup` | Porsche 911 GT3 Cup | 10 | 2 |
+| McLaren | `mclaren_artura` | McLaren Artura | 14 | 2 |
+| McLaren | `mclaren_fanatec_gt3` | Fanatec McLaren GT3 | 12 | 3 |
+| McLaren | `mclaren_gt3_diy` | McLaren GT3 DIY | 10 | 4 |
+| McLaren | `mclaren_gt3_okx` | McLaren GT3 OKX | 10 | 3 |
+| McLaren | `mclaren_gtr_lm` | McLaren GTR LM | 10 | 2 |
+| McLaren | `mclaren_f1_mcl` | McLaren F1 MCL | 10 | 3 |
+| McLaren | `mclaren_f1_mcl_2` | McLaren F1 MCL 2 | 10 | 3 |
+| McLaren | `mclaren_ascher_dark` | Ascher McLaren GT dark | 14 | 2 |
+| Ferrari | `ferrari_road_red` | Ferrari Road red | 7 | 1 |
+| Ferrari | `ferrari_sf1000` | Thrustmaster SF1000 | 11 | 3 |
+| Ferrari | `ferrari_488_gt3` | Thrustmaster 488 GT3 | 10 | 2 |
+| Ferrari | `ferrari_f1_2012` | Ferrari F1 2012-style | 7 | 4 |
+| Ferrari | `ferrari_sf_f1` | Ferrari SF F1 carbon | 7 | 3 |
+| Ferrari | `ferrari_road_blue` | Ferrari Road blue | 6 | 1 |
+| Ferrari | `ferrari_458_black` | Ferrari 458 black | 6 | 1 |
+| Mercedes | `mercedes_amg_f1` | Mercedes-AMG F1 W-series | 12 | 3 |
+| Mercedes | `mercedes_cube_gt3` | Mercedes-AMG GT3 (Cube Controls) | 12 | 2 |
+| Mercedes | `mercedes_gt_diy` | Mercedes GT DIY | 6 | 2 |
+| Mercedes | `mercedes_f1_2014` | Mercedes F1 2014-style | 6 | 2 |
+| Mercedes | `mercedes_road_carbon` | Mercedes-AMG Road Carbon | 7 | 0 |
+| Mercedes | `mercedes_road_led` | Mercedes-AMG Road LED | 7 | 0 |
+
+Audi, BMW, Alfa Romeo, and KTM are in the garage with a Coming soon state. Adding a wheel is a PNG plus a JSON file whose `manufacturer` field is that brand.
+
+Porsche, McLaren, Audi, BMW, Ferrari, Mercedes-AMG, Alfa Romeo, KTM, MOZA, Fanatec, Thrustmaster, Cube Controls, Ascher, and the wheel designs in these pictures are trademarks of their owners. The images are here for layout testing only. They are not those products, and those owners have not endorsed this project.
 
 To add a wheel later, put a new PNG next to a JSON file in the same folder and rebuild. `tools/make_assets.py` regenerates the four shipped layouts from the source renders in `tools/sources/`. The editor can place rings on a new photo without measuring pixels by hand. The planned set is the wheels people actually drive in sims: current F1, GT3, LMP, and rally.
 
 ### Template JSON
 
-`schema` is `racing-wheel-pro.template/v1`. `cx`, `cy`, and `r` are fractions of the image. `r` is a fraction of the width, so a circle stays round in pixels. `hitSlop` grows the touch target without moving the drawn ring. `kind` is `button` or `rotary`. `shape` is `circle`. `defaultButton`, `decButton`, and `incButton` are the suggested virtual-button numbers. A profile can override them. `knobSlot` is 0–7 and selects which knob byte is sent on the wire.
+`schema` is `racing-wheel-pro.template/v1`. `manufacturer` is optional and groups the garage. If it is missing, a maker that contains MOZA is grouped as MOZA, and any other maker is left ungrouped. `cx`, `cy`, and `r` are fractions of the image. `r` is a fraction of the width, so a circle stays round in pixels. `hitSlop` grows the touch target without moving the drawn ring. `kind` is `button` or `rotary`. `shape` is `circle`. `defaultButton`, `decButton`, and `incButton` are the suggested virtual-button numbers. A profile can override them. `knobSlot` is 0–7 and selects which knob byte is sent on the wire.
 
 ```json
 {
@@ -130,6 +167,7 @@ To add a wheel later, put a new PNG next to a JSON file in the same folder and r
   "id": "moza_fsr",
   "name": "MOZA FSR",
   "maker": "MOZA Racing",
+  "manufacturer": "MOZA",
   "style": "formula",
   "image": "moza_fsr_screen.png",
   "imageWidth": 1280,

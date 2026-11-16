@@ -31,9 +31,43 @@ data class WheelTemplate(
     val blurb: String,
     val hitSlop: Float,
     val controls: List<Control>,
+    /** Car brand, or MOZA. Blank templates fall back to the maker name. */
+    val manufacturer: String = "",
 ) {
     val faceButtons: Int get() = controls.count { !it.isRotary }
     val rotaries: Int get() = controls.count { it.isRotary }
+}
+
+/**
+ * Garage order. A new wheel shows up when its JSON sets `manufacturer` to one of
+ * these names (McLaren, Mercedes, and the rest already have slots). MOZA stays
+ * after the car brands. Brands with no templates render a coming-soon state.
+ */
+object WheelMakers {
+    val carBrands = listOf(
+        "Porsche",
+        "McLaren",
+        "Audi",
+        "BMW",
+        "Ferrari",
+        "Mercedes",
+        "Alfa Romeo",
+        "KTM",
+    )
+    const val MOZA = "MOZA"
+
+    fun of(template: WheelTemplate): String {
+        val explicit = template.manufacturer.trim()
+        if (explicit.isNotEmpty()) return explicit
+        if (template.maker.contains("MOZA", ignoreCase = true)) return MOZA
+        return "Generic"
+    }
+
+    fun tabs(templates: List<WheelTemplate>): List<String> {
+        val known = carBrands + MOZA
+        val extra = templates.map { of(it) }.filter { it !in known }.distinct().sorted()
+        return known + extra
+    }
 }
 
 class SteeringSetup(

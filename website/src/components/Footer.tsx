@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="wrap footer-grid">
         <div>
           <p className="footer-brand">Racing Wheel Pro</p>
-          <p>An Android wheel and a Windows receiver. Version 0.1.0.</p>
+          <p>An Android wheel and a Windows receiver. Version 0.2.0.</p>
         </div>
         <div>
           <p className="footer-label">License</p>
@@ -32,12 +32,15 @@ export default function Footer() {
             </a>
           </p>
           <p>
-            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0">Release v0.1.0</a>
+            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.2.0">Release v0.2.0</a>
           </p>
         </div>
       </div>
       <div className="wrap footer-note">
-        <p>MOZA is a trademark of its owner. The wheel pictures are templates for layout testing, not a MOZA product.</p>
+        <p>
+          Porsche, McLaren, Audi, BMW, Ferrari, Mercedes-AMG, Alfa Romeo, KTM, MOZA, and the other wheel names are
+          trademarks of their owners. The pictures are templates for layout testing.
+        </p>
       </div>
     </footer>
   )

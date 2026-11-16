@@ -5,8 +5,8 @@ const FEATURES = [
     graphic: <SteerGraphic />,
   },
   {
-    title: 'Four templates',
-    text: 'FSR, KS, FSR2, and GS. About 9 to 18 buttons and knobs, mapped onto virtual buttons 1–32.',
+    title: 'Wheels by maker',
+    text: 'Porsche, McLaren, Ferrari, Mercedes, and MOZA, plus empty tabs for the next brands. About 4 to 18 buttons and knobs, mapped onto virtual buttons 1–32.',
     graphic: <TemplatesGraphic />,
   },
   {

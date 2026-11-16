@@ -4,6 +4,8 @@ import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.model.Control
+import com.racingwheelpro.model.WheelMakers
+import com.racingwheelpro.model.WheelTemplate
 import com.racingwheelpro.proto.FrameBuffer
 import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
@@ -117,6 +119,16 @@ class CoreTest {
         assertEquals(0f, Curves.shapeSteer(2f, 180f, 3f, 1f, 1f, false), 0.0001f)
         assertEquals(1f, Curves.shapeSteer(90f, 180f, 0f, 1f, 1f, false), 0.0001f)
         assertEquals(-1f, Curves.shapeSteer(90f, 180f, 0f, 1f, 1f, true), 0.0001f)
+    }
+
+    @Test
+    fun manufacturerFallsBackForOldMozaJson() {
+        val legacy = WheelTemplate("moza_ks", "KS", "MOZA Racing", "gt", "x.png", 10, 10, "", 0.01f, emptyList())
+        assertEquals("MOZA", WheelMakers.of(legacy))
+        val porsche = legacy.copy(manufacturer = "Porsche")
+        assertEquals("Porsche", WheelMakers.of(porsche))
+        assertEquals("Mercedes", WheelMakers.carBrands[5])
+        assertTrue(WheelMakers.tabs(emptyList()).contains("Alfa Romeo"))
     }
 
     @Test

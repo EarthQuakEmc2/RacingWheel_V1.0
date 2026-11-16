@@ -1,0 +1,96 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "ferrari_458_black",
+  "name": "Ferrari 458 black",
+  "maker": "Ferrari",
+  "manufacturer": "Ferrari",
+  "style": "road",
+  "image": "ferrari_458_black.png",
+  "imageWidth": 542,
+  "imageHeight": 527,
+  "blurb": "Black 458. Indicators, lights, engine start, and the manettino.",
+  "hitSlop": 0.008,
+  "outputButtons": 8,
+  "controls": [
+    {
+      "id": "ind_l",
+      "label": "IND",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.1845,
+      "cy": 0.49336,
+      "r": 0.02214,
+      "color": "#1A1A1A",
+      "defaultButton": 1
+    },
+    {
+      "id": "light",
+      "label": "LIGHTS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.1845,
+      "cy": 0.58824,
+      "r": 0.02583,
+      "color": "#1A1A1A",
+      "defaultButton": 2
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.28598,
+      "cy": 0.64516,
+      "r": 0.02214,
+      "color": "#2F80ED",
+      "defaultButton": 3
+    },
+    {
+      "id": "start",
+      "label": "ENGINE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.33579,
+      "cy": 0.70588,
+      "r": 0.02952,
+      "color": "#E10600",
+      "defaultButton": 4
+    },
+    {
+      "id": "light_r",
+      "label": "LIGHTS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.79336,
+      "cy": 0.58824,
+      "r": 0.02214,
+      "color": "#1A1A1A",
+      "defaultButton": 5
+    },
+    {
+      "id": "wiper",
+      "label": "WIPER",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.81181,
+      "cy": 0.66414,
+      "r": 0.02214,
+      "color": "#1A1A1A",
+      "defaultButton": 6
+    },
+    {
+      "id": "manettino",
+      "label": "MANETTINO",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.71956,
+      "cy": 0.68311,
+      "r": 0.0369,
+      "color": "#E10600",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 7,
+      "incButton": 8
+    }
+  ]
+}
