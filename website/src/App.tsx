@@ -1,0 +1,28 @@
+import Download from './components/Download'
+import Faq from './components/Faq'
+import Features from './components/Features'
+import Footer from './components/Footer'
+import Header from './components/Header'
+import Hero from './components/Hero'
+import Install from './components/Install'
+import Screenshots from './components/Screenshots'
+
+export default function App() {
+  return (
+    <>
+      <a className="skip" href="#content">
+        Skip to content
+      </a>
+      <Header />
+      <main id="content">
+        <Hero />
+        <Screenshots />
+        <Features />
+        <Download />
+        <Install />
+        <Faq />
+      </main>
+      <Footer />
+    </>
+  )
+}

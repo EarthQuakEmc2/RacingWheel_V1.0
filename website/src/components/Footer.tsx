@@ -1,0 +1,44 @@
+import LedStrip from './LedStrip'
+
+export default function Footer() {
+  return (
+    <footer className="site-footer">
+      <LedStrip />
+      <div className="wrap footer-grid">
+        <div>
+          <p className="footer-brand">Racing Wheel Pro</p>
+          <p>An Android wheel and a Windows receiver. Version 0.1.0.</p>
+        </div>
+        <div>
+          <p className="footer-label">License</p>
+          <p>
+            <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noreferrer">
+              GPL-3.0
+            </a>
+          </p>
+          <p>
+            Based on{' '}
+            <a href="https://github.com/thelv/touchracer" target="_blank" rel="noreferrer">
+              Touch Racer
+            </a>{' '}
+            by thelv.
+          </p>
+        </div>
+        <div>
+          <p className="footer-label">Project</p>
+          <p>
+            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+          </p>
+          <p>
+            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0">Release v0.1.0</a>
+          </p>
+        </div>
+      </div>
+      <div className="wrap footer-note">
+        <p>MOZA is a trademark of its owner. The wheel pictures are templates for layout testing, not a MOZA product.</p>
+      </div>
+    </footer>
+  )
+}

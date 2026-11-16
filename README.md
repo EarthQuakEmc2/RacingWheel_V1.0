@@ -6,6 +6,10 @@ Racing Wheel Pro turns a phone into a steering wheel for PC sim racing. The Andr
 
 Copyright (C) 2026 Racing Wheel Pro contributors. Licensed under the GNU General Public License v3.0, with the additional permissions in [LICENSE_EXCEPTIONS](LICENSE_EXCEPTIONS). See [License](#license).
 
+## Website
+
+The promotional site lives in [`website/`](website/). After GitHub Pages is enabled (source: GitHub Actions), it is published at <https://earthquakemc2.github.io/RacingWheel_V1.0/>.
+
 ## Screenshots
 
 These are rendered previews of the app chrome, drawn from the same wheel images and hotspot JSON the app ships. They are not photographs of a handset.
