@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <defs>
+    <pattern id="weave" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#14181c"/>
+      <path d="M0 10 L10 0 M-2 2 L2 -2 M8 12 L12 8" stroke="#2b333c" stroke-width="2"/>
+    </pattern>
+    <radialGradient id="grip" cx="50%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#2a2a2a"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </radialGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#12151b"/>
+      <stop offset="1" stop-color="#07080c"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke-linejoin="round">
+    <path d="M96 300c18-120 78-190 224-190s206 70 224 190c-18 130-86 210-224 210S114 430 96 300z" stroke="#101113" stroke-width="54"/>
+    <path d="M96 300c18-120 78-190 224-190s206 70 224 190c-18 130-86 210-224 210S114 430 96 300z" stroke="url(#grip)" stroke-width="36"/>
+    <path d="M150 250c30-20 40-70 28-110M490 250c-30-20-40-70-28-110" stroke="#0a0a0a" stroke-width="18" stroke-linecap="round"/>
+  </g>
+  <rect x="176" y="196" width="288" height="250" rx="28" fill="url(#weave)" stroke="#3a424c" stroke-width="2"/>
+  <rect x="206" y="214" width="228" height="18" rx="2" fill="#0c0e12"/>
+  <g>
+    <rect x="214" y="218" width="12" height="10" fill="#3ddc57"/>
+    <rect x="230" y="218" width="12" height="10" fill="#8dff3a"/>
+    <rect x="246" y="218" width="12" height="10" fill="#f5c518"/>
+    <rect x="262" y="218" width="12" height="10" fill="#f5c518"/>
+    <rect x="278" y="218" width="12" height="10" fill="#e10600"/>
+    <rect x="294" y="218" width="12" height="10" fill="#e10600"/>
+    <rect x="310" y="218" width="12" height="10" fill="#e040fb"/>
+    <rect x="326" y="218" width="12" height="10" fill="#7c5cff"/>
+    <rect x="342" y="218" width="12" height="10" fill="#2f80ed"/>
+    <rect x="358" y="218" width="12" height="10" fill="#00e5ff"/>
+  </g>
+  <rect x="214" y="242" width="212" height="92" rx="6" fill="url(#screen)" stroke="#2a313a"/>
+  <text x="320" y="292" text-anchor="middle" fill="#f4f1ea" font-family="Oswald, Arial Narrow, sans-serif" font-size="42" font-weight="600">RWP</text>
+  <text x="320" y="316" text-anchor="middle" fill="#f5c518" font-family="ui-monospace, monospace" font-size="12" letter-spacing="2">STEER</text>
+  <g>
+    <circle cx="196" cy="268" r="14" fill="#f5c518"/>
+    <circle cx="196" cy="308" r="13" fill="#00e5ff"/>
+    <circle cx="444" cy="268" r="14" fill="#e040fb"/>
+    <circle cx="444" cy="308" r="13" fill="#3ddc57"/>
+    <circle cx="230" cy="360" r="12" fill="#ff4d4d"/>
+    <circle cx="268" cy="348" r="11" fill="#f5c518"/>
+    <circle cx="372" cy="348" r="11" fill="#4c9dff"/>
+    <circle cx="410" cy="360" r="12" fill="#3ddc57"/>
+  </g>
+  <g>
+    <circle cx="236" cy="410" r="22" fill="#121416" stroke="#3ddc57" stroke-width="4"/>
+    <circle cx="320" cy="424" r="24" fill="#121416" stroke="#e10600" stroke-width="4"/>
+    <circle cx="404" cy="410" r="22" fill="#121416" stroke="#f5c518" stroke-width="4"/>
+    <path d="M236 396 v10 M320 408 v12 M404 396 v10" stroke="#f4f1ea" stroke-width="2"/>
+  </g>
+  <text x="320" y="378" text-anchor="middle" fill="#9aa3ab" font-family="Oswald, sans-serif" font-size="13" letter-spacing="3">RWP</text>
+  <circle cx="118" cy="250" r="11" fill="#e10600"/>
+  <circle cx="522" cy="250" r="11" fill="#f5c518"/>
+  <circle cx="124" cy="330" r="10" fill="#00e5ff"/>
+  <circle cx="516" cy="330" r="10" fill="#e040fb"/>
+</svg>
