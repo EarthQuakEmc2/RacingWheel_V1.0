@@ -1,0 +1,93 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "mercedes_road_led",
+  "name": "Mercedes-AMG Road LED",
+  "maker": "Mercedes-AMG",
+  "manufacturer": "Mercedes",
+  "style": "road",
+  "image": "mercedes_road_led.png",
+  "imageWidth": 565,
+  "imageHeight": 433,
+  "blurb": "LED road wheel. Spoke touch pads, volume, voice, and cruise.",
+  "hitSlop": 0.008,
+  "outputButtons": 7,
+  "controls": [
+    {
+      "id": "back",
+      "label": "BACK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.23009,
+      "cy": 0.46189,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 1
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.27434,
+      "cy": 0.50808,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 2
+    },
+    {
+      "id": "vol",
+      "label": "VOL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.22124,
+      "cy": 0.56582,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 3
+    },
+    {
+      "id": "voice",
+      "label": "VOICE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30088,
+      "cy": 0.55427,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 4
+    },
+    {
+      "id": "menu",
+      "label": "MENU",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.72566,
+      "cy": 0.47344,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 5
+    },
+    {
+      "id": "cruise",
+      "label": "CRUISE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.76991,
+      "cy": 0.53118,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 6
+    },
+    {
+      "id": "phone",
+      "label": "PHONE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.69912,
+      "cy": 0.56582,
+      "r": 0.02124,
+      "color": "#1A1A1A",
+      "defaultButton": 7
+    }
+  ]
+}

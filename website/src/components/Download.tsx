@@ -1,6 +1,6 @@
-const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.1.0/RacingWheelPro.apk'
+const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.2.0/RacingWheelPro.apk'
 const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.1.0/RacingWheelPro-PC.exe'
-const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0'
+const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.2.0'
 
 export default function Download() {
   return (
@@ -31,8 +31,8 @@ export default function Download() {
           </article>
         </div>
         <p className="release-row">
-          <a href={RELEASE}>All files on the v0.1.0 release</a>
-          <span>GPL-3.0 · 12 Nov 2026</span>
+          <a href={RELEASE}>Android app on the v0.2.0 release</a>
+          <span>GPL-3.0 · 16 Nov 2026</span>
         </p>
       </div>
     </section>

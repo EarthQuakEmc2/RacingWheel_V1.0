@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Screen
+import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.session.RaceSession
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
@@ -656,31 +658,77 @@ private fun EditorScreen(session: RaceSession) {
 
 @Composable
 private fun GarageScreen(session: RaceSession) {
+    val tabs = WheelMakers.tabs(session.templates)
+    var brand by remember { mutableStateOf(WheelMakers.of(session.wheel).let { if (it in tabs) it else tabs.first() }) }
+    if (brand !in tabs) brand = tabs.first()
+    val inBrand = session.templates.filter { WheelMakers.of(it) == brand }
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Text("WHEEL TEMPLATES", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.SemiBold)
-        Text("Pick the wheel in your hands. Profiles remember the map per wheel and per game.", color = Muted, fontSize = 13.sp)
+        Text("Pick a manufacturer, then the wheel in your hands.", color = Muted, fontSize = 13.sp)
+        Spacer(Modifier.height(6.dp))
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            tabs.forEach { name ->
+                val on = name == brand
+                val count = session.templates.count { WheelMakers.of(it) == name }
+                Text(
+                    if (count == 0) name.uppercase() else "${name.uppercase()}  $count",
+                    color = if (on) Color.Black else Ink,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 0.6.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(if (on) SignalYellow else PanelRaised)
+                        .clickable { brand = name }
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                )
+            }
+        }
         Spacer(Modifier.height(8.dp))
-        Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            session.templates.forEach { template ->
-                val selected = template.id == session.wheel.id
-                Column(
-                    Modifier
-                        .width(280.dp)
-                        .fillMaxHeight()
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(if (selected) PanelRaised else Panel)
-                        .border(1.dp, if (selected) SignalYellow else Line, RoundedCornerShape(10.dp))
-                        .clickable { session.selectWheel(template.id) }
-                        .padding(8.dp),
-                ) {
-                    TemplateArt(template.image, Modifier.weight(1f).fillMaxWidth())
-                    Text(template.name, color = Ink, fontWeight = FontWeight.SemiBold)
-                    Text(template.blurb, color = Muted, fontSize = 12.sp)
+        if (inBrand.isEmpty()) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Panel)
+                    .border(1.dp, Line, RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("COMING SOON", color = SignalYellow, fontWeight = FontWeight.Bold, letterSpacing = 1.6.sp, fontSize = 18.sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(brand, color = Ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "${template.faceButtons} buttons · ${template.rotaries} rotaries",
-                        color = SignalCyan,
-                        fontSize = 12.sp,
+                        "No ${brand} wheels in this build yet. Add a PNG and JSON with \"manufacturer\": \"$brand\".",
+                        color = Muted,
+                        fontSize = 13.sp,
                     )
+                }
+            }
+        } else {
+            Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                inBrand.forEach { template ->
+                    val selected = template.id == session.wheel.id
+                    Column(
+                        Modifier
+                            .width(280.dp)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (selected) PanelRaised else Panel)
+                            .border(1.dp, if (selected) SignalYellow else Line, RoundedCornerShape(10.dp))
+                            .clickable { session.selectWheel(template.id) }
+                            .padding(8.dp),
+                    ) {
+                        TemplateArt(template.image, Modifier.weight(1f).fillMaxWidth())
+                        Text(template.name, color = Ink, fontWeight = FontWeight.SemiBold)
+                        Text(template.blurb, color = Muted, fontSize = 12.sp)
+                        Text(
+                            "${template.faceButtons} buttons · ${template.rotaries} rotaries",
+                            color = SignalCyan,
+                            fontSize = 12.sp,
+                        )
+                    }
                 }
             }
         }

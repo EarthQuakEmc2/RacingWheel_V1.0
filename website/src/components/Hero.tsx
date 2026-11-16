@@ -15,14 +15,14 @@ import { webglAvailable } from '../lib/webgl'
 
 const WheelScene = lazy(() => import('./WheelScene'))
 
-const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0'
-const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.1.0/RacingWheelPro.apk'
+const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.2.0'
+const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.2.0/RacingWheelPro.apk'
 const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.1.0/RacingWheelPro-PC.exe'
 
 const TICKER = [
   '100 Hz telemetry',
   'UDP 41511',
-  '4 wheel templates',
+  'Wheels by manufacturer',
   'Buttons 1–32',
   'ViGEm Xbox 360',
   'vJoy',
@@ -185,7 +185,7 @@ export default function Hero() {
         <div className="hero-copy">
           <p className="kicker">
             <i className="live" aria-hidden="true" />
-            v0.1.0 · Android + Windows
+            v0.2.0 · Android + Windows
           </p>
           <h1>
             The phone
@@ -204,7 +204,7 @@ export default function Hero() {
             </a>
           </div>
           <p className="release-line">
-            <a href={RELEASE}>Release v0.1.0</a>
+            <a href={RELEASE}>Release v0.2.0</a>
             <span aria-hidden="true"> · </span>
             GPL-3.0
           </p>

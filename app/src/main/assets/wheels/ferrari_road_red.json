@@ -1,0 +1,107 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "ferrari_road_red",
+  "name": "Ferrari Road red",
+  "maker": "Ferrari",
+  "manufacturer": "Ferrari",
+  "style": "road",
+  "image": "ferrari_road_red.png",
+  "imageWidth": 612,
+  "imageHeight": 547,
+  "blurb": "Red road wheel. Indicators, lights, engine start, wipers, manettino.",
+  "hitSlop": 0.008,
+  "outputButtons": 9,
+  "controls": [
+    {
+      "id": "back",
+      "label": "BACK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25327,
+      "cy": 0.48446,
+      "r": 0.02288,
+      "color": "#1A1A1A",
+      "defaultButton": 1
+    },
+    {
+      "id": "light",
+      "label": "LIGHTS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25327,
+      "cy": 0.63071,
+      "r": 0.02288,
+      "color": "#1A1A1A",
+      "defaultButton": 2
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.34314,
+      "cy": 0.64899,
+      "r": 0.02124,
+      "color": "#2F80ED",
+      "defaultButton": 3
+    },
+    {
+      "id": "start",
+      "label": "ENGINE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.39052,
+      "cy": 0.7075,
+      "r": 0.02614,
+      "color": "#E10600",
+      "defaultButton": 4
+    },
+    {
+      "id": "wiper",
+      "label": "WIPER",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.4902,
+      "cy": 0.73126,
+      "r": 0.02288,
+      "color": "#1A1A1A",
+      "defaultButton": 5
+    },
+    {
+      "id": "phone",
+      "label": "PHONE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.56373,
+      "cy": 0.73126,
+      "r": 0.01961,
+      "color": "#1A1A1A",
+      "defaultButton": 6
+    },
+    {
+      "id": "light_r",
+      "label": "LIGHTS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.76797,
+      "cy": 0.62157,
+      "r": 0.02288,
+      "color": "#1A1A1A",
+      "defaultButton": 7
+    },
+    {
+      "id": "manettino",
+      "label": "MANETTINO",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.68627,
+      "cy": 0.70384,
+      "r": 0.03595,
+      "color": "#E10600",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 8,
+      "incButton": 9
+    }
+  ]
+}

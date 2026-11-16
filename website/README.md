@@ -20,13 +20,13 @@ npm run build
 npm run preview
 ```
 
-`npm run build` checks TypeScript, then builds with Vite `base` set to `/RacingWheel_V1.0/`. That is the path GitHub project Pages uses. `npm run preview` serves the production build, so open:
+`npm run build` checks TypeScript, then builds with Vite `base` `/`. `npm run build -- --base=/` is the same build. `npm run preview` serves it at:
 
-http://localhost:4173/RacingWheel_V1.0/
+http://localhost:4173/
 
 The published site is:
 
-https://earthquakemc2.github.io/RacingWheel_V1.0/
+https://myracingwheel.site/
 
 ## Deploy
 

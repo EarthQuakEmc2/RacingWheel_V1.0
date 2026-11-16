@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.2.0] - 2026-11-16
+
+Manufacturer garage and thirty car-wheel templates.
+
+### Added
+
+- Optional `manufacturer` field on `racing-wheel-pro.template/v1`. Older files still load. A missing field is treated as MOZA when the maker is MOZA, and otherwise left blank.
+- Garage brand tabs: Porsche, McLaren, Audi, BMW, Ferrari, Mercedes, Alfa Romeo, KTM, then MOZA. A brand with no templates shows Coming soon.
+- Nine Porsche templates, eight McLaren, seven Ferrari (including three road wheels), and six Mercedes (including two road wheels). Each control is a measured hotspot. A button uses one slot and a rotary uses two, and every template stays between 4 and 18 slots.
+- Website section “Wheels by manufacturer”, with the same tabs, a gallery, and a trademark line. Canonical and Open Graph URLs are `https://myracingwheel.site/`.
+- `tools/build_manufacturer_wheels.py` writes the car-wheel JSON, copies the PNGs, and draws alignment overlays in `docs/align/`.
+
 ## [0.1.0] - 2026-11-12
 
 First working release: an Android wheel and a Windows receiver.
@@ -34,5 +46,6 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0

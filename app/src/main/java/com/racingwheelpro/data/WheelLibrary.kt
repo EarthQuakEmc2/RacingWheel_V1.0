@@ -45,6 +45,15 @@ class WheelLibrary(private val context: Context) {
     }
 
     companion object {
+        /** Missing `manufacturer` keeps old MOZA files in the MOZA group. */
+        fun manufacturerOf(o: JSONObject): String {
+            val explicit = o.optString("manufacturer", "").trim()
+            if (explicit.isNotEmpty()) return explicit
+            val maker = o.optString("maker", "")
+            if (maker.contains("MOZA", ignoreCase = true)) return "MOZA"
+            return ""
+        }
+
         fun parseTemplate(text: String): WheelTemplate {
             val o = JSONObject(text)
             val arr = o.getJSONArray("controls")
@@ -80,6 +89,7 @@ class WheelLibrary(private val context: Context) {
                 blurb = o.optString("blurb", ""),
                 hitSlop = o.optDouble("hitSlop", 0.008).toFloat(),
                 controls = controls,
+                manufacturer = manufacturerOf(o),
             )
         }
 
@@ -112,6 +122,7 @@ class WheelLibrary(private val context: Context) {
                 .put("id", t.id)
                 .put("name", t.name)
                 .put("maker", t.maker)
+                .put("manufacturer", t.manufacturer)
                 .put("style", t.style)
                 .put("image", t.image)
                 .put("imageWidth", t.imageWidth)

@@ -4,6 +4,7 @@ import LedStrip from './LedStrip'
 const LINKS = [
   { href: '#drive', id: 'drive', label: 'Drive' },
   { href: '#wheels', id: 'wheels', label: 'Wheels' },
+  { href: '#makers', id: 'makers', label: 'Makers' },
   { href: '#download', id: 'download', label: 'Download' },
   { href: '#install', id: 'install', label: 'Install' },
 ]

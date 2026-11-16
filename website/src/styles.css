@@ -787,6 +787,80 @@ a { color: var(--yellow); }
   max-width: 70ch;
 }
 
+.maker-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 18px;
+}
+.maker-tab {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  min-height: 40px;
+  padding: 0 14px;
+  font-family: var(--font-d);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.maker-tab.on {
+  background: var(--yellow);
+  color: #1a1606;
+  border-color: var(--yellow);
+}
+.wheel-gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.wheel-gallery figure {
+  margin: 0;
+  border: 1px solid var(--line);
+  background: #10141a;
+  height: 100%;
+}
+.wheel-gallery img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: contain;
+  background: #0b0d10;
+}
+.wheel-gallery figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 14px;
+}
+.wheel-gallery strong {
+  font-family: var(--font-d);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.wheel-gallery span {
+  color: var(--faint);
+  font-family: var(--font-m);
+  font-size: 12px;
+}
+.wheel-blurb { color: var(--muted) !important; font-family: var(--font-b) !important; font-size: 14px !important; }
+.coming-soon {
+  border: 1px dashed var(--line-strong);
+  padding: 28px 18px;
+  max-width: 560px;
+}
+.coming-soon p { margin: 0 0 8px; }
+.legal-note {
+  margin: 18px 0 0;
+  max-width: 78ch;
+  color: var(--faint);
+  font-size: 13px;
+}
+
 .site-footer { margin-top: 20px; }
 .footer-grid {
   display: grid;
@@ -822,7 +896,8 @@ a { color: var(--yellow); }
   .wheel-stage { height: 420px; min-height: 300px; }
   .feature-grid,
   .download-grid,
-  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid,
+  .wheel-gallery { grid-template-columns: 1fr 1fr; }
   .thumbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
@@ -849,7 +924,8 @@ a { color: var(--yellow); }
   .download-grid,
   .footer-grid,
   .binds,
-  .stats { grid-template-columns: 1fr; }
+  .stats,
+  .wheel-gallery { grid-template-columns: 1fr; }
   .thumbs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .steps li { grid-template-columns: 48px minmax(0, 1fr); }
   .section { padding: 56px 0; }
