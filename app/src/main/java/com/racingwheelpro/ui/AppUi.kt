@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
@@ -357,6 +358,16 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                 Offset(rect.cx, rect.top - 2f),
                 Offset(rect.cx, rect.top + 14f),
                 strokeWidth = 2f,
+            )
+            val glow = maxOf(rect.width, rect.height) * 0.46f
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color.White.copy(alpha = 0.06f), Color.Transparent),
+                    center = Offset(rect.cx, rect.cy),
+                    radius = glow,
+                ),
+                radius = glow,
+                center = Offset(rect.cx, rect.cy),
             )
             rotate(angle, Offset(rect.cx, rect.cy)) {
                 drawImage(

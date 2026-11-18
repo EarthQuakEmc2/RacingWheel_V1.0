@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.2.1] - 2026-11-17
+
+Transparent wheel plates.
+
+### Changed
+
+- Every wheel template PNG is a transparent cutout. Studio backdrops, floor shadows, reflections, and corner gallery badges are gone. The canvas size and the wheel's position are unchanged, so the existing normalized hotspots still line up.
+- The manufacturer gallery draws those cutouts on the same carbon ground as the app, with a soft highlight so dark rims stay visible.
+- Android `versionCode` is 3.
+
 ## [0.2.0] - 2026-11-16
 
 Manufacturer garage and thirty car-wheel templates.
@@ -46,6 +56,7 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.1.0

@@ -155,8 +155,14 @@ TEMPLATES = [
 
 
 def knock_out_white(im: Image.Image) -> Image.Image:
-    """Flood-fill near-white background from the corners so the dash stays opaque."""
+    """Flood-fill near-white background from the corners so the dash stays opaque.
+
+    Plates that already have a transparent field (the rembg cutouts) are kept.
+    Running the fill again would nibble light pixels along the cut edge.
+    """
     arr = np.array(im.convert("RGBA"))
+    if int((arr[:, :, 3] == 0).sum()) > arr.shape[0] * arr.shape[1] * 0.05:
+        return Image.fromarray(arr, "RGBA")
     h, w = arr.shape[:2]
     rgb = arr[:, :, :3].astype(np.int16)
     mn = rgb.min(axis=2)
