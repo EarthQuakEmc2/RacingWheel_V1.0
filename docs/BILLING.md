@@ -22,9 +22,9 @@ The Android module has one flavor dimension, `tier`:
 
 The free wheels are `moza_ks`, `ferrari_sf1000`, `mercedes_amg_f1`, and `mclaren_ascher_dark`. They are the plates whose numbered dials sit on the hotspot centers. Every other template remains in the app and shows up in the garage as a locked Premium tile. The garage always offers **Unlock Racing Wheel Premium - $3.99**.
 
-## Why the Play client is not on main
+## Play client on this branch
 
-Google Play Billing is the monetization code `LICENSE_EXCEPTIONS` lets us keep off the published tree. The branch `paid-version` replaces `app/src/premium` with a Billing Library 7 client and adds `premiumImplementation` of `com.android.billingclient:billing-ktx`. The free flavor does not compile that client. The branch is not merged.
+This is the `paid-version` branch. `app/src/premium` is `PlayPremiumGate`, and `premiumImplementation` pulls in `com.android.billingclient:billing-ktx` 7.1.1. The free flavor does not compile that client. The branch is not merged to `main`. On `main`, the same source set is `OpenPremiumGate` and the dependency is absent.
 
 That client sells one non-consumable product:
 

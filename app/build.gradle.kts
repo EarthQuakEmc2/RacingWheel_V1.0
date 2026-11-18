@@ -114,4 +114,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     // android.jar stubs org.json and throws. The real library lets unit tests parse templates.
     testImplementation("org.json:json:20240303")
+    // Play Billing is premium-only. The free flavor does not compile this artifact.
+    "premiumImplementation"("com.android.billingclient:billing-ktx:7.1.1")
 }
