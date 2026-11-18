@@ -38,6 +38,8 @@ export default function Footer() {
             <a href="/account">Account</a>
             {' · '}
             <a href="/leaderboard">Leaderboard</a>
+            {' · '}
+            <a href="/privacy">Privacy</a>
           </p>
         </div>
       </div>

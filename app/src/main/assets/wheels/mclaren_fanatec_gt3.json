@@ -156,7 +156,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 13,
-      "incButton": 14
+      "incButton": 14,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "abs",
@@ -170,7 +172,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 15,
-      "incButton": 16
+      "incButton": 16,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "ctr",
@@ -184,7 +188,9 @@
       "positions": 12,
       "knobSlot": 2,
       "decButton": 17,
-      "incButton": 18
+      "incButton": 18,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 package com.racingwheelpro.session
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Handler
@@ -13,10 +14,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.racingwheelpro.BuildConfig
+import com.racingwheelpro.billing.createPremiumGate
+import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.data.ProfileStore
 import com.racingwheelpro.data.WheelLibrary
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.ImgRect
+import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.input.Smoother
 import com.racingwheelpro.input.SteeringSensor
 import com.racingwheelpro.input.Curves
@@ -35,6 +40,7 @@ import org.json.JSONObject
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -79,8 +85,14 @@ class RaceSession(private val context: Context) {
     var notice by mutableStateOf("")
     var setupPage by mutableStateOf("steer")
     var logRevision by mutableIntStateOf(0)
+    var paywall by mutableStateOf(false)
+    var premiumUnlocked by mutableStateOf(false)
+    var premiumDetail by mutableStateOf("")
+    var knobRevision by mutableIntStateOf(0)
 
     val inputLog = InputLog(File(context.filesDir, "input-logs"))
+    val genericNames: Boolean = BuildConfig.GENERIC_NAMES
+    val gate = createPremiumGate(context)
 
     var imageRect: ImgRect = ImgRect.EMPTY
 
@@ -99,6 +111,7 @@ class RaceSession(private val context: Context) {
     private val pulses = HashMap<Int, Long>()
     private val keyHeld = HashMap<Int, Int>()
     private val knobPos = IntArray(8)
+    private val knobIndex = HashMap<String, Int>()
     private var brakeRaw = 0f
     private var throttleRaw = 0f
     private var clutchRaw = 0f
@@ -190,6 +203,7 @@ class RaceSession(private val context: Context) {
     fun start() {
         if (running) return
         running = true
+        gate.addListener { main.post { applyEntitlement() } }
         val loaded = library.load()
         templates = loaded
         if (loaded.isEmpty()) {
@@ -198,13 +212,20 @@ class RaceSession(private val context: Context) {
         }
         profiles = profilesStore.loadAll().toMutableList()
         val active = profilesStore.activeId()?.let { id -> profiles.find { it.id == id } }
-        val initialWheel = loaded.find { it.id == active?.wheelId } ?: loaded.first()
+            ?.takeIf { gate.wheelUnlocked(it.wheelId) }
+        val initialWheel = loaded.find { it.id == active?.wheelId }
+            ?: loaded.firstOrNull { gate.wheelUnlocked(it.id) }
+            ?: loaded.first()
         wheel = initialWheel
         profile = active ?: defaultProfile(initialWheel).also {
+            if (genericNames) it.name = displayName(initialWheel)
             profiles = profiles + it
             profilesStore.save(it)
         }
         ensureBindings()
+        syncKnobBytes()
+        applyEntitlement()
+        gate.start()
         wire = buildPacket(0f, 0f, 0f, 0f, 0L)
         localIp = link.localIpv4()
         link.start()
@@ -259,25 +280,68 @@ class RaceSession(private val context: Context) {
 
     fun selectWheel(id: String) {
         val next = templates.find { it.id == id } ?: return
-        wheel = next
-        val existing = profiles.find { it.wheelId == id }
-        profile = existing ?: defaultProfile(next).also {
-            profiles = profiles + it
-            profilesStore.save(it)
+        if (!gate.wheelUnlocked(id)) {
+            paywall = true
+            screen = Screen.Garage
+            return
         }
-        ensureBindings()
-        selectedControl = null
-        restartSensor()
+        assignWheel(next)
         screen = Screen.Drive
     }
 
     fun selectProfile(id: String) {
         val next = profiles.find { it.id == id } ?: return
+        if (!gate.wheelUnlocked(next.wheelId)) {
+            paywall = true
+            return
+        }
         profile = next
         templates.find { it.id == next.wheelId }?.let { wheel = it }
         ensureBindings()
+        syncKnobBytes()
         profilesStore.setActive(id)
         restartSensor()
+    }
+
+    fun purchasePremium(activity: Activity) {
+        paywall = true
+        gate.purchase(activity)
+    }
+
+    fun restorePremium() {
+        gate.restore()
+    }
+
+    fun displayName(template: WheelTemplate): String =
+        WheelCatalog.displayName(template, templates, genericNames)
+
+    fun displayBlurb(template: WheelTemplate): String =
+        WheelCatalog.displayBlurb(template, genericNames)
+
+    fun groupOf(template: WheelTemplate): String =
+        WheelCatalog.groupOf(template, genericNames)
+
+    fun garageTabs(): List<String> = WheelCatalog.tabs(templates, genericNames)
+
+    fun displayProfileName(item: Profile): String {
+        if (!genericNames) return item.name
+        val scrubbed = WheelCatalog.scrubBrands(item.name)
+        if (scrubbed.length >= 3 && !WheelCatalog.containsBrand(scrubbed)) return scrubbed
+        val owner = templates.find { it.id == item.wheelId }
+        return owner?.let { displayName(it) } ?: "Profile"
+    }
+
+    fun knobPosition(controlId: String): Int {
+        val control = wheel.controls.find { it.id == controlId } ?: return 0
+        return knobAt(control)
+    }
+
+    /** One detent from a + or − tap. Positive is the next printed position. */
+    fun nudgeKnob(controlId: String, delta: Int) {
+        val control = wheel.controls.find { it.id == controlId && it.isRotary } ?: return
+        val binding = bindingFor(controlId) ?: return
+        stepKnob(control, binding, delta)
+        buzz(8)
     }
 
     fun saveProfileAs(name: String, game: String) {
@@ -360,6 +424,14 @@ class RaceSession(private val context: Context) {
         val angle = steerVisualDeg
         when (phase) {
             "down" -> {
+                val nudge = knobNudgeAt(x, y, angle)
+                if (nudge != null) {
+                    val binding = bindingFor(nudge.first.id) ?: return
+                    holds[id] = Hold(nudge.first.id, binding, SystemClock.elapsedRealtime(), nudge = true)
+                    nudgeKnob(nudge.first.id, nudge.second)
+                    pressedControls = holds.values.map { it.controlId }.toSet()
+                    return
+                }
                 val hit = Geometry.hit(
                     wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
                     angle, wheel.hitSlop,
@@ -381,7 +453,7 @@ class RaceSession(private val context: Context) {
                 val hold = holds[id]
                 if (hold != null) {
                     val control = wheel.controls.find { it.id == hold.controlId }
-                    if (control?.isRotary == true) dragRotary(id, control, hold.binding, x, y, angle)
+                    if (control?.isRotary == true && !hold.nudge) dragRotary(id, control, hold.binding, x, y, angle)
                 } else if (usingTouch()) {
                     val prev = steerFingers[id]
                     if (prev != null) {
@@ -512,24 +584,103 @@ class RaceSession(private val context: Context) {
     private fun dragRotary(id: Long, control: Control, binding: Binding, x: Float, y: Float, angle: Float) {
         val next = knobAngle(control, x, y, angle)
         val prev = rotaryAngle[id] ?: next
-        var delta = next - prev
-        while (delta > Math.PI) delta -= (Math.PI * 2).toFloat()
-        while (delta < -Math.PI) delta += (Math.PI * 2).toFloat()
+        var moved = next - prev
+        while (moved > Math.PI) moved -= (Math.PI * 2).toFloat()
+        while (moved < -Math.PI) moved += (Math.PI * 2).toFloat()
         rotaryAngle[id] = next
-        val acc = (rotaryAccum[id] ?: 0f) + delta
-        val step = (Math.PI * 2.0 / control.positions.coerceAtLeast(2)).toFloat()
-        if (abs(acc) >= step) {
-            val dir = if (acc > 0f) 1 else -1
-            val button = if (dir > 0) binding.incButton else binding.decButton
-            if (button in 1..32) pulses[button] = SystemClock.elapsedRealtime() + 70
-            val slot = control.knobSlot.coerceIn(0, 7)
-            val count = control.positions.coerceAtLeast(1)
-            knobPos[slot] = Math.floorMod(knobPos[slot] + dir, count)
-            rotaryAccum[id] = acc - dir * step
-            buzz(8)
-        } else {
-            rotaryAccum[id] = acc
+        val index = KnobMath.nearestIndex(next, control.startAngle, control.positions, control.clockwise)
+        val steps = KnobMath.shortestDelta(knobAt(control), index, control.positions)
+        if (steps == 0) return
+        // Ignore a snap that opposes the finger, so a noisy reading cannot walk backward.
+        if (steps > 0 && moved < -0.04f) return
+        if (steps < 0 && moved > 0.04f) return
+        stepKnob(control, binding, steps)
+        buzz(8)
+    }
+
+    private fun knobKey(control: Control) = "${wheel.id}:${control.id}"
+
+    private fun knobAt(control: Control): Int {
+        val count = control.positions.coerceAtLeast(1)
+        return Math.floorMod(knobIndex[knobKey(control)] ?: 0, count)
+    }
+
+    private fun stepKnob(control: Control, binding: Binding, delta: Int) {
+        if (delta == 0) return
+        val count = control.positions.coerceAtLeast(1)
+        val next = Math.floorMod(knobAt(control) + delta, count)
+        knobIndex[knobKey(control)] = next
+        val slot = control.knobSlot
+        if (slot in 0..7) knobPos[slot] = next
+        knobRevision++
+        val button = if (delta > 0) binding.incButton else binding.decButton
+        pulseButton(button, abs(delta).coerceAtMost(count))
+    }
+
+    /** Each detent is its own short press so the PC sees the position change. */
+    private fun pulseButton(button: Int, times: Int) {
+        if (button !in 1..32 || times <= 0) return
+        val count = times.coerceAtMost(8)
+        for (i in 0 until count) {
+            main.postDelayed({
+                pulses[button] = SystemClock.elapsedRealtime() + 45
+            }, i * 55L)
         }
+    }
+
+    private fun syncKnobBytes() {
+        for (i in knobPos.indices) knobPos[i] = 0
+        for (control in wheel.controls) {
+            if (!control.isRotary) continue
+            val slot = control.knobSlot
+            if (slot in 0..7) knobPos[slot] = knobAt(control)
+        }
+        knobRevision++
+    }
+
+    private fun knobNudgeAt(x: Float, y: Float, rotation: Float): Pair<Control, Int>? {
+        if (!gate.knobOverlay(wheel.id) || imageRect.width <= 1f) return null
+        val (lx, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, rotation)
+        val nx = (lx - imageRect.left) / imageRect.width
+        val ny = (ly - imageRect.top) / imageRect.height
+        var best: Pair<Control, Int>? = null
+        var bestDist = Float.MAX_VALUE
+        for (control in wheel.controls) {
+            if (!control.isRotary) continue
+            val limit = control.r * imageRect.width * 0.32f
+            for ((side, delta) in listOf(-0.62f to -1, 0.62f to 1)) {
+                val tx = control.cx + side * control.r
+                val ty = control.cy
+                val dist = hypot((nx - tx) * imageRect.width, (ny - ty) * imageRect.height)
+                if (dist <= limit && dist < bestDist) {
+                    bestDist = dist
+                    best = control to delta
+                }
+            }
+        }
+        return best
+    }
+
+    private fun assignWheel(next: WheelTemplate) {
+        wheel = next
+        val existing = profiles.find { it.wheelId == next.id }
+        profile = existing ?: defaultProfile(next).also {
+            if (genericNames) it.name = displayName(next)
+            profiles = profiles + it
+            profilesStore.save(it)
+        }
+        ensureBindings()
+        syncKnobBytes()
+        selectedControl = null
+        restartSensor()
+    }
+
+    private fun applyEntitlement() {
+        premiumUnlocked = gate.unlocked
+        premiumDetail = gate.detail
+        if (templates.isEmpty() || gate.wheelUnlocked(wheel.id)) return
+        val fallback = templates.firstOrNull { gate.wheelUnlocked(it.id) } ?: return
+        assignWheel(fallback)
     }
 
     private fun knobAngle(control: Control, x: Float, y: Float, rotation: Float): Float {
@@ -702,8 +853,8 @@ class RaceSession(private val context: Context) {
     private fun helloBytes(): ByteArray {
         return JSONObject()
             .put("name", Build.MODEL ?: "Android")
-            .put("wheel", wheel.name)
-            .put("profile", profile.name)
+            .put("wheel", displayName(wheel))
+            .put("profile", displayProfileName(profile))
             .put("protocol", Proto.VERSION)
             .toString()
             .toByteArray()
@@ -728,6 +879,7 @@ class RaceSession(private val context: Context) {
         val binding: Binding,
         val downAt: Long,
         var longFired: Boolean = false,
+        val nudge: Boolean = false,
     )
 
     private class PedalTouch(val side: String, var raw: Float, var originY: Float)

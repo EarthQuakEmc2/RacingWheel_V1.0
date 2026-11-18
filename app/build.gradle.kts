@@ -4,31 +4,73 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+/**
+ * Upload-key material is read from the environment or from gradle.properties.
+ * Neither the keystore nor its passwords belong in git. When they are absent,
+ * release builds fall back to the public development keystore in this module
+ * so a GitHub APK can still be signed. That development key is not a Play
+ * upload key. See play-store/PUBLISHING.md.
+ */
+fun secret(name: String): String? {
+    val fromEnv = System.getenv(name)?.takeIf { it.isNotBlank() }
+    if (fromEnv != null) return fromEnv
+    return (findProperty(name) as String?)?.takeIf { it.isNotBlank() }
+}
+
+val genericNames = secret("RWP_GENERIC_NAMES") == "true" ||
+    (findProperty("racingwheel.genericNames") as String?) == "true"
+
 android {
     namespace = "com.racingwheelpro"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.racingwheelpro"
+        applicationId = "site.myracingwheel.app"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 4
+        targetSdk = 35
+        versionCode = 5
         versionName = "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
+        buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
+    }
+
+    flavorDimensions += "tier"
+    productFlavors {
+        create("free") {
+            dimension = "tier"
+            isDefault = true
+        }
+        create("premium") {
+            dimension = "tier"
+        }
     }
 
     signingConfigs {
         create("release") {
-            storeFile = file("release.keystore")
-            storePassword = "racingwheelpro"
-            keyAlias = "racingwheelpro"
-            keyPassword = "racingwheelpro"
+            val upload = secret("RWP_UPLOAD_STORE_FILE")
+            if (upload != null) {
+                storeFile = file(upload)
+                storePassword = secret("RWP_UPLOAD_STORE_PASSWORD")
+                keyAlias = secret("RWP_UPLOAD_KEY_ALIAS")
+                keyPassword = secret("RWP_UPLOAD_KEY_PASSWORD")
+            } else {
+                storeFile = file("release.keystore")
+                storePassword = "racingwheelpro"
+                keyAlias = "racingwheelpro"
+                keyPassword = "racingwheelpro"
+            }
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -44,6 +86,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     lint {
@@ -69,4 +112,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     testImplementation("junit:junit:4.13.2")
+    // android.jar stubs org.json and throws. The real library lets unit tests parse templates.
+    testImplementation("org.json:json:20240303")
 }

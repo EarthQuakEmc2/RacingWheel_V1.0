@@ -1,5 +1,6 @@
 package com.racingwheelpro.ui
 
+import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -11,6 +12,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
@@ -60,14 +63,18 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.input.Geometry
+import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.model.Binding
+import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.Screen
-import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
 import kotlinx.coroutines.delay
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 @Composable
 fun AppRoot(session: RaceSession) {
@@ -88,6 +95,9 @@ fun AppRoot(session: RaceSession) {
                 Screen.Editor -> EditorScreen(session)
                 Screen.Garage -> GarageScreen(session)
                 Screen.Logs -> LogsScreen(session)
+            }
+            if (session.paywall) {
+                PremiumDialog(session)
             }
         }
     }
@@ -132,7 +142,7 @@ private fun TopBar(session: RaceSession) {
             letterSpacing = 1.4.sp,
         )
         Spacer(Modifier.width(12.dp))
-        Text(session.wheel.name, color = SignalYellow, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(session.displayName(session.wheel), color = SignalYellow, fontSize = 13.sp, fontWeight = FontWeight.Medium)
         Spacer(Modifier.width(10.dp))
         Text(session.steerReadout, color = Ink, fontSize = 13.sp)
         Spacer(Modifier.weight(1f))
@@ -331,6 +341,8 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val pressed = session.pressedControls
     val show = editor || session.showHotspots
     val selected = session.selectedControl
+    val overlay = session.gate.knobOverlay(wheel.id)
+    val knobRevision = session.knobRevision
     Box(
         modifier.pointerInput(editor) {
             awaitPointerEventScope {
@@ -398,6 +410,9 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                             drawContext.canvas.nativeCanvas.drawText(control.label, px, py - rad - 4f, labelPaint)
                         }
                     }
+                    if (overlay && control.isRotary && knobRevision >= 0) {
+                        drawKnobPointer(control, session.knobPosition(control.id), px, py, rad, density, labelPaint)
+                    }
                 }
                 drawLine(
                     SignalYellow,
@@ -407,6 +422,38 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                 )
             }
         }
+    }
+}
+
+private fun DrawScope.drawKnobPointer(
+    control: Control,
+    index: Int,
+    px: Float,
+    py: Float,
+    rad: Float,
+    density: Float,
+    labelPaint: Paint,
+) {
+    val deg = KnobMath.detentDegrees(control.startAngle, index, control.positions, control.clockwise)
+    val theta = Math.toRadians(deg.toDouble())
+    val tip = Offset(px + cos(theta).toFloat() * rad * 0.92f, py + sin(theta).toFloat() * rad * 0.92f)
+    drawCircle(Color.Black.copy(alpha = 0.55f), rad * 0.28f, Offset(px, py))
+    drawLine(Color.White, Offset(px, py), tip, strokeWidth = 3.5f)
+    drawCircle(SignalYellow, rad * 0.16f, Offset(px, py))
+    drawCircle(SignalYellow, 4.5f, tip)
+    val shown = index + 1
+    labelPaint.textSize = 12f * density
+    labelPaint.color = android.graphics.Color.BLACK
+    drawContext.canvas.nativeCanvas.drawText(shown.toString(), px, py + 4f * density, labelPaint)
+    labelPaint.color = android.graphics.Color.WHITE
+    val chip = (rad * 0.24f).coerceIn(7f, 14f)
+    val gap = rad * 0.62f
+    for ((dx, glyph) in listOf(-gap to "−", gap to "+")) {
+        val c = Offset(px + dx, py)
+        drawCircle(Color.Black.copy(alpha = 0.78f), chip, c)
+        drawCircle(SignalYellow, chip, c, style = Stroke(1.6f))
+        labelPaint.textSize = 16f * density
+        drawContext.canvas.nativeCanvas.drawText(glyph, c.x, c.y + 5f * density, labelPaint)
     }
 }
 
@@ -564,7 +611,7 @@ private fun SetupScreen(session: RaceSession) {
                 }
                 else -> {
                     SectionTitle("Profile")
-                    var name by remember(session.profile.id) { androidx.compose.runtime.mutableStateOf(session.profile.name) }
+                    var name by remember(session.profile.id) { androidx.compose.runtime.mutableStateOf(session.displayProfileName(session.profile)) }
                     var game by remember(session.profile.id) { androidx.compose.runtime.mutableStateOf(session.profile.game) }
                     OutlinedTextField(name, { name = it; session.profile.name = it; bump() }, label = { Text("Profile name") }, singleLine = true)
                     Spacer(Modifier.height(8.dp))
@@ -579,7 +626,7 @@ private fun SetupScreen(session: RaceSession) {
                     Spacer(Modifier.height(8.dp))
                     session.profiles.forEach { item ->
                         Text(
-                            "${item.name}  ·  ${item.game}",
+                            "${session.displayProfileName(item)}  ·  ${item.game}",
                             color = if (item.id == session.profile.id) SignalYellow else Ink,
                             modifier = Modifier.fillMaxWidth().clickable { session.selectProfile(item.id) }.padding(vertical = 6.dp),
                         )
@@ -675,18 +722,24 @@ private fun EditorScreen(session: RaceSession) {
 
 @Composable
 private fun GarageScreen(session: RaceSession) {
-    val tabs = WheelMakers.tabs(session.templates)
-    var brand by remember { mutableStateOf(WheelMakers.of(session.wheel).let { if (it in tabs) it else tabs.first() }) }
-    if (brand !in tabs) brand = tabs.first()
-    val inBrand = session.templates.filter { WheelMakers.of(it) == brand }
+    val tabs = session.garageTabs()
+    var brand by remember { mutableStateOf(session.groupOf(session.wheel).let { if (it in tabs) it else tabs.first() }) }
+    if (brand !in tabs && tabs.isNotEmpty()) brand = tabs.first()
+    val inBrand = session.templates.filter { session.groupOf(it) == brand }
+    val unlocked = session.premiumUnlocked
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Text("WHEEL TEMPLATES", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.SemiBold)
-        Text("Pick a manufacturer, then the wheel in your hands.", color = Muted, fontSize = 13.sp)
+        Text(
+            if (session.genericNames) "Pick a layout, then the wheel in your hands."
+            else "Pick a manufacturer, then the wheel in your hands.",
+            color = Muted,
+            fontSize = 13.sp,
+        )
         Spacer(Modifier.height(6.dp))
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             tabs.forEach { name ->
                 val on = name == brand
-                val count = session.templates.count { WheelMakers.of(it) == name }
+                val count = session.templates.count { session.groupOf(it) == name }
                 Text(
                     if (count == 0) name.uppercase() else "${name.uppercase()}  $count",
                     color = if (on) Color.Black else Ink,
@@ -698,6 +751,27 @@ private fun GarageScreen(session: RaceSession) {
                         .background(if (on) SignalYellow else PanelRaised)
                         .clickable { brand = name }
                         .padding(horizontal = 12.dp, vertical = 6.dp),
+                )
+            }
+        }
+        if (!unlocked) {
+            Spacer(Modifier.height(8.dp))
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(PanelRaised)
+                    .clickable { session.paywall = true }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LockMark()
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Unlock Racing Wheel Premium - ${WheelCatalog.PRICE_LABEL}",
+                    color = SignalYellow,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
                 )
             }
         }
@@ -717,7 +791,8 @@ private fun GarageScreen(session: RaceSession) {
                     Spacer(Modifier.height(6.dp))
                     Text(brand, color = Ink, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "No ${brand} wheels in this build yet. Add a PNG and JSON with \"manufacturer\": \"$brand\".",
+                        if (session.genericNames) "No $brand layouts in this build yet."
+                        else "No $brand wheels in this build yet. Add a PNG and JSON with \"manufacturer\": \"$brand\".",
                         color = Muted,
                         fontSize = 13.sp,
                     )
@@ -727,22 +802,43 @@ private fun GarageScreen(session: RaceSession) {
             Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 inBrand.forEach { template ->
                     val selected = template.id == session.wheel.id
+                    val locked = !session.gate.wheelUnlocked(template.id)
                     Column(
                         Modifier
                             .width(280.dp)
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (selected) PanelRaised else Panel)
-                            .border(1.dp, if (selected) SignalYellow else Line, RoundedCornerShape(10.dp))
-                            .clickable { session.selectWheel(template.id) }
+                            .background(if (selected && !locked) PanelRaised else Panel)
+                            .border(1.dp, if (selected && !locked) SignalYellow else Line, RoundedCornerShape(10.dp))
+                            .clickable {
+                                if (locked) session.paywall = true else session.selectWheel(template.id)
+                            }
                             .padding(8.dp),
                     ) {
-                        TemplateArt(template.image, Modifier.weight(1f).fillMaxWidth())
-                        Text(template.name, color = Ink, fontWeight = FontWeight.SemiBold)
-                        Text(template.blurb, color = Muted, fontSize = 12.sp)
+                        Box(Modifier.weight(1f).fillMaxWidth()) {
+                            TemplateArt(template.image, Modifier.fillMaxSize(), dimmed = locked)
+                            if (locked) {
+                                Column(Modifier.align(Alignment.TopEnd).padding(6.dp), horizontalAlignment = Alignment.End) {
+                                    Row(
+                                        Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(SignalYellow)
+                                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        LockMark(small = true)
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("PREMIUM", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                        Text(session.displayName(template), color = Ink, fontWeight = FontWeight.SemiBold)
+                        Text(session.displayBlurb(template), color = Muted, fontSize = 12.sp, maxLines = 2)
                         Text(
-                            "${template.faceButtons} buttons · ${template.rotaries} rotaries",
-                            color = SignalCyan,
+                            if (locked) "Locked · Racing Wheel Premium"
+                            else "${template.faceButtons} buttons · ${template.rotaries} rotaries",
+                            color = if (locked) SignalYellow else SignalCyan,
                             fontSize = 12.sp,
                         )
                     }
@@ -753,7 +849,102 @@ private fun GarageScreen(session: RaceSession) {
 }
 
 @Composable
-private fun TemplateArt(image: String, modifier: Modifier) {
+private fun PremiumDialog(session: RaceSession) {
+    val activity = LocalContext.current as? Activity
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.62f))
+            .clickable { session.paywall = false },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier
+                .width(460.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Panel)
+                .border(1.dp, SignalYellow, RoundedCornerShape(12.dp))
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
+                .padding(18.dp),
+        ) {
+            Text("RACING WHEEL PREMIUM", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text("All wheels, and a pointer on every numbered dial.", color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Steering, throttle, brake, buttons, the layout editor, and the PC receiver stay in the free version. " +
+                    "Premium is a one-time purchase of ${WheelCatalog.PRICE_LABEL}.",
+                color = Muted,
+                fontSize = 13.sp,
+            )
+            if (session.premiumDetail.isNotBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(session.premiumDetail, color = Ink, fontSize = 13.sp)
+            }
+            Spacer(Modifier.height(12.dp))
+            Row {
+                Text(
+                    "Unlock Racing Wheel Premium - ${WheelCatalog.PRICE_LABEL}",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(SignalYellow)
+                        .clickable { if (activity != null) session.purchasePremium(activity) }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "RESTORE",
+                    color = Ink,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .border(1.dp, Line, RoundedCornerShape(6.dp))
+                        .clickable { session.restorePremium() }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "NOT NOW",
+                color = Muted,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable { session.paywall = false }.padding(vertical = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LockMark(small: Boolean = false) {
+    val s = if (small) 10.dp else 14.dp
+    Canvas(Modifier.width(s).height(s)) {
+        val w = size.width
+        val h = size.height
+        drawRoundRect(
+            color = Color.Black,
+            topLeft = Offset(w * 0.18f, h * 0.42f),
+            size = androidx.compose.ui.geometry.Size(w * 0.64f, h * 0.5f),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(1.5f, 1.5f),
+        )
+        drawArc(
+            color = Color.Black,
+            startAngle = 180f,
+            sweepAngle = 180f,
+            useCenter = false,
+            topLeft = Offset(w * 0.28f, h * 0.08f),
+            size = androidx.compose.ui.geometry.Size(w * 0.44f, h * 0.5f),
+            style = Stroke(width = w * 0.12f),
+        )
+    }
+}
+
+@Composable
+private fun TemplateArt(image: String, modifier: Modifier, dimmed: Boolean = false) {
     val context = LocalContext.current
     val bitmap = remember(image) {
         runCatching {
@@ -771,7 +962,11 @@ private fun TemplateArt(image: String, modifier: Modifier) {
             dstOffset = IntOffset(rect.left.roundToInt(), rect.top.roundToInt()),
             dstSize = IntSize(rect.width.roundToInt().coerceAtLeast(1), rect.height.roundToInt().coerceAtLeast(1)),
             filterQuality = FilterQuality.Medium,
+            alpha = if (dimmed) 0.35f else 1f,
         )
+        if (dimmed) {
+            drawRect(Color.Black.copy(alpha = 0.28f))
+        }
     }
 }
 

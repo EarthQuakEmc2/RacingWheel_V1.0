@@ -6,6 +6,7 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import Install from './components/Install'
 import Manufacturers from './components/Manufacturers'
+import Pricing from './components/Pricing'
 import Screenshots from './components/Screenshots'
 
 export default function Marketing() {
@@ -20,6 +21,7 @@ export default function Marketing() {
         <Screenshots />
         <Manufacturers />
         <Features />
+        <Pricing />
         <Download />
         <Install />
         <Faq />

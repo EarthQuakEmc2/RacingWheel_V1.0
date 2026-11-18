@@ -6,6 +6,7 @@ const LINKS = [
   { href: '/#drive', id: 'drive', label: 'Drive' },
   { href: '/#wheels', id: 'wheels', label: 'Wheels' },
   { href: '/#makers', id: 'makers', label: 'Makers' },
+  { href: '/#pricing', id: 'pricing', label: 'Pricing' },
   { href: '/#download', id: 'download', label: 'Download' },
   { href: '/#install', id: 'install', label: 'Install' },
   { href: '/leaderboard', id: 'leaderboard', label: 'Leaderboard' },
@@ -16,7 +17,14 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('top')
   const location = useLocation()
-  const routeActive = location.pathname === '/account' ? 'account' : location.pathname === '/leaderboard' ? 'leaderboard' : ''
+  const routeActive =
+    location.pathname === '/account'
+      ? 'account'
+      : location.pathname === '/leaderboard'
+        ? 'leaderboard'
+        : location.pathname === '/privacy'
+          ? 'privacy'
+          : ''
 
   useEffect(() => {
     const ids = ['top', ...LINKS.map((l) => l.id), 'notes']

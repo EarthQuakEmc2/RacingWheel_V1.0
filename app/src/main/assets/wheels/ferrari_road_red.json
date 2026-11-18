@@ -101,7 +101,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 8,
-      "incButton": 9
+      "incButton": 9,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

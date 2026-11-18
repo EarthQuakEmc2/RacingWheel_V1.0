@@ -167,7 +167,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 14,
-      "incButton": 15
+      "incButton": 15,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "map",
@@ -181,7 +183,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 16,
-      "incButton": 17
+      "incButton": 17,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

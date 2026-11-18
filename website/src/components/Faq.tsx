@@ -16,6 +16,10 @@ const ITEMS = [
     a: 'Yes. With USB debugging on, reverse ports 41512, 41511, and 41510, then tap USB / ADB. The app talks to 127.0.0.1 and adb forwards those ports to the PC.',
   },
   {
+    q: 'What does the $3.99 unlock?',
+    a: 'Racing Wheel Premium is a one-time purchase. It opens every wheel template and draws the dial pointer on every rotary. The free app already steers, brakes, throttles, edits layouts, and talks to the PC, and it keeps the pointer demo on one wheel.',
+  },
+  {
     q: 'Windows SmartScreen blocks the exe.',
     a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.4.0 release, choose More info, then Run anyway.',
   },
@@ -31,7 +35,7 @@ export default function Faq() {
       <div className="wrap faq-wrap">
         <header className="section-head">
           <p className="kicker">
-            <span>05</span> Pit notes
+            <span>06</span> Pit notes
           </p>
           <h2>When the pad is missing.</h2>
         </header>

@@ -1,0 +1,27 @@
+Racing Wheel Pro turns an Android phone into a steering wheel for PC sim racing.
+
+Hold the phone in landscape and roll it. The wheel on screen turns with you. The left edge is the brake and the right edge is the throttle. Buttons and rotary dials sit on the wheel picture, under your thumbs, and they stay under your thumbs while the picture rotates.
+
+A Windows receiver on the same Wi-Fi presents the phone to games as a virtual controller. ViGEm gives you an Xbox 360 pad. vJoy gives you a full 32-button device. With neither driver installed, the receiver still shows a live readout. USB works too, through adb reverse.
+
+Free
+• Four wheel layouts, ready to drive
+• Steering from the game-rotation sensor, the accelerometer, or a finger drag
+• Range, sensitivity, dead zone, linearity, smoothing, and a center button
+• Separate throttle and brake, with curves, dead zones, and an optional clutch
+• Buttons mapped to a virtual pad, including press, toggle, and long-press
+• A layout editor: move, resize, add, and save hotspots on the phone
+• The animated dial pointer on one wheel, so you can see a knob track its detents
+• The Windows receiver
+
+Racing Wheel Premium — $3.99 once
+• Every wheel layout in the app
+• The dial pointer on every rotary, snapping to the marks printed on the wheel
+• A one-time, non-consumable purchase. No subscription and no ads
+• Restore purchases on a new phone from the same Google account
+
+The price is charged by Google Play. The app does not collect a card number, and it does not run ads or analytics. The phone talks only to the PC you connect, on your own network.
+
+Steering, pedals, buttons, the layout editor, and the PC link stay available if you never buy Premium.
+
+This is a controller for games you already own. It is not affiliated with any car maker or wheel maker. Wheel photographs in the app are layout references. Names in the store build are generic.
