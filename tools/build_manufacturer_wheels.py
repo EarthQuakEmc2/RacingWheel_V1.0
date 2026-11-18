@@ -4,6 +4,10 @@
 Coordinates are pixel centers on the source photo. Radius is in source pixels.
 A rotary consumes two programmable buttons (+/-). Each template stays within
 4–18 button slots. `manufacturer` is optional for older MOZA files.
+
+The PNGs this script copies are the photographed plates. `tools/cutout_wheels.py`
+replaces them with transparent cutouts of the same canvas. Re-run that after
+this script if the uploads are copied again.
 """
 
 from __future__ import annotations

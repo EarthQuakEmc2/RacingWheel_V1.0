@@ -828,7 +828,9 @@ a { color: var(--yellow); }
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: contain;
-  background: #0b0d10;
+  background:
+    radial-gradient(ellipse at 50% 46%, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 58%),
+    #0b0d10;
 }
 .wheel-gallery figcaption {
   display: flex;
