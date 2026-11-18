@@ -16,6 +16,13 @@ data class Control(
     val knobSlot: Int = 0,
     val decButton: Int = 0,
     val incButton: Int = 0,
+    /**
+     * Degrees clockwise from 3 o'clock of detent 0, in screen space (y grows downward).
+     * −90 is 12 o'clock. The overlay pointer uses this with [positions] and [clockwise].
+     */
+    val startAngle: Float = -90f,
+    /** When true, higher detents move clockwise on the screen. */
+    val clockwise: Boolean = true,
 ) {
     val isRotary: Boolean get() = kind == "rotary"
 }

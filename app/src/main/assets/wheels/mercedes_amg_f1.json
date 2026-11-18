@@ -153,10 +153,12 @@
       "cy": 0.73144,
       "r": 0.03789,
       "color": "#F5C400",
-      "positions": 12,
+      "positions": 16,
       "knobSlot": 0,
       "decButton": 13,
-      "incButton": 14
+      "incButton": 14,
+      "startAngle": -67.5,
+      "clockwise": true
     },
     {
       "id": "mix",
@@ -167,10 +169,12 @@
       "cy": 0.72052,
       "r": 0.03518,
       "color": "#6C4CFF",
-      "positions": 12,
+      "positions": 16,
       "knobSlot": 1,
       "decButton": 15,
-      "incButton": 16
+      "incButton": 16,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "hpp",
@@ -181,10 +185,12 @@
       "cy": 0.72052,
       "r": 0.03789,
       "color": "#00E5E5",
-      "positions": 12,
+      "positions": 16,
       "knobSlot": 2,
       "decButton": 17,
-      "incButton": 18
+      "incButton": 18,
+      "startAngle": -67.5,
+      "clockwise": true
     }
   ]
 }

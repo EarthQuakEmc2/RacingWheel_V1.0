@@ -1,8 +1,12 @@
 package com.racingwheelpro
 
+import com.racingwheelpro.catalog.EntitlementPolicy
+import com.racingwheelpro.catalog.WheelCatalog
+import com.racingwheelpro.data.WheelLibrary
 import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
 import com.racingwheelpro.input.Geometry
+import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
@@ -11,10 +15,12 @@ import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
 import com.racingwheelpro.proto.StatePacket
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 class CoreTest {
     @Test
@@ -132,6 +138,113 @@ class CoreTest {
     }
 
     @Test
+    fun knobDetentZeroSitsOnTheStartAngle() {
+        assertEquals(270f, KnobMath.detentDegrees(-90f, 0, 12, true), 0.01f)
+        assertEquals(300f, KnobMath.detentDegrees(-60f, 0, 12, true), 0.01f)
+        // One step clockwise of 12 o'clock on a 16-position dial.
+        assertEquals(292.5f, KnobMath.detentDegrees(-67.5f, 0, 16, true), 0.01f)
+        assertEquals(315f, KnobMath.detentDegrees(-67.5f, 1, 16, true), 0.01f)
+    }
+
+    @Test
+    fun nearestDetentSnapsToPrintedTicks() {
+        // 1 o'clock is printed "1" when startAngle is -60 and there are 12 ticks.
+        val oneOClock = Math.toRadians(-60.0).toFloat()
+        assertEquals(0, KnobMath.nearestIndex(oneOClock, -60f, 12, true))
+        val twoOClock = Math.toRadians(-30.0).toFloat()
+        assertEquals(1, KnobMath.nearestIndex(twoOClock, -60f, 12, true))
+        // Just past the seam, nearest is still detent 0.
+        val almostOne = Math.toRadians(-75.0).toFloat()
+        assertEquals(0, KnobMath.nearestIndex(almostOne, -60f, 12, true))
+    }
+
+    @Test
+    fun shortestDeltaWrapsTheDial() {
+        assertEquals(1, KnobMath.shortestDelta(11, 0, 12))
+        assertEquals(-1, KnobMath.shortestDelta(0, 11, 12))
+        assertEquals(0, KnobMath.shortestDelta(4, 4, 12))
+        assertEquals(2, KnobMath.shortestDelta(14, 0, 16))
+    }
+
+    @Test
+    fun freeCatalogIsFourWheelsAndGenericNamesHideBrands() {
+        assertEquals(4, WheelCatalog.freeWheelIds.size)
+        assertEquals(
+            listOf("moza_ks", "ferrari_sf1000", "mercedes_amg_f1", "mclaren_ascher_dark"),
+            WheelCatalog.freeWheelIds,
+        )
+        assertEquals("moza_ks", WheelCatalog.DEMO_KNOB_WHEEL)
+        assertTrue(WheelCatalog.freeWheelIds.contains(WheelCatalog.DEMO_KNOB_WHEEL))
+        val templates = loadAssetTemplates()
+        assertEquals(34, templates.size)
+        val generic = templates.map { WheelCatalog.displayName(it, templates, true) }
+        assertTrue(generic.any { it == "GT3 Wheel A" || it.startsWith("GT3 Wheel") })
+        assertTrue(generic.any { it.startsWith("F1 Wheel") })
+        generic.forEach { name ->
+            assertFalse(name, WheelCatalog.containsBrand(name))
+        }
+        templates.forEach { template ->
+            val blurb = WheelCatalog.displayBlurb(template, true)
+            assertFalse(blurb, WheelCatalog.containsBrand(blurb))
+        }
+        val storeTabs = WheelCatalog.tabs(templates, true)
+        assertFalse(storeTabs.any { WheelCatalog.containsBrand(it) })
+    }
+
+    @Test
+    fun numberedDialsCarryStartAngleAndPositionCount() {
+        val templates = loadAssetTemplates().associateBy { it.id }
+        fun rotary(wheel: String, id: String) = templates.getValue(wheel).controls.first { it.id == id }
+        val strat = rotary("mercedes_amg_f1", "strat")
+        assertEquals(16, strat.positions)
+        assertEquals(-67.5f, strat.startAngle, 0.01f)
+        assertTrue(strat.clockwise)
+        val hpp = rotary("mercedes_amg_f1", "hpp")
+        assertEquals(16, hpp.positions)
+        assertEquals(-67.5f, hpp.startAngle, 0.01f)
+        val manettino = rotary("ferrari_sf1000", "manettino")
+        assertEquals(12, manettino.positions)
+        assertEquals(-75f, manettino.startAngle, 0.01f)
+        val ascher = rotary("mclaren_ascher_dark", "map")
+        assertEquals(12, ascher.positions)
+        assertEquals(-72f, ascher.startAngle, 0.01f)
+        val turbo = rotary("moza_ks", "turbo")
+        assertEquals(12, turbo.positions)
+        assertEquals(-60f, turbo.startAngle, 0.01f)
+        assertTrue(templates.values.all { wheel ->
+            wheel.controls.filter { it.isRotary }.all { it.positions >= 2 }
+        })
+    }
+
+    @Test
+    fun templateJsonRoundTripsKnobCalibration() {
+        val raw = """
+            {"id":"sample","name":"Sample","maker":"MOZA Racing","style":"gt","image":"x.png",
+             "imageWidth":100,"imageHeight":80,"controls":[
+               {"id":"turbo","label":"TURBO","kind":"rotary","cx":0.5,"cy":0.5,"r":0.04,
+                "positions":12,"startAngle":-60,"clockwise":true,"knobSlot":0,"decButton":1,"incButton":2}
+             ]}
+        """.trimIndent()
+        val parsed = WheelLibrary.parseTemplate(raw)
+        val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(parsed))
+        val knob = again.controls.single()
+        assertEquals(-60f, knob.startAngle, 0.01f)
+        assertTrue(knob.clockwise)
+        assertEquals(12, knob.positions)
+        assertEquals("MOZA", again.manufacturer)
+    }
+
+    @Test
+    fun entitlementFollowsTheQueryAndKeepsTheCacheWhenOffline() {
+        assertFalse(EntitlementPolicy.resolve(EntitlementPolicy.Query.SUCCEEDED, false, true, false))
+        assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.SUCCEEDED, true, false, false))
+        assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.FAILED, false, true, false))
+        assertFalse(EntitlementPolicy.resolve(EntitlementPolicy.Query.FAILED, false, false, false))
+        assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.PENDING, false, true, false))
+        assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.SUCCEEDED, false, false, true))
+    }
+
+    @Test
     fun unwrapperContinuesPastTheBranchCut() {
         val u = AngleUnwrapper()
         val first = u.feed(3f, true)
@@ -139,5 +252,12 @@ class CoreTest {
         // Jump from +3 to -3 is a wrap of about -6 rad, which should add +2π.
         val next = u.feed(-3f, true)
         assertTrue(next > 3f)
+    }
+
+    private fun loadAssetTemplates(): List<WheelTemplate> {
+        val dir = File("src/main/assets/wheels")
+        return dir.listFiles { file -> file.extension == "json" }!!
+            .sortedBy { it.name }
+            .map { WheelLibrary.parseTemplate(it.readText()) }
     }
 }

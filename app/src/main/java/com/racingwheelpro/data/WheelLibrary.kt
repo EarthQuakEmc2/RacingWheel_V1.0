@@ -75,6 +75,8 @@ class WheelLibrary(private val context: Context) {
                         knobSlot = c.optInt("knobSlot", i),
                         decButton = c.optInt("decButton", 0),
                         incButton = c.optInt("incButton", 0),
+                        startAngle = c.optDouble("startAngle", -90.0).toFloat(),
+                        clockwise = c.optBoolean("clockwise", true),
                     ),
                 )
             }
@@ -109,6 +111,8 @@ class WheelLibrary(private val context: Context) {
                 if (c.isRotary) {
                     o.put("positions", c.positions)
                     o.put("knobSlot", if (c.knobSlot >= 0) c.knobSlot else slot)
+                    o.put("startAngle", c.startAngle.toDouble())
+                    o.put("clockwise", c.clockwise)
                     if (c.decButton > 0) o.put("decButton", c.decButton)
                     if (c.incButton > 0) o.put("incButton", c.incButton)
                     slot++

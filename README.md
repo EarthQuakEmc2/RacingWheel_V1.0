@@ -8,7 +8,27 @@ Copyright (C) 2026 Racing Wheel Pro contributors. Licensed under the GNU General
 
 ## Website
 
-The promotional site lives in [`website/`](website/). Its canonical address is <https://myracingwheel.site/>.
+The promotional site lives in [`website/`](website/). Its canonical address is <https://myracingwheel.site/>. The privacy policy is <https://myracingwheel.site/privacy>.
+
+## Free and Premium
+
+Version 0.3.0 keeps every driving feature in the free app and locks the extra wheel pictures.
+
+The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. One free wheel, the KS, draws the animated dial pointer so the knob feature can be tried.
+
+Gradle flavors are `free` and `premium`. The free flavor compiles with no Play Billing library. The premium flavor on this branch unlocks every wheel and every dial pointer, again with no billing library, which is what keeps the published source fully usable under [LICENSE_EXCEPTIONS](LICENSE_EXCEPTIONS). The Play Billing client for the one-time product `racing_wheel_premium` lives only on the `paid-version` branch and is not merged. The split is written out in [docs/BILLING.md](docs/BILLING.md).
+
+Package id is `site.myracingwheel.app`. `targetSdk` is 35. Release builds run R8.
+
+### Store names
+
+Google Play regularly rejects apps that use Ferrari, Porsche, Mercedes, McLaren, MOZA, and the other names in this repo without a license, especially once money is involved. A store build hides those names in the UI:
+
+```bash
+./gradlew :app:bundlePremiumRelease -Pracingwheel.genericNames=true
+```
+
+`RWP_GENERIC_NAMES=true` does the same thing. Titles become "F1 Wheel A", "GT3 Wheel B", and the rest, grouped as Formula, GT, Cup, and Road. The PNG files are not removed or altered. The photographs can still get a listing removed. Read [play-store/PUBLISHING.md](play-store/PUBLISHING.md) before uploading a bundle. Do not put those brand names in the Play listing. The listing text in `play-store/listing/` is the one written for the store.
 
 ## Screenshots
 
@@ -40,7 +60,7 @@ Hotspot rings on the KS and GS templates:
 
 ## Install the APK
 
-The signed release build is published as `RacingWheelPro.apk` (built from `app/build/outputs/apk/release/app-release.apk`). A debug APK is `RacingWheelPro-debug.apk`.
+The signed free release build is published as `RacingWheelPro.apk` (the `free` flavor, `app/build/outputs/apk/free/release/app-free-release.apk`). A debug APK of that flavor is `RacingWheelPro-debug.apk`. The Play bundle is a separate artifact. See [play-store/PUBLISHING.md](play-store/PUBLISHING.md).
 
 On the phone, allow installs from your file manager and open the APK. From a computer, with USB debugging on:
 
@@ -48,7 +68,7 @@ On the phone, allow installs from your file manager and open the APK. From a com
 adb install -r RacingWheelPro.apk
 ```
 
-The release APK is signed with the development keystore in `app/release.keystore` (alias `racingwheelpro`, store and key password `racingwheelpro`). That key makes the build reproducible. Replace it before any store listing.
+GitHub APKs are signed with the development keystore in `app/release.keystore` (alias `racingwheelpro`, store and key password `racingwheelpro`) when no upload key is configured. That key makes the GitHub build reproducible. It is not a Play upload key. Set `RWP_UPLOAD_STORE_FILE`, `RWP_UPLOAD_STORE_PASSWORD`, `RWP_UPLOAD_KEY_ALIAS`, and `RWP_UPLOAD_KEY_PASSWORD` in the environment or in `gradle.properties` for a Play upload. Do not commit that keystore.
 
 The app is landscape only and keeps the screen on while it is open.
 
@@ -155,11 +175,15 @@ Audi, BMW, Alfa Romeo, and KTM are in the garage with a Coming soon state. Addin
 
 Porsche, McLaren, Audi, BMW, Ferrari, Mercedes-AMG, Alfa Romeo, KTM, MOZA, Fanatec, Thrustmaster, Cube Controls, Ascher, and the wheel designs in these pictures are trademarks of their owners. The images are here for layout testing only. They are not those products, and those owners have not endorsed this project.
 
+Google Play's IP rules are stricter than a GitHub README. Shipping those names or those photographs in a paid listing is a common cause of rejection or removal. The store build switch and the reasons are in [play-store/PUBLISHING.md](play-store/PUBLISHING.md).
+
 To add a wheel later, put a new PNG next to a JSON file in the same folder and rebuild. `tools/make_assets.py` regenerates the four shipped layouts from the source renders in `tools/sources/`. The editor can place rings on a new photo without measuring pixels by hand. The planned set is the wheels people actually drive in sims: current F1, GT3, LMP, and rally.
 
 ### Template JSON
 
 `schema` is `racing-wheel-pro.template/v1`. `manufacturer` is optional and groups the garage. If it is missing, a maker that contains MOZA is grouped as MOZA, and any other maker is left ungrouped. `cx`, `cy`, and `r` are fractions of the image. `r` is a fraction of the width, so a circle stays round in pixels. `hitSlop` grows the touch target without moving the drawn ring. `kind` is `button` or `rotary`. `shape` is `circle`. `defaultButton`, `decButton`, and `incButton` are the suggested virtual-button numbers. A profile can override them. `knobSlot` is 0–7 and selects which knob byte is sent on the wire.
+
+A rotary also has `positions`, `startAngle`, and `clockwise`. `startAngle` is degrees clockwise from 3 o'clock in screen space, where y grows downward. −90 is 12 o'clock and is the default. Detent 0 sits on that angle. The next detent is one step clockwise when `clockwise` is true. The drive screen draws a pointer on that detent, plus a − and a + on the knob. Tapping them, or dragging around the knob, snaps to the nearest printed mark and pulses the decrement or increment button once per step. The knob byte still carries the absolute position. `tools/render_knob_overlays.py` draws the same pointer onto the wheel art and writes `docs/knobs/`.
 
 ```json
 {
@@ -282,14 +306,19 @@ Rumble (`RWPR`, large motor, small motor) travels back to the UDP port the phone
 
 ### Android
 
-JDK 17 or 21, and Android SDK 34 (`platforms;android-34` and `build-tools;34.0.0`).
+JDK 17 or 21, and Android SDK 35 (`platforms;android-35` and `build-tools;35.0.0`).
 
 ```bash
 export ANDROID_HOME="$HOME/Android/Sdk"    # or sdk.dir in local.properties
-./gradlew assembleDebug                    # app/build/outputs/apk/debug/app-debug.apk
-./gradlew assembleRelease                  # signed app-release.apk
-./gradlew test                             # packet, geometry, and curve tests
+./gradlew :app:assembleFreeDebug           # free debug APK
+./gradlew :app:assemblePremiumDebug        # open premium debug APK, every wheel
+./gradlew :app:assembleFreeRelease         # signed free release APK, R8 on
+./gradlew :app:bundleFreeRelease           # free AAB
+./gradlew :app:bundlePremiumRelease -Pracingwheel.genericNames=true
+./gradlew :app:test                        # packet, geometry, curve, knob, and catalog tests
 ```
+
+`assembleDebug` and `assembleRelease` without a flavor are not valid anymore. Name `free` or `premium`.
 
 `./gradlew test` runs on the JVM. It checks the state packet, the rotation used to keep a touch on a spinning button, and the pedal and steering curves.
 

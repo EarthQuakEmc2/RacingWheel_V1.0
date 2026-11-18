@@ -6,9 +6,13 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import Install from './components/Install'
 import Manufacturers from './components/Manufacturers'
+import Pricing from './components/Pricing'
 import Screenshots from './components/Screenshots'
+import Privacy from './pages/Privacy'
 
 export default function App() {
+  const path = window.location.pathname.replace(/\/+$/, '')
+  if (path.endsWith('/privacy')) return <Privacy />
   return (
     <>
       <a className="skip" href="#content">
@@ -20,6 +24,7 @@ export default function App() {
         <Screenshots />
         <Manufacturers />
         <Features />
+        <Pricing />
         <Download />
         <Install />
         <Faq />

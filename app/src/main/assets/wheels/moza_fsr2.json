@@ -123,7 +123,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 10,
-      "incButton": 11
+      "incButton": 11,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "mix",
@@ -137,7 +139,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 12,
-      "incButton": 13
+      "incButton": 13,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "ers",
@@ -151,7 +155,9 @@
       "positions": 12,
       "knobSlot": 2,
       "decButton": 14,
-      "incButton": 15
+      "incButton": 15,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "tc",
@@ -165,7 +171,9 @@
       "positions": 12,
       "knobSlot": 3,
       "decButton": 16,
-      "incButton": 17
+      "incButton": 17,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "abs",
@@ -179,7 +187,9 @@
       "positions": 12,
       "knobSlot": 4,
       "decButton": 18,
-      "incButton": 19
+      "incButton": 19,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

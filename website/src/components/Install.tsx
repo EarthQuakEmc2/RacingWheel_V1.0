@@ -22,7 +22,7 @@ export default function Install() {
       <div className="wrap">
         <header className="section-head">
           <p className="kicker">
-            <span>04</span> Install
+            <span>05</span> Install
           </p>
           <h2>Five steps to the grid.</h2>
         </header>

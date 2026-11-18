@@ -90,7 +90,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 7,
-      "incButton": 8
+      "incButton": 8,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

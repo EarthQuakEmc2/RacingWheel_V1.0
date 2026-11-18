@@ -178,7 +178,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 15,
-      "incButton": 16
+      "incButton": 16,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "tc",
@@ -192,7 +194,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 17,
-      "incButton": 18
+      "incButton": 18,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

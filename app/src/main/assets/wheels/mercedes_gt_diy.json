@@ -90,7 +90,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 7,
-      "incButton": 8
+      "incButton": 8,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "page_r",
@@ -104,7 +106,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 9,
-      "incButton": 10
+      "incButton": 10,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

@@ -68,7 +68,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 5,
-      "incButton": 6
+      "incButton": 6,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "pl",
@@ -126,7 +128,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 11,
-      "incButton": 12
+      "incButton": 12,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "r",
@@ -162,7 +166,9 @@
       "positions": 12,
       "knobSlot": 2,
       "decButton": 15,
-      "incButton": 16
+      "incButton": 16,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "turbo",
@@ -176,7 +182,9 @@
       "positions": 12,
       "knobSlot": 3,
       "decButton": 17,
-      "incButton": 18
+      "incButton": 18,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "tc",
@@ -190,7 +198,9 @@
       "positions": 12,
       "knobSlot": 4,
       "decButton": 19,
-      "incButton": 20
+      "incButton": 20,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "ers",
@@ -204,7 +214,9 @@
       "positions": 12,
       "knobSlot": 5,
       "decButton": 21,
-      "incButton": 22
+      "incButton": 22,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "abs",
@@ -218,7 +230,9 @@
       "positions": 12,
       "knobSlot": 6,
       "decButton": 23,
-      "incButton": 24
+      "incButton": 24,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

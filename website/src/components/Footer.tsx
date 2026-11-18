@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="wrap footer-grid">
         <div>
           <p className="footer-brand">Racing Wheel Pro</p>
-          <p>An Android wheel and a Windows receiver. Version 0.2.1.</p>
+          <p>An Android wheel and a Windows receiver. Version 0.3.0.</p>
         </div>
         <div>
           <p className="footer-label">License</p>
@@ -32,7 +32,10 @@ export default function Footer() {
             </a>
           </p>
           <p>
-            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.2.1">Release v0.2.1</a>
+            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.3.0">Release v0.3.0</a>
+          </p>
+          <p>
+            <a href="/privacy">Privacy</a>
           </p>
         </div>
       </div>

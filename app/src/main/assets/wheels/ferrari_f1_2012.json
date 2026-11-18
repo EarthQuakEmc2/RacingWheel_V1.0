@@ -101,7 +101,9 @@
       "positions": 12,
       "knobSlot": 0,
       "decButton": 8,
-      "incButton": 9
+      "incButton": 9,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "map",
@@ -115,7 +117,9 @@
       "positions": 12,
       "knobSlot": 1,
       "decButton": 10,
-      "incButton": 11
+      "incButton": 11,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "trq",
@@ -129,7 +133,9 @@
       "positions": 12,
       "knobSlot": 2,
       "decButton": 12,
-      "incButton": 13
+      "incButton": 13,
+      "startAngle": -90.0,
+      "clockwise": true
     },
     {
       "id": "grp",
@@ -143,7 +149,9 @@
       "positions": 12,
       "knobSlot": 3,
       "decButton": 14,
-      "incButton": 15
+      "incButton": 15,
+      "startAngle": -90.0,
+      "clockwise": true
     }
   ]
 }

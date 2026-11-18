@@ -17,3 +17,10 @@ pc/publish/
 artifacts/
 *.apk
 *.exe
+
+# Play upload keys. The public development keystore already in app/ stays tracked.
+# New keystores and password files must not be committed.
+*.jks
+upload-keystore.jks
+keystore.properties
+**/keystore.properties

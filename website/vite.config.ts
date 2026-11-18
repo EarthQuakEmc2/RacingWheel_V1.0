@@ -1,5 +1,23 @@
-import { defineConfig } from 'vite'
+// @ts-nocheck
+// Node built-ins are used only to copy dist/privacy/index.html after the build.
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+
+/** Static hosts can serve /privacy/ from a copied index without a rewrite rule. */
+function privacyRoute(): Plugin {
+  return {
+    name: 'privacy-route',
+    closeBundle() {
+      const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'dist')
+      const privacyDir = path.join(dist, 'privacy')
+      fs.mkdirSync(privacyDir, { recursive: true })
+      fs.copyFileSync(path.join(dist, 'index.html'), path.join(privacyDir, 'index.html'))
+    },
+  }
+}
 
 /**
  * The public site is https://myracingwheel.site/ at the domain root.
@@ -7,7 +25,7 @@ import react from '@vitejs/plugin-react'
  */
 export default defineConfig(() => ({
   base: '/',
-  plugins: [react()],
+  plugins: [react(), privacyRoute()],
   server: {
     fs: {
       allow: ['..'],
