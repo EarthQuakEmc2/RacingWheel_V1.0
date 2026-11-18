@@ -17,7 +17,11 @@ const ITEMS = [
   },
   {
     q: 'Windows SmartScreen blocks the exe.',
-    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.1.0 release, choose More info, then Run anyway.',
+    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.4.0 release, choose More info, then Run anyway.',
+  },
+  {
+    q: 'How does the driving coach link to my PC?',
+    a: 'Start the Windows receiver and read the pairing code in its Logs window (or at http://127.0.0.1:41513). Sign in at myracingwheel.site/account and enter that code. Turn on automatic upload if you want finished sessions sent up. The coach reads per-corner metrics, not the raw trace.',
   },
 ]
 

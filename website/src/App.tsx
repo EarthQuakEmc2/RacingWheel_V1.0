@@ -1,30 +1,17 @@
-import Download from './components/Download'
-import Faq from './components/Faq'
-import Features from './components/Features'
-import Footer from './components/Footer'
-import Header from './components/Header'
-import Hero from './components/Hero'
-import Install from './components/Install'
-import Manufacturers from './components/Manufacturers'
-import Screenshots from './components/Screenshots'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import Marketing from './Marketing'
+import AccountPage from './pages/Account'
+import LeaderboardPage from './pages/Leaderboard'
+import SessionPage from './pages/Session'
 
 export default function App() {
   return (
-    <>
-      <a className="skip" href="#content">
-        Skip to content
-      </a>
-      <Header />
-      <main id="content">
-        <Hero />
-        <Screenshots />
-        <Manufacturers />
-        <Features />
-        <Download />
-        <Install />
-        <Faq />
-      </main>
-      <Footer />
-    </>
+    <Routes>
+      <Route path="/" element={<Marketing />} />
+      <Route path="/account" element={<AccountPage />} />
+      <Route path="/session/:id" element={<SessionPage />} />
+      <Route path="/leaderboard" element={<LeaderboardPage />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }

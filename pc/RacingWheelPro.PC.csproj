@@ -15,4 +15,9 @@
   <ItemGroup>
     <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="RacingWheelPro.PC.Tests/**" />
+    <None Remove="RacingWheelPro.PC.Tests/**" />
+    <EmbeddedResource Remove="RacingWheelPro.PC.Tests/**" />
+  </ItemGroup>
 </Project>

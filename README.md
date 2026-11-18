@@ -37,6 +37,7 @@ Hotspot rings on the KS and GS templates:
 - Profiles per wheel and per game. The volume keys can be bound to buttons.
 - Wi-Fi discovery, a manual IP, or USB through `adb reverse`. The drive screen shows link state, latency, and packet rate.
 - A Windows receiver that feeds ViGEm (Xbox 360 pad) or vJoy, and injects keyboard keys for buttons past the pad. Without a driver it still prints a live dashboard. ViGEm rumble is forwarded to the phone as a short vibration.
+- An Assetto Corsa coach. The receiver reads the game's shared memory, cuts laps, stores a gzipped log, and (if you opt in) uploads it. The site draws throttle, brake, steering, and speed, keeps a leaderboard, and asks Workers AI for a few notes per session.
 
 ## Install the APK
 
@@ -75,7 +76,9 @@ RacingWheelPro-PC.exe --json              one JSON object per packet
 RacingWheelPro-PC.exe --self-test
 ```
 
-In the game, bind the Xbox pad or the vJoy device.
+In the game, bind the Xbox pad or the vJoy device. The console prints input Hz over a full second and output Hz for the virtual pad. Output is submitted every 10 ms from the latest sample.
+
+The receiver also opens a page at <http://127.0.0.1:41513/>. That page lists saved sessions, shows a pairing code, and holds the upload switch. Logs are gzipped JSON and CSV in `%AppData%\RacingWheelPro\Logs`. Upload stays off until you turn it on, after the website has accepted the pairing code. See [worker/DEPLOY.md](worker/DEPLOY.md) for the Cloudflare side.
 
 | Phone output | ViGEm Xbox 360 | vJoy |
 | --- | --- | --- |
@@ -256,7 +259,7 @@ RWP1 is little-endian. The version byte is 1. It is a new layout, not Touch Race
 
 The phone sends a find (`RWPF`, 24 bytes, name in 16 bytes) to UDP port 41510. The PC answers with a host beacon (`RWPH`): version, capability bits (1 ViGEm, 2 vJoy, 4 keyboard), TCP port, UDP port, and a name. The PC also broadcasts that beacon.
 
-State (`RWPS`, 36 bytes) goes to UDP 41511 about 100 times a second, and is repeated on TCP when the session is up.
+State (`RWPS`, 36 bytes) goes to UDP 41511 about 100 times a second. TCP carries the hello and the latency ping. An earlier build also wrote every state packet to TCP and flushed it; that stalled the sender, so the copy was removed.
 
 | Offset | Type | Field |
 | --- | --- | --- |

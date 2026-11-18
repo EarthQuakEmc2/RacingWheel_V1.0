@@ -28,6 +28,8 @@ The published site is:
 
 https://myracingwheel.site/
 
+That address is served by the Cloudflare Worker `racingwheel-pro`, which also hosts the coach API. Building the static files is step 1 of [../worker/DEPLOY.md](../worker/DEPLOY.md). The GitHub Pages workflow below only publishes the static build. It does not create the D1 database or the API.
+
 ## Deploy
 
 Pushes to `main` that touch `website/` run `.github/workflows/pages.yml`. The workflow installs dependencies, runs `npm run build`, and deploys `website/dist` with GitHub Actions. Commits that only change the Android app or the Windows receiver do not start this workflow. You can also run it by hand from the Actions tab (`workflow_dispatch`).
