@@ -21,8 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Wi-Fi session with the PC receiver.
- * UDP discovery on [Proto.DISCOVERY_PORT], telemetry to the host's UDP port,
- * and a TCP session for the hello, pings, and a reliable copy of each state packet.
+ * UDP discovery on [Proto.DISCOVERY_PORT], telemetry to the host's UDP port at 100 Hz,
+ * and a TCP session for the hello and pings. State is not copied onto TCP: a flush
+ * per packet stalled the sender well below 100 Hz.
  */
 class LinkClient(
     context: Context,
@@ -93,23 +94,25 @@ class LinkClient(
         }
     }
 
+    private var cachedIp: String? = null
+    private var cachedAddress: InetAddress? = null
+
     fun sendState(packet: ByteArray) {
         val ip = targetIp ?: return
         val socket = telemetry ?: return
         try {
+            if (cachedIp != ip || cachedAddress == null) {
+                cachedAddress = InetAddress.getByName(ip)
+                cachedIp = ip
+            }
+            val addr = cachedAddress ?: return
             val data = packet.copyOf()
             val seq = sent.incrementAndGet() and 0xFFFF
             data[6] = (seq and 0xFF).toByte()
             data[7] = ((seq ushr 8) and 0xFF).toByte()
-            socket.send(DatagramPacket(data, data.size, InetAddress.getByName(ip), targetUdp))
-            val stream = tcp
-            if (tcpUp && stream != null && stream.isConnected) {
-                val out = stream.getOutputStream()
-                out.write(Packets.tcpFrame(Proto.TCP_STATE, data))
-                out.flush()
-            }
+            socket.send(DatagramPacket(data, data.size, addr, targetUdp))
         } catch (_: Exception) {
-            // The next ping or send will notice a dead TCP socket.
+            // The next ping or send will notice a dead socket.
         }
     }
 

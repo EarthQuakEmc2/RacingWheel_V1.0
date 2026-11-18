@@ -37,6 +37,7 @@ import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
 import com.racingwheelpro.proto.StatePacket
 import org.json.JSONObject
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
@@ -83,11 +84,13 @@ class RaceSession(private val context: Context) {
     var selectedControl by mutableStateOf<String?>(null)
     var notice by mutableStateOf("")
     var setupPage by mutableStateOf("steer")
+    var logRevision by mutableIntStateOf(0)
     var paywall by mutableStateOf(false)
     var premiumUnlocked by mutableStateOf(false)
     var premiumDetail by mutableStateOf("")
     var knobRevision by mutableIntStateOf(0)
 
+    val inputLog = InputLog(File(context.filesDir, "input-logs"))
     val genericNames: Boolean = BuildConfig.GENERIC_NAMES
     val gate = createPremiumGate(context)
 
@@ -183,12 +186,16 @@ class RaceSession(private val context: Context) {
     }
 
     private val sender = Thread({
+        var next = SystemClock.elapsedRealtime()
         while (running) {
-            val start = SystemClock.elapsedRealtime()
             link.sendState(wire)
-            val wait = 10 - (SystemClock.elapsedRealtime() - start)
+            next += 10
+            val now = SystemClock.elapsedRealtime()
+            val wait = next - now
             if (wait > 0) {
                 try { Thread.sleep(wait) } catch (_: Exception) {}
+            } else if (wait < -40) {
+                next = now
             }
         }
     }, "rwp-send")
@@ -225,6 +232,7 @@ class RaceSession(private val context: Context) {
         sensor.start()
         sensorName = if (usingTouch()) "touch" else sensor.activeName
         lastFrame = SystemClock.elapsedRealtime()
+        inputLog.start()
         main.post(frame)
         sender.isDaemon = true
         sender.start()
@@ -240,6 +248,8 @@ class RaceSession(private val context: Context) {
 
     fun stop() {
         running = false
+        inputLog.stop()
+        logRevision++
         main.removeCallbacksAndMessages(null)
         sensor.stop()
         link.stop()
@@ -758,6 +768,7 @@ class RaceSession(private val context: Context) {
         clutchOut = clutch
         heldButtons = (1..32).filter { mask and (1L shl (it - 1)) != 0L }
         wire = buildPacket(steer, throttle, brake, clutch, mask)
+        inputLog.note(now, steer, throttle, brake)
     }
 
     private fun buttonMask(now: Long): Long {

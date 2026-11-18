@@ -62,7 +62,7 @@ export default function Features() {
           <i />
           <span>Assetto Corsa</span>
           <i />
-          <span>Other sims</span>
+          <span>Coach</span>
         </div>
       </div>
     </section>

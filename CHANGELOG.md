@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.4.0] - 2026-11-18
+
+AI driving coach for Assetto Corsa, on the free Cloudflare plan.
+
+### Added
+
+- The Windows receiver reads Assetto Corsa shared memory (`acpmf_physics`, `acpmf_graphics`, `acpmf_static`): speed, throttle, brake, steering, gear, rpm, lap position, lap times, car, track, and layout. When the game is not running it records the phone's steer, throttle, brake, and buttons instead.
+- Laps are cut when `completedLaps` increases. Each corner gets a brake point, peak brake, trail-brake time, minimum speed, throttle pick-up, steering smoothness, and coasting time.
+- Sessions are gzipped JSON and CSV in `%AppData%\RacingWheelPro\Logs`. The receiver's local page (http://127.0.0.1:41513/) lists them, shows a pairing code, and has an opt-in upload switch.
+- The phone app has a Logs screen with throttle, brake, and steering traces, and a link to the account page.
+- The website worker (`racingwheel-pro`) adds accounts (email, PBKDF2 password, HttpOnly cookie), device pairing, sessions, corner metrics, and a leaderboard per track, layout, and car. Pages: `/account`, `/session/:id`, `/leaderboard`. Charts use Chart.js. A log can also be uploaded by hand, including a Sim Racing Telemetry CSV.
+- Workers AI (`@cf/openai/gpt-oss-120b`) writes per-session notes from the corner metrics, not from the raw trace. Reports are cached in D1. Free accounts get 5 analyses a day; a Premium flag on the user raises that to 40.
+- Official Assetto Corsa track folders and layouts, including Nordschleife, Barcelona GP and MotoGP, Brands Hatch GP and Indy, and Red Bull Ring. Car folders from the base game, plus any custom name.
+
+### Fixed
+
+- The receiver's pace readout counted packets inside a ~100 ms refresh and printed that count as Hz, so a healthy stream read as 6–22 Hz. It now measures a full second. UDP is read on its own thread, and the virtual controller is submitted every 10 ms from the latest sample, so the pad updates at 100 Hz.
+- The phone no longer looks up the PC address on every packet, and it no longer copies every state packet onto TCP. That flush was holding the 100 Hz sender back. UDP remains the telemetry path. TCP is the hello and the ping.
+
+### Changed
+
+- Android `versionCode` is 5, `versionName` is 0.4.0.
+
 ## [0.3.0] - 2026-11-17
 
 Free garage, dial pointers, and a Play-ready build switch.
@@ -75,7 +98,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.1.0...v0.2.0

@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import LedStrip from './LedStrip'
 
 const LINKS = [
-  { href: '#drive', id: 'drive', label: 'Drive' },
-  { href: '#wheels', id: 'wheels', label: 'Wheels' },
-  { href: '#makers', id: 'makers', label: 'Makers' },
-  { href: '#pricing', id: 'pricing', label: 'Pricing' },
-  { href: '#download', id: 'download', label: 'Download' },
-  { href: '#install', id: 'install', label: 'Install' },
+  { href: '/#drive', id: 'drive', label: 'Drive' },
+  { href: '/#wheels', id: 'wheels', label: 'Wheels' },
+  { href: '/#makers', id: 'makers', label: 'Makers' },
+  { href: '/#pricing', id: 'pricing', label: 'Pricing' },
+  { href: '/#download', id: 'download', label: 'Download' },
+  { href: '/#install', id: 'install', label: 'Install' },
+  { href: '/leaderboard', id: 'leaderboard', label: 'Leaderboard' },
+  { href: '/account', id: 'account', label: 'Account' },
 ]
-
-function onPrivacyPage() {
-  return window.location.pathname.replace(/\/+$/, '').endsWith('/privacy')
-}
 
 export default function Header() {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('top')
-  const privacy = onPrivacyPage()
-  const hrefFor = (hash: string) => (privacy ? `/${hash}` : hash)
+  const location = useLocation()
+  const routeActive =
+    location.pathname === '/account'
+      ? 'account'
+      : location.pathname === '/leaderboard'
+        ? 'leaderboard'
+        : location.pathname === '/privacy'
+          ? 'privacy'
+          : ''
 
   useEffect(() => {
     const ids = ['top', ...LINKS.map((l) => l.id), 'notes']
@@ -50,7 +56,7 @@ export default function Header() {
     <div className="chrome">
       <LedStrip animate />
       <header className="topbar">
-        <a className="brand" href={privacy ? '/' : '#top'}>
+        <a className="brand" href="/#top">
           <WheelMark />
           <span>
             Racing Wheel <em>Pro</em>
@@ -69,8 +75,8 @@ export default function Header() {
           {LINKS.map((link) => (
             <a
               key={link.id}
-              href={hrefFor(link.href)}
-              aria-current={!privacy && active === link.id ? 'location' : undefined}
+              href={link.href}
+              aria-current={(routeActive || active) === link.id ? 'location' : undefined}
               onClick={() => setOpen(false)}
             >
               {link.label}

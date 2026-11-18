@@ -1,6 +1,6 @@
 package com.racingwheelpro.model
 
-enum class Screen { Drive, Connect, Setup, Editor, Garage }
+enum class Screen { Drive, Connect, Setup, Editor, Garage, Logs }
 
 data class Control(
     val id: String,

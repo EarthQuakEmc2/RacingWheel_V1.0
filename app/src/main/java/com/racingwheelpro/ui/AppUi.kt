@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
@@ -47,6 +49,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -66,6 +69,7 @@ import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.Screen
+import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
 import kotlinx.coroutines.delay
 import kotlin.math.cos
@@ -90,6 +94,7 @@ fun AppRoot(session: RaceSession) {
                 Screen.Setup -> SetupScreen(session)
                 Screen.Editor -> EditorScreen(session)
                 Screen.Garage -> GarageScreen(session)
+                Screen.Logs -> LogsScreen(session)
             }
             if (session.paywall) {
                 PremiumDialog(session)
@@ -150,6 +155,7 @@ private fun TopBar(session: RaceSession) {
         NavButton("LINK", session.screen == Screen.Connect) { session.screen = Screen.Connect }
         NavButton("SETUP", session.screen == Screen.Setup) { session.screen = Screen.Setup }
         NavButton("EDIT", session.screen == Screen.Editor) { session.screen = Screen.Editor }
+        NavButton("LOGS", session.screen == Screen.Logs) { session.screen = Screen.Logs }
         NavButton("DRIVE", session.screen == Screen.Drive) { session.screen = Screen.Drive }
     }
 }
@@ -1040,4 +1046,99 @@ private fun ActionChip(label: String, onClick: () -> Unit) {
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 8.dp),
     )
+}
+
+@Composable
+private fun LogsScreen(session: RaceSession) {
+    val context = LocalContext.current
+    var selected by remember { mutableStateOf<InputLog.Detail?>(null) }
+    var revision by remember { mutableIntStateOf(0) }
+    val logs = remember(revision, session.logRevision) { session.inputLog.list() }
+    Column(Modifier.fillMaxSize().background(Carbon).padding(12.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("INPUT LOGS", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, letterSpacing = 1.sp)
+            Spacer(Modifier.weight(1f))
+            Text(
+                "ACCOUNT",
+                color = SignalYellow,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://myracingwheel.site/account")))
+                }.padding(8.dp),
+            )
+            Text(
+                "REFRESH",
+                color = Muted,
+                fontSize = 12.sp,
+                modifier = Modifier.clickable { revision++ }.padding(8.dp),
+            )
+        }
+        Text(
+            "Throttle, brake and steering from this phone. Assetto Corsa laps are recorded on the PC.",
+            color = Muted,
+            fontSize = 12.sp,
+        )
+        Row(Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp)) {
+            Column(Modifier.width(220.dp).verticalScroll(rememberScrollState())) {
+                if (logs.isEmpty()) Text("No sessions yet. Drive for a few seconds.", color = Muted, fontSize = 12.sp)
+                logs.forEach { summary ->
+                    val on = selected?.id == summary.id
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 6.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (on) PanelRaised else Panel)
+                            .clickable { selected = session.inputLog.load(summary.id) }
+                            .padding(8.dp),
+                    ) {
+                        Text(summary.label, color = Ink, fontSize = 12.sp)
+                        Text("${summary.samples} samples", color = Muted, fontSize = 11.sp)
+                    }
+                }
+            }
+            Spacer(Modifier.width(10.dp))
+            val detail = selected
+            if (detail == null) {
+                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    Text("Pick a session", color = Muted)
+                }
+            } else {
+                Column(Modifier.weight(1f).fillMaxHeight()) {
+                    Text(detail.label, color = SignalYellow, fontSize = 13.sp)
+                    InputChart(detail, Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InputChart(detail: InputLog.Detail, modifier: Modifier) {
+    Canvas(modifier.clip(RoundedCornerShape(8.dp)).background(Panel)) {
+        val points = detail.points
+        if (points.size < 2) return@Canvas
+        val left = 8f
+        val top = 8f
+        val width = size.width - 16f
+        val height = size.height - 16f
+        val lanes = 3
+        fun lane(index: Int) = top + height * index / lanes
+        fun yIn(lane: Int, value: Float) = lane(lane) + height / lanes * (1f - value.coerceIn(0f, 1f))
+        val span = (points.last().t - points.first().t).coerceAtLeast(1L).toFloat()
+        fun x(t: Long) = left + width * ((t - points.first().t) / span)
+        fun stroke(color: Color, lane: Int, value: (InputLog.Point) -> Float) {
+            val path = Path()
+            points.forEachIndexed { index, point ->
+                val px = x(point.t)
+                val py = yIn(lane, value(point))
+                if (index == 0) path.moveTo(px, py) else path.lineTo(px, py)
+            }
+        drawPath(path, color, style = Stroke(width = 2f))
+        }
+        stroke(SignalGreen, 0) { it.gas }
+        stroke(SignalRed, 1) { it.brake }
+        stroke(SignalBlue, 2) { (it.steer + 1f) / 2f }
+    }
 }
