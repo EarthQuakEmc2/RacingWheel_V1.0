@@ -10,6 +10,11 @@
   "imageHeight": 465,
   "blurb": "Second MCL. +10, N, OT, PLS, D, and the DRY rotary.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0251, "top": 0.0452, "right": 0.9749, "bottom": 0.9935},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.516},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.517}
+  },
   "outputButtons": 16,
   "controls": [
     {

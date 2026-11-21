@@ -10,6 +10,11 @@
   "imageHeight": 547,
   "blurb": "Red road wheel. Indicators, lights, engine start, wipers, manettino.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0490, "top": 0.0183, "right": 0.9984, "bottom": 0.9890},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.518},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.520}
+  },
   "outputButtons": 9,
   "controls": [
     {

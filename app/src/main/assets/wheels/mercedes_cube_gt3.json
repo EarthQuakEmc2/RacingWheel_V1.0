@@ -10,6 +10,11 @@
   "imageHeight": 370,
   "blurb": "Cube Controls GT. R, P, TC, ABS, mic, and the arrow pad.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0510, "top": 0.0703, "right": 0.9020, "bottom": 0.9865},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.500},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.500}
+  },
   "outputButtons": 16,
   "controls": [
     {

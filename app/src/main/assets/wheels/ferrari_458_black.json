@@ -10,6 +10,11 @@
   "imageHeight": 527,
   "blurb": "Black 458. Indicators, lights, engine start, and the manettino.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0387, "top": 0.0550, "right": 0.9613, "bottom": 0.9450},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.505},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.505}
+  },
   "outputButtons": 8,
   "controls": [
     {

@@ -26,7 +26,7 @@ const FEATURES = [
   },
   {
     title: 'A pad the sim knows',
-    text: 'ViGEmBus presents an Xbox 360 controller. vJoy is there for 32 buttons and eight axes. Left paddle is shift up, right paddle is shift down.',
+    text: 'ViGEmBus presents an Xbox 360 controller. vJoy is there for 32 buttons and eight axes. Left paddle is shift up, right paddle is shift down, and a button keeps its circle.',
     graphic: <PadGraphic />,
   },
 ]

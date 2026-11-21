@@ -50,7 +50,7 @@ cd worker
 npx wrangler deploy
 ```
 
-Confirm the custom domain still points at `racingwheel-pro`. A request to `/` should be the marketing page. `/account`, `/session/:id` and `/leaderboard` are the same single-page app. `/api/health` should return `{"ok":true,"version":"0.5.0"}`.
+Confirm the custom domain still points at `racingwheel-pro`. A request to `/` should be the marketing page. `/account`, `/session/:id` and `/leaderboard` are the same single-page app. `/api/health` should return `{"ok":true,"version":"0.5.1"}`.
 
 ## Accounts
 
