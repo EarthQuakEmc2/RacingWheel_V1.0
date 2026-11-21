@@ -10,6 +10,11 @@
   "imageHeight": 1000,
   "blurb": "Screen GT wheel. P, OT, DRS, N, and the three center encoders.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0440, "top": 0.2560, "right": 0.9550, "bottom": 0.7550},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.528},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.528}
+  },
   "outputButtons": 16,
   "controls": [
     {

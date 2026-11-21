@@ -10,6 +10,11 @@
   "imageHeight": 352,
   "blurb": "Night GT3 R screen. Colored faces on the same button stack.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.1113, "top": 0.0142, "right": 0.8969, "bottom": 0.9801},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.569},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.563}
+  },
   "outputButtons": 18,
   "controls": [
     {

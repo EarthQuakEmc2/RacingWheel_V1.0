@@ -10,6 +10,11 @@
   "imageHeight": 326,
   "blurb": "GT3 R screen with the GRID dash. Same face map as the color screen wheel.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0987, "top": 0.0644, "right": 0.9174, "bottom": 0.9172},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.559},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.561}
+  },
   "outputButtons": 18,
   "controls": [
     {

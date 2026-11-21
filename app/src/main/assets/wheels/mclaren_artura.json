@@ -10,6 +10,11 @@
   "imageHeight": 420,
   "blurb": "Artura screen wheel. BB, flash, and the two numbered dials.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0798, "top": 0.0619, "right": 0.9276, "bottom": 0.9238},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.504},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.504}
+  },
   "outputButtons": 18,
   "controls": [
     {
