@@ -27,6 +27,11 @@ RED = (225, 6, 0, 255)
 GREEN = (61, 220, 87, 255)
 CYAN = (0, 229, 255, 255)
 
+# Keep these in step with ShifterZones.kt.
+ZONE_W = 0.27
+ZONE_H = 0.47
+ZONE_CY = 0.50
+
 
 def font(size: int):
     for path in (
@@ -95,24 +100,90 @@ def pedal(d, box, title, amount, color):
     d.text((x + 12, y + h - 58), f"{int(amount * 100)}", fill=INK, font=font(22))
 
 
-def drive(doc, amount_thr=0.62, amount_brk=0.18, hotspots=False, name="drive"):
+def wheel_plate(wheel: Image.Image, slot, angle=0.0, zones=False):
+    """Fit the wheel in slot-local space, optionally with paddle rectangles, then rotate clockwise."""
+    _, _, sw, sh = slot
+    canvas = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
+    placed_img, (ox, oy, nw, nh) = fit(wheel, (0, 0, sw, sh))
+    canvas.alpha_composite(placed_img, (ox, oy))
+    if zones:
+        overlay = Image.new("RGBA", (sw, sh), (0, 0, 0, 0))
+        d = ImageDraw.Draw(overlay)
+        top = oy + (ZONE_CY - ZONE_H / 2) * nh
+        height = ZONE_H * nh
+        left = (ox, top, ox + nw * ZONE_W, top + height)
+        right = (ox + nw * (1 - ZONE_W), top, ox + nw, top + height)
+        d.rounded_rectangle(left, 10, fill=(0, 229, 255, 72), outline=(0, 229, 255, 190), width=3)
+        d.rounded_rectangle(right, 10, fill=(245, 197, 24, 72), outline=(245, 197, 24, 190), width=3)
+        label = font(26)
+        for box, text in ((left, "UP"), (right, "DN")):
+            cx = (box[0] + box[2]) / 2
+            cy = (box[1] + box[3]) / 2
+            d.text((cx, cy), text, fill=(255, 255, 255, 230), font=label, anchor="mm")
+        canvas.alpha_composite(overlay)
+    if angle:
+        canvas = canvas.rotate(-angle, resample=Image.Resampling.BICUBIC, center=(sw / 2, sh / 2))
+    return canvas, (ox, oy, nw, nh)
+
+
+def drive(doc, amount_thr=0.62, amount_brk=0.18, hotspots=False, name="drive", zones=False, angle=0.0, brake_gap=0, throttle_gap=0):
     im = chrome(doc["name"], "192.168.1.20   8 ms   100 Hz")
     d = ImageDraw.Draw(im)
     wheel = Image.open(WHEELS / doc["image"]).convert("RGBA")
     zone = 150
-    pedal(d, (16, 96, zone - 24, H - 140), "BRAKE", amount_brk, RED)
-    pedal(d, (W - zone + 8, 96, zone - 24, H - 140), "THROTTLE", amount_thr, GREEN)
-    placed_img, placed = fit(wheel, (zone, 90, W - 2 * zone, H - 150))
-    im.alpha_composite(placed_img, (placed[0], placed[1]))
-    if hotspots:
+    pedal(d, (16 + brake_gap, 96, zone - 24, H - 140), "BRAKE", amount_brk, RED)
+    pedal(d, (W - zone + 8 - throttle_gap, 96, zone - 24, H - 140), "THROTTLE", amount_thr, GREEN)
+    slot = (zone + brake_gap // 4, 90, W - 2 * zone - (brake_gap + throttle_gap) // 4, H - 150)
+    plate, placed_local = wheel_plate(wheel, slot, angle=angle, zones=zones)
+    im.alpha_composite(plate, (slot[0], slot[1]))
+    if hotspots and not angle:
+        placed = (slot[0] + placed_local[0], slot[1] + placed_local[1], placed_local[2], placed_local[3])
         draw_hotspots(im, placed, doc, labels=True)
     d = ImageDraw.Draw(im)
     d.rectangle((0, H - 36, W, H), fill=PANEL)
     d.text((16, H - 28), "Assetto Corsa  ·  game rotation", fill=MUTED, font=font(15))
+    d.text((620, H - 28), "Buttons clear", fill=CYAN, font=font(15))
     d.text((W - 280, H - 28), "CENTER    SHOW HITS    SWEEP", fill=INK, font=font(15))
     OUT.mkdir(parents=True, exist_ok=True)
     im.convert("RGB").save(OUT / name, quality=92)
     print(name)
+
+
+def pedal_setup():
+    im = chrome("SETUP", "192.168.1.20   8 ms")
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 78, 220, H), fill=PANEL)
+    for i, (label, on) in enumerate((("STEERING", False), ("PEDALS", True), ("BUTTONS", False), ("PROFILE", False))):
+        d.text((24, 110 + i * 36), label, fill=YELLOW if on else MUTED, font=font(16))
+    rows = [
+        ("Side zone width", "18% of screen", 0.45),
+        ("Brake distance from edge", "4% of width", 0.40),
+        ("Throttle distance from edge", "8% of width", 0.80),
+    ]
+    y = 110
+    d.text((250, y), "THROTTLE AND BRAKE", fill=YELLOW, font=font(14))
+    y += 36
+    for label, value, amount in rows:
+        d.text((250, y), label, fill=INK, font=font(18))
+        d.text((1180, y), value, fill=YELLOW, font=font(16))
+        d.rectangle((250, y + 28, 1500, y + 36), fill=(60, 20, 20, 255))
+        d.rectangle((250, y + 28, 250 + int(1250 * amount), y + 36), fill=RED)
+        y += 58
+    d.rounded_rectangle((250, y, 430, y + 36), 6, fill=YELLOW)
+    d.text((268, y + 8), "RESET EDGES", fill=(0, 0, 0, 255), font=font(14))
+    y += 56
+    d.text((250, y), "Live preview  ·  brake 4%  ·  throttle 8%", fill=MUTED, font=font(14))
+    y += 28
+    d.rounded_rectangle((250, y, 1500, y + 70), 8, fill=CARBON)
+    # 4% and 8% of the preview width, pedals 12% wide.
+    span = 1250
+    brake_gap = int(span * 0.04)
+    thr_gap = int(span * 0.08)
+    pedal_w = int(span * 0.12)
+    d.rectangle((250 + brake_gap, y + 10, 250 + brake_gap + pedal_w, y + 60), fill=RED)
+    d.rectangle((1500 - thr_gap - pedal_w, y + 10, 1500 - thr_gap, y + 60), fill=GREEN)
+    im.convert("RGB").save(OUT / "ui-setup-pedals.jpg", quality=92)
+    print("ui-setup-pedals.jpg")
 
 
 def connect_screen():
@@ -136,6 +207,8 @@ def main():
         docs[path.stem] = json.loads(path.read_text())
     drive(docs["moza_fsr"], hotspots=False, name="ui-drive-fsr.jpg")
     drive(docs["moza_fsr"], hotspots=True, name="ui-editor-fsr.jpg")
+    drive(docs["moza_ks"], 0.4, 0.22, False, "ui-drive-shifters.jpg", zones=True)
+    drive(docs["moza_ks"], 0.4, 0.22, False, "ui-drive-shifters-turned.jpg", zones=True, angle=28)
     drive(docs["moza_ks"], 0.2, 0.05, True, "ui-hotspots-ks.jpg")
     drive(docs["moza_fsr2"], 0.8, 0.4, True, "ui-hotspots-fsr2.jpg")
     drive(docs["moza_gs"], 0.45, 0.1, True, "ui-hotspots-gs.jpg")
@@ -163,6 +236,13 @@ def main():
         y += 52
     setup.convert("RGB").save(OUT / "ui-setup.jpg", quality=92)
     print("ui-setup.jpg")
+    pedal_setup()
+    shots = ROOT / "docs" / "screenshots"
+    shots.mkdir(parents=True, exist_ok=True)
+    for name in ("ui-drive-shifters.jpg", "ui-drive-shifters-turned.jpg", "ui-setup-pedals.jpg"):
+        src = OUT / name
+        if src.exists():
+            (shots / name.removeprefix("ui-")).write_bytes(src.read_bytes())
 
 
 if __name__ == "__main__":

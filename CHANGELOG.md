@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.5.0] - 2026-11-21
+
+Paddle shifters on every wheel, and pedals that can sit in from the screen edge.
+
+### Added
+
+- Gearshift zones on every wheel template. The left zone is shift up and the right zone is shift down. Each rectangle is 27% of the wheel width, measured in from that edge, and 47% of the wheel height, centered on the paddles. The fractions live in `ShifterZones`. Touches in a zone shift instead of pressing a button whose center sits there, and a held paddle keeps shifting while the wheel turns. A faint overlay draws the rectangles and can be hidden in Setup → Buttons.
+- The state packet uses the previously reserved byte at offset 32 as a gear field (bit 0 = shift up, bit 1 = shift down). Older receivers ignore it. The Windows receiver types Page Up and Page Down, and holds vJoy buttons 31 and 32. Each paddle can also be mapped to a virtual button 1–32.
+- Pedal edge inset. Throttle and brake each have a slider, 0–10% of screen width, for how far that pedal sits in from the bezel. The value is stored in the profile, applied on the drive screen, and reset with Reset edges. A small preview on the pedals page moves with the slider.
+
+### Changed
+
+- Android `versionCode` is 6, `versionName` is 0.5.0.
+
 ## [0.4.0] - 2026-11-18
 
 AI driving coach for Assetto Corsa, on the free Cloudflare plan.
@@ -98,7 +112,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.0...v0.2.1

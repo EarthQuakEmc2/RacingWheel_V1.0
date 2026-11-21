@@ -66,6 +66,8 @@ import androidx.compose.ui.unit.sp
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.PedalInsets
+import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.Screen
@@ -195,10 +197,15 @@ private fun NavButton(label: String, active: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun DriveScreen(session: RaceSession) {
+    val layoutTick = session.layoutRevision
     BoxWithConstraints(Modifier.fillMaxSize().background(Carbon)) {
-        val zone = (maxWidth * session.profile.pedals.zoneFraction).coerceIn(72.dp, 190.dp)
+        val pedals = session.profile.pedals
+        val zone = (maxWidth * pedals.zoneFraction).coerceIn(72.dp, 190.dp)
+        val brakeGap = maxWidth * PedalInsets.clamp(pedals.brakeInset)
+        val throttleGap = maxWidth * PedalInsets.clamp(pedals.throttleInset)
         Column(Modifier.fillMaxSize()) {
             Row(Modifier.weight(1f).fillMaxWidth()) {
+                if (brakeGap > 0.5.dp) Spacer(Modifier.width(brakeGap).fillMaxHeight())
                 PedalColumn(
                     title = "BRAKE",
                     value = session.brakeOut,
@@ -211,7 +218,7 @@ private fun DriveScreen(session: RaceSession) {
                         editor = false,
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                     )
-                    if (session.profile.pedals.clutchEnabled) {
+                    if (pedals.clutchEnabled) {
                         PedalColumn(
                             title = "CLUTCH",
                             value = session.clutchOut,
@@ -226,6 +233,7 @@ private fun DriveScreen(session: RaceSession) {
                     color = SignalGreen,
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "throttle", y, h) }
+                if (throttleGap > 0.5.dp) Spacer(Modifier.width(throttleGap).fillMaxHeight())
             }
             Row(
                 Modifier.fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
@@ -238,7 +246,7 @@ private fun DriveScreen(session: RaceSession) {
                     fontSize = 11.sp,
                 )
                 Text(
-                    if (session.heldButtons.isEmpty()) "Buttons clear" else "BTN " + session.heldButtons.joinToString(" "),
+                    gearReadout(session, layoutTick),
                     color = SignalCyan,
                     fontSize = 11.sp,
                 )
@@ -252,6 +260,15 @@ private fun DriveScreen(session: RaceSession) {
             }
         }
     }
+}
+
+private fun gearReadout(session: RaceSession, layoutTick: Int): String {
+    val parts = ArrayList<String>()
+    if (session.shiftUp) parts.add("UP")
+    if (session.shiftDown) parts.add("DN")
+    val gear = if (parts.isEmpty()) "" else parts.joinToString(" ") + "  "
+    val buttons = if (session.heldButtons.isEmpty()) "Buttons clear" else "BTN " + session.heldButtons.joinToString(" ")
+    return if (layoutTick >= 0) gear + buttons else buttons
 }
 
 @Composable
@@ -343,6 +360,9 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val selected = session.selectedControl
     val overlay = session.gate.knobOverlay(wheel.id)
     val knobRevision = session.knobRevision
+    val showZones = session.profile.showShifterZones
+    val shiftUp = session.shiftUp
+    val shiftDown = session.shiftDown
     Box(
         modifier.pointerInput(editor) {
             awaitPointerEventScope {
@@ -420,9 +440,46 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     Offset(rect.cx, rect.top + 26f),
                     strokeWidth = 4f,
                 )
+                if (showZones) {
+                    drawShifterZone(ShifterZones.up, rect, shiftUp, SignalCyan, "UP", density, labelPaint)
+                    drawShifterZone(ShifterZones.down, rect, shiftDown, SignalYellow, "DN", density, labelPaint)
+                }
             }
         }
     }
+}
+
+private fun DrawScope.drawShifterZone(
+    zone: ShifterZones.Zone,
+    rect: com.racingwheelpro.input.ImgRect,
+    held: Boolean,
+    color: Color,
+    label: String,
+    density: Float,
+    labelPaint: Paint,
+) {
+    val x = rect.left + zone.left * rect.width
+    val y = rect.top + zone.top * rect.height
+    val w = (zone.right - zone.left) * rect.width
+    val h = (zone.bottom - zone.top) * rect.height
+    val corner = androidx.compose.ui.geometry.CornerRadius(8f, 8f)
+    drawRoundRect(
+        color = color.copy(alpha = if (held) 0.34f else 0.13f),
+        topLeft = Offset(x, y),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = corner,
+    )
+    drawRoundRect(
+        color = color.copy(alpha = if (held) 0.92f else 0.42f),
+        topLeft = Offset(x, y),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = corner,
+        style = Stroke(width = if (held) 3.5f else 1.6f),
+    )
+    labelPaint.color = android.graphics.Color.WHITE
+    labelPaint.textSize = 13f * density
+    labelPaint.textAlign = Paint.Align.CENTER
+    drawContext.canvas.nativeCanvas.drawText(label, x + w / 2f, y + h / 2f + 4f * density, labelPaint)
 }
 
 private fun DrawScope.drawKnobPointer(
@@ -582,6 +639,21 @@ private fun SetupScreen(session: RaceSession) {
                     SliderRow("Throttle outer", pedals.throttleOuter, 0.5f..1f, { "%.0f%%".format(it * 100) }) { pedals.throttleOuter = it; bump() }
                     SliderRow("Brake outer", pedals.brakeOuter, 0.5f..1f, { "%.0f%%".format(it * 100) }) { pedals.brakeOuter = it; bump() }
                     SliderRow("Side zone width", pedals.zoneFraction, 0.1f..0.28f, { "%.0f%% of screen".format(it * 100) }) { pedals.zoneFraction = it; bump() }
+                    SliderRow(
+                        "Brake distance from edge",
+                        PedalInsets.clamp(pedals.brakeInset),
+                        PedalInsets.MIN..PedalInsets.MAX,
+                        { "%.0f%% of width".format(it * 100) },
+                    ) { pedals.brakeInset = it; bump() }
+                    SliderRow(
+                        "Throttle distance from edge",
+                        PedalInsets.clamp(pedals.throttleInset),
+                        PedalInsets.MIN..PedalInsets.MAX,
+                        { "%.0f%% of width".format(it * 100) },
+                    ) { pedals.throttleInset = it; bump() }
+                    ActionChip("RESET EDGES") { session.resetPedalInsets(); bump() }
+                    Spacer(Modifier.height(8.dp))
+                    PedalInsetPreview(PedalInsets.clamp(pedals.brakeInset), PedalInsets.clamp(pedals.throttleInset))
                     SliderRow("Relative travel", pedals.relativeTravelMm, 8f..80f, { "${it.roundToInt()} mm = full" }) { pedals.relativeTravelMm = it; bump() }
                     SliderRow("Release fade", pedals.fadePerSec, 0.5f..8f, { "%.1f / s".format(it) }) { pedals.fadePerSec = it; bump() }
                     ChipRow(listOf("instant", "fade"), pedals.release) { pedals.release = it; bump() }
@@ -591,13 +663,39 @@ private fun SetupScreen(session: RaceSession) {
                     ToggleLine("Clutch zone", pedals.clutchEnabled) { pedals.clutchEnabled = it; bump() }
                     ToggleLine("Exclusive axes (larger pedal wins)", pedals.exclusive) { pedals.exclusive = it; bump() }
                     Text(
-                        "Position mode maps finger height in the zone. Relative mode accumulates millimetres of drag, the way Touch Racer scaled a swipe.",
+                        "Position mode maps finger height in the zone. Relative mode accumulates millimetres of drag, the way Touch Racer scaled a swipe. " +
+                            "Each edge slider moves that pedal inward, as a percent of the screen width. 0% sits flush with the bezel. Reset puts both back.",
                         color = Muted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
                 "buttons" -> {
+                    SectionTitle("Shifter zones")
+                    Text(
+                        "Left side of the wheel is shift up. Right side is shift down. Each zone is 27% of the wheel width by 47% of its height, over the paddles. " +
+                            "A touch there shifts instead of pressing a button, and it keeps shifting while the wheel turns.",
+                        color = Muted,
+                        fontSize = 12.sp,
+                    )
+                    ToggleLine("Show shifter zones", session.profile.showShifterZones) {
+                        session.profile.showShifterZones = it
+                        bump()
+                    }
+                    Stepper("Shift up → button", session.profile.gearUpButton, 0..32) {
+                        session.profile.gearUpButton = it
+                        bump()
+                    }
+                    Stepper("Shift down → button", session.profile.gearDownButton, 0..32) {
+                        session.profile.gearDownButton = it
+                        bump()
+                    }
+                    Text(
+                        "The receiver types Page Up and Page Down, and vJoy buttons 31 and 32. Set a button number here if the game should also see that pad button. 0 leaves the paddle on the gear channel only.",
+                        color = Muted,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 10.dp),
+                    )
                     SectionTitle("Button map")
                     Text("Outputs are virtual pad buttons 1–32. Rotaries pulse a pair and also send a position.", color = Muted, fontSize = 12.sp)
                     session.wheel.controls.forEach { control ->
@@ -633,6 +731,36 @@ private fun SetupScreen(session: RaceSession) {
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun PedalInsetPreview(brakeInset: Float, throttleInset: Float) {
+    Canvas(
+        Modifier
+            .fillMaxWidth()
+            .height(64.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Carbon),
+    ) {
+        val brakeGap = size.width * brakeInset
+        val throttleGap = size.width * throttleInset
+        val pedalW = size.width * 0.12f
+        drawRect(SignalRed.copy(alpha = 0.85f), Offset(brakeGap, 8f), androidx.compose.ui.geometry.Size(pedalW, size.height - 16f))
+        drawRect(
+            SignalGreen.copy(alpha = 0.85f),
+            Offset(size.width - throttleGap - pedalW, 8f),
+            androidx.compose.ui.geometry.Size(pedalW, size.height - 16f),
+        )
+        val wheelLeft = brakeGap + pedalW + 8f
+        val wheelRight = size.width - throttleGap - pedalW - 8f
+        if (wheelRight > wheelLeft) {
+            drawRect(
+                Color.White.copy(alpha = 0.08f),
+                Offset(wheelLeft, 14f),
+                androidx.compose.ui.geometry.Size(wheelRight - wheelLeft, size.height - 28f),
+            )
         }
     }
 }

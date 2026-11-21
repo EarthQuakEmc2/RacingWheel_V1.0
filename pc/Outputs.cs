@@ -198,6 +198,8 @@ public sealed class VjoyOutput : IOutput
             var down = (state.Buttons & (1u << (int)(b - 1))) != 0;
             VjoyNative.SetBtn(down, _id, b);
         }
+        if ((state.Gear & Proto.GearUp) != 0) VjoyNative.SetBtn(true, _id, Proto.VjoyGearUp);
+        if ((state.Gear & Proto.GearDown) != 0) VjoyNative.SetBtn(true, _id, Proto.VjoyGearDown);
     }
 
     public void Dispose()
@@ -289,6 +291,8 @@ public sealed class KeyboardOverlay : IOutput
             if ((state.Buttons & (1u << (button - 1))) == 0) continue;
             want.Add(KeyFor(button));
         }
+        if ((state.Gear & Proto.GearUp) != 0) want.Add(Proto.GearUpKey);
+        if ((state.Gear & Proto.GearDown) != 0) want.Add(Proto.GearDownKey);
         foreach (var vk in _down.ToArray())
         {
             if (!want.Contains(vk))

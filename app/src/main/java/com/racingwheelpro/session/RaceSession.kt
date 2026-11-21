@@ -22,6 +22,7 @@ import com.racingwheelpro.data.WheelLibrary
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.ImgRect
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.input.Smoother
 import com.racingwheelpro.input.SteeringSensor
 import com.racingwheelpro.input.Curves
@@ -81,6 +82,9 @@ class RaceSession(private val context: Context) {
     var pressedControls by mutableStateOf<Set<String>>(emptySet())
     var heldButtons by mutableStateOf<List<Int>>(emptyList())
     var showHotspots by mutableStateOf(false)
+    var shiftUp by mutableStateOf(false)
+    var shiftDown by mutableStateOf(false)
+    var layoutRevision by mutableIntStateOf(0)
     var selectedControl by mutableStateOf<String?>(null)
     var notice by mutableStateOf("")
     var setupPage by mutableStateOf("steer")
@@ -107,6 +111,7 @@ class RaceSession(private val context: Context) {
     private val rotaryAngle = HashMap<Long, Float>()
     private val rotaryAccum = HashMap<Long, Float>()
     private val pedalFingers = HashMap<Long, PedalTouch>()
+    private val shifterFingers = HashMap<Long, ShifterTouch>()
     private val toggled = HashSet<Int>()
     private val pulses = HashMap<Int, Long>()
     private val keyHeld = HashMap<Int, Int>()
@@ -226,7 +231,7 @@ class RaceSession(private val context: Context) {
         syncKnobBytes()
         applyEntitlement()
         gate.start()
-        wire = buildPacket(0f, 0f, 0f, 0f, 0L)
+        wire = buildPacket(0f, 0f, 0f, 0f, 0L, 0)
         localIp = link.localIpv4()
         link.start()
         sensor.start()
@@ -357,6 +362,9 @@ class RaceSession(private val context: Context) {
             volumeUpButton = profile.volumeUpButton,
             volumeDownButton = profile.volumeDownButton,
             autoConnect = profile.autoConnect,
+            showShifterZones = profile.showShifterZones,
+            gearUpButton = profile.gearUpButton,
+            gearDownButton = profile.gearDownButton,
         )
         profiles = profiles + copy
         profile = copy
@@ -378,8 +386,15 @@ class RaceSession(private val context: Context) {
     }
 
     fun touchProfile() {
+        layoutRevision++
         main.removeCallbacks(saveProfile)
         main.postDelayed(saveProfile, 350)
+    }
+
+    fun resetPedalInsets() {
+        profile.pedals.brakeInset = com.racingwheelpro.input.PedalInsets.DEFAULT
+        profile.pedals.throttleInset = com.racingwheelpro.input.PedalInsets.DEFAULT
+        touchProfile()
     }
 
     private val saveProfile = Runnable { profilesStore.save(profile) }
@@ -424,6 +439,14 @@ class RaceSession(private val context: Context) {
         val angle = steerVisualDeg
         when (phase) {
             "down" -> {
+                val side = shifterAt(x, y, angle)
+                if (side != null) {
+                    shifterFingers[id] = ShifterTouch(x, y, side)
+                    syncShiftFlags()
+                    buzz(12)
+                    pressedControls = holds.values.map { it.controlId }.toSet()
+                    return
+                }
                 val nudge = knobNudgeAt(x, y, angle)
                 if (nudge != null) {
                     val binding = bindingFor(nudge.first.id) ?: return
@@ -433,7 +456,7 @@ class RaceSession(private val context: Context) {
                     return
                 }
                 val hit = Geometry.hit(
-                    wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
+                    driveControls(), x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
                     angle, wheel.hitSlop,
                 )
                 if (hit != null) {
@@ -450,6 +473,17 @@ class RaceSession(private val context: Context) {
                 }
             }
             "move" -> {
+                val paddle = shifterFingers[id]
+                if (paddle != null) {
+                    paddle.x = x
+                    paddle.y = y
+                    // Stay latched if the picture turns out from under the finger.
+                    // Sliding onto the other paddle switches sides.
+                    val side = shifterAt(x, y, angle)
+                    if (side != null) paddle.side = side
+                    syncShiftFlags()
+                    return
+                }
                 val hold = holds[id]
                 if (hold != null) {
                     val control = wheel.controls.find { it.id == hold.controlId }
@@ -464,7 +498,11 @@ class RaceSession(private val context: Context) {
                     }
                 }
             }
-            "up" -> releasePointer(id)
+            "up" -> {
+                shifterFingers.remove(id)
+                syncShiftFlags()
+                releasePointer(id)
+            }
         }
         pressedControls = holds.values.map { it.controlId }.toSet()
     }
@@ -647,6 +685,7 @@ class RaceSession(private val context: Context) {
         var bestDist = Float.MAX_VALUE
         for (control in wheel.controls) {
             if (!control.isRotary) continue
+            if (ShifterZones.claims(control.cx, control.cy)) continue
             val limit = control.r * imageRect.width * 0.32f
             for ((side, delta) in listOf(-0.62f to -1, 0.62f to 1)) {
                 val tx = control.cx + side * control.r
@@ -760,6 +799,9 @@ class RaceSession(private val context: Context) {
         if (locked && !atLock) buzz(18)
         atLock = locked
         val mask = buttonMask(now)
+        var gear = 0
+        if (shiftUp) gear = gear or Proto.GEAR_UP
+        if (shiftDown) gear = gear or Proto.GEAR_DOWN
         steerVisualDeg = degrees.coerceIn(-setup.visualClamp, setup.visualClamp)
         steerReadout = "${degrees.roundToInt()}°"
         steerOut = steer
@@ -767,7 +809,7 @@ class RaceSession(private val context: Context) {
         brakeOut = brake
         clutchOut = clutch
         heldButtons = (1..32).filter { mask and (1L shl (it - 1)) != 0L }
-        wire = buildPacket(steer, throttle, brake, clutch, mask)
+        wire = buildPacket(steer, throttle, brake, clutch, mask, gear)
         inputLog.note(now, steer, throttle, brake)
     }
 
@@ -781,6 +823,8 @@ class RaceSession(private val context: Context) {
         pulses.keys.forEach { raise(it) }
         toggled.forEach { raise(it) }
         keyHeld.values.forEach { raise(it) }
+        if (shiftUp) raise(profile.gearUpButton)
+        if (shiftDown) raise(profile.gearDownButton)
         for (hold in holds.values) {
             val binding = hold.binding
             when (binding.mode) {
@@ -801,7 +845,14 @@ class RaceSession(private val context: Context) {
         return mask
     }
 
-    private fun buildPacket(steer: Float, throttle: Float, brake: Float, clutch: Float, buttons: Long): ByteArray {
+    private fun buildPacket(
+        steer: Float,
+        throttle: Float,
+        brake: Float,
+        clutch: Float,
+        buttons: Long,
+        gear: Int = 0,
+    ): ByteArray {
         val knobs = ByteArray(8)
         for (i in 0 until 8) knobs[i] = knobPos[i].coerceIn(0, 127).toByte()
         return Packets.state(
@@ -815,8 +866,30 @@ class RaceSession(private val context: Context) {
                 knobs = knobs,
                 clientTimeMs = SystemClock.elapsedRealtime(),
                 flags = if (usingTouch()) 1 else 0,
+                gear = gear,
             ),
         )
+    }
+
+    /**
+     * Paddle hit in the unrotated wheel picture. The current steering angle is
+     * unwound first, so the rectangle stays on the paddle art while it turns.
+     */
+    private fun shifterAt(x: Float, y: Float, angle: Float): ShifterZones.Side? {
+        if (imageRect.width < 2f || imageRect.height < 2f) return null
+        val (lx, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, angle)
+        val nx = (lx - imageRect.left) / imageRect.width
+        val ny = (ly - imageRect.top) / imageRect.height
+        return ShifterZones.hit(nx, ny)
+    }
+
+    /** Buttons whose centers sit in a paddle rectangle are not pressable while driving. */
+    private fun driveControls(): List<Control> =
+        wheel.controls.filter { !ShifterZones.claims(it.cx, it.cy) }
+
+    private fun syncShiftFlags() {
+        shiftUp = shifterFingers.values.any { it.side == ShifterZones.Side.UP }
+        shiftDown = shifterFingers.values.any { it.side == ShifterZones.Side.DOWN }
     }
 
     private fun usingTouch(): Boolean {
@@ -883,6 +956,8 @@ class RaceSession(private val context: Context) {
     )
 
     private class PedalTouch(val side: String, var raw: Float, var originY: Float)
+
+    private class ShifterTouch(var x: Float, var y: Float, var side: ShifterZones.Side)
 }
 
 private fun copySteering(s: com.racingwheelpro.model.SteeringSetup) = com.racingwheelpro.model.SteeringSetup(
@@ -894,6 +969,7 @@ private fun copyPedals(p: com.racingwheelpro.model.PedalSetup) = com.racingwheel
     p.mode, p.throttleGamma, p.brakeGamma, p.clutchGamma, p.throttleDead, p.brakeDead,
     p.throttleOuter, p.brakeOuter, p.bottomIsFull, p.invertThrottle, p.invertBrake, p.invertClutch,
     p.release, p.fadePerSec, p.relativeTravelMm, p.zoneFraction, p.clutchEnabled, p.exclusive,
+    p.brakeInset, p.throttleInset,
 )
 
 private fun copyBinding(b: Binding) = Binding(

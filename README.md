@@ -12,7 +12,7 @@ The promotional site lives in [`website/`](website/). Its canonical address is <
 
 ## Free and Premium
 
-Version 0.4.0 keeps every driving feature in the free app and locks the extra wheel pictures. The driving coach is a separate website account.
+Version 0.5.0 keeps every driving feature in the free app and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
 
 The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. One free wheel, the KS, draws the animated dial pointer so the knob feature can be tried.
 
@@ -42,6 +42,10 @@ These are rendered previews of the app chrome, drawn from the same wheel images 
 | --- | --- |
 | ![Connection screen](docs/screenshots/connect.jpg) | ![Steering setup](docs/screenshots/setup.jpg) |
 
+| Paddle zones | Pedal edge inset |
+| --- | --- |
+| ![Drive screen with shift-up and shift-down rectangles on the KS wheel](docs/screenshots/drive-shifters.jpg) | ![Pedal setup with independent edge sliders](docs/screenshots/setup-pedals.jpg) |
+
 Hotspot rings on the KS and GS templates:
 
 ![KS hotspots](docs/screenshots/hotspots-ks.jpg)
@@ -52,8 +56,9 @@ Hotspot rings on the KS and GS templates:
 - Wheel templates grouped by manufacturer: Porsche, McLaren, Audi, BMW, Ferrari, Mercedes, Alfa Romeo, KTM, and MOZA. Each one is a wheel image plus a JSON layout of every button and knob.
 - A layout editor. Drag a hotspot, nudge it, resize it, add a button or knob, delete one, save the layout on the phone, copy the JSON, or reset to the built-in map. The drive screen can draw the same rings.
 - Steering from the game-rotation sensor, the accelerometer, or a finger drag when the phone has no usable sensor. Range, sensitivity, dead zone, linearity, smoothing, invert, center calibration, and a haptic tick at full lock.
-- Separate throttle and brake, with position or relative travel, curves, dead zones, outer clamp, invert, instant or fade release, an exclusive-axis option, and an optional clutch strip.
-- Programmable buttons. Each hotspot maps to virtual button 1–32, as momentary, toggle, or long-press. A rotary pulses a left/right pair and also sends a position.
+- Separate throttle and brake, with position or relative travel, curves, dead zones, outer clamp, invert, instant or fade release, an exclusive-axis option, an optional clutch strip, and a per-pedal inset from the screen edge.
+- Gearshift zones on every wheel. The left rectangle is shift up and the right rectangle is shift down. Each one is 27% of the wheel width by 47% of the wheel height, centered on the paddles, and it rotates with the picture. A touch there does not press a button underneath. The overlay can be hidden.
+- Programmable buttons. Each hotspot maps to virtual button 1–32, as momentary, toggle, or long-press. A rotary pulses a left/right pair and also sends a position. Paddles can also be mapped onto a button number.
 - Profiles per wheel and per game. The volume keys can be bound to buttons.
 - Wi-Fi discovery, a manual IP, or USB through `adb reverse`. The drive screen shows link state, latency, and packet rate.
 - A Windows receiver that feeds ViGEm (Xbox 360 pad) or vJoy, and injects keyboard keys for buttons past the pad. Without a driver it still prints a live dashboard. ViGEm rumble is forwarded to the phone as a short vibration.
@@ -109,6 +114,8 @@ The receiver also opens a page at <http://127.0.0.1:41513/>. That page lists sav
 | Knob slots 0–3 | Right stick X/Y for the first two | Ry, Rz, Slider, Dial |
 | Buttons 1–14 | A B X Y LB RB Back Start LS RS, d-pad | Buttons 1–14 |
 | Buttons 15–32 | Keyboard: F1–F12, then 1–0, then A… | Buttons 15–32 |
+| Shift up (left paddle) | Keyboard Page Up, plus a virtual button if the profile sets one | Button 31, and Page Up |
+| Shift down (right paddle) | Keyboard Page Down, plus a virtual button if the profile sets one | Button 32, and Page Down |
 
 Button 1 is bit 0 of the button mask.
 
@@ -272,10 +279,22 @@ The left strip is the brake. The right strip is the throttle. A clutch strip app
 | Invert | Flips that pedal's output. |
 | Clutch zone | Shows the third pedal. |
 | Exclusive axes | The larger of throttle and brake wins, and the other is forced to zero. |
+| Brake distance from edge | How far the brake sits in from the left bezel, 0–10% of screen width. 0% is flush. |
+| Throttle distance from edge | The same for the throttle and the right bezel. The two sliders are independent. Reset edges puts both back to 0%. |
 
 ### Buttons
 
 Each hotspot has a virtual button number from 1 to 32, or none. Momentary holds the button while the finger is down. Toggle flips on a short release. Long-press holds the primary button until 400 ms, then switches to the long-press button. A rotary sends a decrement button and an increment button as short pulses, and stores a position in its knob slot. Volume up and volume down can each be mapped to a button number so the phone's keys become wheel buttons.
+
+### Shifter zones
+
+Every wheel reserves a rectangle on each side for the paddle shifters. The left rectangle is shift up. The right rectangle is shift down. Each one is 27% of the wheel's width, measured inward from that edge, and 47% of the wheel's height, centered on the grip line where the paddles are drawn. Those three fractions are `WIDTH_FRACTION`, `HEIGHT_FRACTION`, and `CENTER_Y_FRACTION` in `ShifterZones.kt`.
+
+The rectangles are part of the wheel picture. Steering rotates them with the art, and the hit test unwinds that rotation, so a tap lands on the paddle that is drawn under the finger. Once the finger is down, the shift stays held while the wheel turns, the same way a face button stays held. A button or knob whose center sits inside a rectangle is not pressable on the drive screen, so the paddles and the programmable buttons do not share that area. The layout editor can still grab that control and move it.
+
+Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
+
+The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down, and it holds vJoy buttons 31 and 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out.
 
 ## Protocol
 
@@ -298,7 +317,8 @@ State (`RWPS`, 36 bytes) goes to UDP 41511 about 100 times a second. TCP carries
 | 16 | u32 | buttons, bit 0 = button 1 |
 | 20 | i8 × 8 | knob positions |
 | 28 | u32 | client time, milliseconds |
-| 32 | u16 | reserved |
+| 32 | u8 | gear. Bit 0 = shift up (left paddle), bit 1 = shift down (right paddle). Older receivers leave this byte unread. |
+| 33 | u8 | reserved |
 | 34 | u16 | reserved |
 
 TCP frames are a type byte, a little-endian length, and a payload. Type 1 is a JSON hello (`name`, `wheel`, `profile`, `protocol`). Type 2 is a state packet. Type 3 is a ping (`u32` client time). Type 4 is a pong (echoed client time, then server time). Type 5 is goodbye. The phone shows half of that round trip as latency.

@@ -7,6 +7,8 @@ import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.PedalInsets
+import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
@@ -36,8 +38,10 @@ class CoreTest {
             knobs = knobs,
             clientTimeMs = 123456789L,
             flags = 1,
+            gear = Proto.GEAR_UP or Proto.GEAR_DOWN,
         )
-        val back = Packets.parseState(Packets.state(packet))
+        val bytes = Packets.state(packet)
+        val back = Packets.parseState(bytes)
         assertNotNull(back)
         back!!
         assertEquals(7, back.seq)
@@ -50,7 +54,9 @@ class CoreTest {
         assertEquals(-2, back.knobs[1].toInt())
         assertEquals(1, back.flags)
         assertEquals(123456789L, back.clientTimeMs)
-        assertEquals(Proto.STATE_LEN, Packets.state(packet).size)
+        assertEquals(Proto.GEAR_UP or Proto.GEAR_DOWN, back.gear)
+        assertEquals(Proto.STATE_LEN, bytes.size)
+        assertEquals((Proto.GEAR_UP or Proto.GEAR_DOWN).toByte(), bytes[32])
     }
 
     @Test
@@ -95,6 +101,51 @@ class CoreTest {
         val back = Geometry.screenToLocal(screen.first, screen.second, 100f, 80f, 90f)
         assertEquals(140f, back.first, 0.01f)
         assertEquals(80f, back.second, 0.01f)
+    }
+
+    @Test
+    fun shifterZonesAreLeftUpAndRightDown() {
+        val up = ShifterZones.up
+        val down = ShifterZones.down
+        assertEquals(ShifterZones.Side.UP, up.side)
+        assertEquals(0f, up.left, 0.0001f)
+        assertEquals(ShifterZones.WIDTH_FRACTION, up.right, 0.0001f)
+        assertEquals(ShifterZones.HEIGHT_FRACTION, up.bottom - up.top, 0.0001f)
+        assertEquals(ShifterZones.CENTER_Y_FRACTION, (up.top + up.bottom) / 2f, 0.0001f)
+        assertEquals(1f - ShifterZones.WIDTH_FRACTION, down.left, 0.0001f)
+        assertEquals(1f, down.right, 0.0001f)
+        assertEquals(up.top, down.top, 0.0001f)
+        assertEquals(ShifterZones.Side.UP, ShifterZones.hit(0.05f, ShifterZones.CENTER_Y_FRACTION))
+        assertEquals(ShifterZones.Side.DOWN, ShifterZones.hit(0.95f, ShifterZones.CENTER_Y_FRACTION))
+        assertNull(ShifterZones.hit(0.50f, ShifterZones.CENTER_Y_FRACTION))
+        assertNull(ShifterZones.hit(0.05f, 0.02f))
+        assertTrue(ShifterZones.claims(0.10f, 0.50f))
+        assertFalse(ShifterZones.claims(0.50f, 0.50f))
+    }
+
+    @Test
+    fun rotatedShifterZoneStillHitsTheSamePaddle() {
+        val rect = Geometry.fitCenter(400f, 220f, 200, 110)
+        val up = ShifterZones.up
+        val lx = rect.left + ((up.left + up.right) / 2f) * rect.width
+        val ly = rect.top + ShifterZones.CENTER_Y_FRACTION * rect.height
+        val turned = Geometry.localToScreen(lx, ly, rect.cx, rect.cy, 48f)
+        val back = Geometry.screenToLocal(turned.first, turned.second, rect.cx, rect.cy, 48f)
+        val nx = (back.first - rect.left) / rect.width
+        val ny = (back.second - rect.top) / rect.height
+        assertEquals(ShifterZones.Side.UP, ShifterZones.hit(nx, ny))
+        val button = Control("edge", "E", "button", "circle", 0.08f, 0.50f, 0.04f, "#FFFFFF")
+        assertTrue(ShifterZones.claims(button.cx, button.cy))
+        assertEquals(ShifterZones.Side.UP, ShifterZones.hit(button.cx, button.cy))
+    }
+
+    @Test
+    fun pedalInsetsClampToTheSliderRange() {
+        assertEquals(0f, PedalInsets.clamp(-0.2f), 0.0001f)
+        assertEquals(PedalInsets.DEFAULT, PedalInsets.clamp(0f), 0.0001f)
+        assertEquals(0.04f, PedalInsets.clamp(0.04f), 0.0001f)
+        assertEquals(PedalInsets.MAX, PedalInsets.clamp(2f), 0.0001f)
+        assertTrue(PedalInsets.MAX <= 0.12f)
     }
 
     @Test

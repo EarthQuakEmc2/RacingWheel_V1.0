@@ -40,6 +40,11 @@ internal static class Program
             Console.Error.WriteLine("self-test: buttons/knobs mismatch");
             return 1;
         }
+        if (parsed.Gear != (Proto.GearUp | Proto.GearDown))
+        {
+            Console.Error.WriteLine("self-test: gear mismatch");
+            return 1;
+        }
         if (!Packets.IsFind(Packets.HostBeacon(1, 2, 0, "x").Take(0).ToArray()) &&
             !Packets.IsFind(new byte[] { (byte)'R', (byte)'W', (byte)'P', (byte)'F' }))
         {
@@ -98,6 +103,7 @@ internal static class Program
         buf[20] = 3;
         buf[21] = unchecked((byte)-2);
         WriteU32(buf, 28, 123456789);
+        buf[32] = (byte)(Proto.GearUp | Proto.GearDown);
         return buf;
     }
 
@@ -309,6 +315,8 @@ internal sealed class Receiver : IDisposable
                 buttons = state.PressedButtons().ToArray(),
                 knobs = state.Knobs.Select(b => (int)(sbyte)b).ToArray(),
                 flags = state.Flags,
+                shiftUp = (state.Gear & Proto.GearUp) != 0,
+                shiftDown = (state.Gear & Proto.GearDown) != 0,
                 from = from?.Address.ToString() ?? "sim",
             });
             Console.WriteLine(line);
@@ -424,9 +432,16 @@ internal sealed class Receiver : IDisposable
         var age = _lastRx == DateTime.MinValue ? -1 : (int)(DateTime.UtcNow - _lastRx).TotalMilliseconds;
         var buttons = string.Join(",", s.PressedButtons());
         if (buttons.Length == 0) buttons = "-";
+        var gear = (s.Gear & (Proto.GearUp | Proto.GearDown)) switch
+        {
+            Proto.GearUp | Proto.GearDown => "BOTH",
+            Proto.GearUp => "UP",
+            Proto.GearDown => "DN",
+            _ => "-",
+        };
         var code = string.IsNullOrEmpty(_account.Code) ? "----" : _account.Code;
         Console.Write(
-            $"\r{peer,-16} steer {s.Steer,6:0.00}  thr {s.Throttle,4:0.00}  brk {s.Brake,4:0.00}  clt {s.Clutch,4:0.00}  btn {buttons,-12} in {inputHz,3} Hz  out {outputHz,3} Hz  {(ac ? "AC" : "noAC"),4}  {code}  age {(age < 0 ? "  -" : age + "ms"),5}   ");
+            $"\r{peer,-16} steer {s.Steer,6:0.00}  thr {s.Throttle,4:0.00}  brk {s.Brake,4:0.00}  clt {s.Clutch,4:0.00}  gear {gear,-4}  btn {buttons,-12} in {inputHz,3} Hz  out {outputHz,3} Hz  {(ac ? "AC" : "noAC"),4}  {code}  age {(age < 0 ? "  -" : age + "ms"),5}   ");
     }
 
     private void TelemetryLoop(byte[] beacon)

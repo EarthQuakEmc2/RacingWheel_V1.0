@@ -31,7 +31,7 @@ Answer from the Play Console Data safety questionnaire. This matches the app in 
 
 ## What the app does use the network for
 
-The phone sends a steering packet to a PC the user chooses, on the local network or through `adb reverse` to `127.0.0.1`. That packet contains steering, pedals, button bits, and knob positions. It does not contain a name the developer can see, and it does not leave the user's LAN unless the user points it at a machine they control.
+The phone sends a steering packet to a PC the user chooses, on the local network or through `adb reverse` to `127.0.0.1`. That packet contains steering, pedals, button bits, knob positions, and gear-paddle flags. It does not contain a name the developer can see, and it does not leave the user's LAN unless the user points it at a machine they control.
 
 `ACCESS_WIFI_STATE` and multicast are for discovering that PC. The result stays on the phone.
 

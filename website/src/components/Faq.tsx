@@ -21,7 +21,11 @@ const ITEMS = [
   },
   {
     q: 'Windows SmartScreen blocks the exe.',
-    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.4.0 release, choose More info, then Run anyway.',
+    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.5.0 release, choose More info, then Run anyway.',
+  },
+  {
+    q: 'How do the paddle shifters reach the game?',
+    a: 'The left edge of the wheel is shift up and the right edge is shift down. The receiver types Page Up and Page Down, and it holds vJoy buttons 31 and 32. In Setup → Buttons you can also map each paddle to a virtual pad button. Hide the overlay there if you do not want the rectangles drawn.',
   },
   {
     q: 'How does the driving coach link to my PC?',

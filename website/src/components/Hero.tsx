@@ -15,9 +15,9 @@ import { webglAvailable } from '../lib/webgl'
 
 const WheelScene = lazy(() => import('./WheelScene'))
 
-const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.2.1'
-const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.2.1/RacingWheelPro.apk'
-const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.1.0/RacingWheelPro-PC.exe'
+const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.5.0'
+const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.0/RacingWheelPro.apk'
+const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.0/RacingWheelPro-PC.exe'
 
 const TICKER = [
   '100 Hz telemetry',
@@ -185,7 +185,7 @@ export default function Hero() {
         <div className="hero-copy">
           <p className="kicker">
             <i className="live" aria-hidden="true" />
-            v0.2.1 · Android + Windows
+            v0.5.0 · Android + Windows
           </p>
           <h1>
             The phone
@@ -193,7 +193,7 @@ export default function Hero() {
             is the <span>wheel.</span>
           </h1>
           <p className="lede">
-            Roll it to steer. Thumbs stay on the buttons. The edges of the screen are the pedals.
+            Roll it to steer. Thumbs stay on the buttons. The wheel edges shift. The screen edges are the pedals.
           </p>
           <div className="cta">
             <a className="btn btn-red" href={APK}>
@@ -204,7 +204,7 @@ export default function Hero() {
             </a>
           </div>
           <p className="release-line">
-            <a href={RELEASE}>Release v0.2.1</a>
+            <a href={RELEASE}>Release v0.5.0</a>
             <span aria-hidden="true"> · </span>
             GPL-3.0
           </p>

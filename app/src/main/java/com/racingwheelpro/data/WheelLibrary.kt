@@ -205,6 +205,8 @@ class ProfileStore(private val context: Context) {
             zoneFraction = p.optDouble("zoneFraction", 0.18).toFloat(),
             clutchEnabled = p.optBoolean("clutchEnabled", false),
             exclusive = p.optBoolean("exclusive", false),
+            brakeInset = p.optDouble("brakeInset", 0.0).toFloat(),
+            throttleInset = p.optDouble("throttleInset", 0.0).toFloat(),
         )
         val bindings = mutableListOf<Binding>()
         val arr = o.optJSONArray("bindings") ?: JSONArray()
@@ -234,6 +236,9 @@ class ProfileStore(private val context: Context) {
             volumeUpButton = o.optInt("volumeUpButton", 0),
             volumeDownButton = o.optInt("volumeDownButton", 0),
             autoConnect = o.optBoolean("autoConnect", true),
+            showShifterZones = o.optBoolean("showShifterZones", true),
+            gearUpButton = o.optInt("gearUpButton", 0),
+            gearDownButton = o.optInt("gearDownButton", 0),
         )
     }
 
@@ -273,6 +278,8 @@ class ProfileStore(private val context: Context) {
             .put("zoneFraction", p.zoneFraction.toDouble())
             .put("clutchEnabled", p.clutchEnabled)
             .put("exclusive", p.exclusive)
+            .put("brakeInset", p.brakeInset.toDouble())
+            .put("throttleInset", p.throttleInset.toDouble())
         val bindings = JSONArray()
         for (b in profile.bindings) {
             bindings.put(
@@ -295,6 +302,9 @@ class ProfileStore(private val context: Context) {
             .put("volumeUpButton", profile.volumeUpButton)
             .put("volumeDownButton", profile.volumeDownButton)
             .put("autoConnect", profile.autoConnect)
+            .put("showShifterZones", profile.showShifterZones)
+            .put("gearUpButton", profile.gearUpButton)
+            .put("gearDownButton", profile.gearDownButton)
             .put("steering", steering)
             .put("pedals", pedals)
             .put("bindings", bindings)
