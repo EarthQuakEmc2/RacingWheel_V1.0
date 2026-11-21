@@ -117,6 +117,10 @@ class PedalSetup(
     var clutchEnabled: Boolean = false,
     /** When set, the larger of throttle and brake wins and the other is forced to zero. */
     var exclusive: Boolean = false,
+    /** Fraction of screen width between the left bezel and the brake. 0 is flush. */
+    var brakeInset: Float = 0f,
+    /** Fraction of screen width between the right bezel and the throttle. 0 is flush. */
+    var throttleInset: Float = 0f,
 )
 
 class Binding(
@@ -141,6 +145,12 @@ class Profile(
     var volumeUpButton: Int = 0,
     var volumeDownButton: Int = 0,
     var autoConnect: Boolean = true,
+    /** Draw the paddle rectangles. The zones still shift when this is off. */
+    var showShifterZones: Boolean = true,
+    /** Virtual button for the left paddle, or 0 to leave it on the gear channel only. */
+    var gearUpButton: Int = 0,
+    /** Virtual button for the right paddle, or 0 to leave it on the gear channel only. */
+    var gearDownButton: Int = 0,
 )
 
 data class DiscoveredHost(

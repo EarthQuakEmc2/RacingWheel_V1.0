@@ -23,7 +23,8 @@ import java.nio.charset.StandardCharsets
  * 16  u32     buttons          bit 0 = button 1
  * 20  i8[8]   knob positions
  * 28  u32     client time ms
- * 32  u16     reserved
+ * 32  u8      gear (bit0 = shift up, bit1 = shift down). Older receivers ignore this.
+ * 33  u8      reserved
  * 34  u16     reserved
  *
  * Discovery find (phone -> 41510), 24 bytes: "RWPF", version, pad, 16-byte name.
@@ -53,6 +54,12 @@ object Proto {
     const val CAP_VIGEM = 1
     const val CAP_VJOY = 2
     const val CAP_KEYBOARD = 4
+
+    /** Left paddle. Bit 0 of the gear byte. */
+    const val GEAR_UP = 1
+
+    /** Right paddle. Bit 1 of the gear byte. */
+    const val GEAR_DOWN = 2
 }
 
 class StatePacket(
@@ -65,6 +72,8 @@ class StatePacket(
     val knobs: ByteArray,
     val clientTimeMs: Long,
     val flags: Int,
+    /** Bit 0 = shift up (left zone), bit 1 = shift down (right zone). */
+    val gear: Int = 0,
 )
 
 class HostBeacon(
@@ -91,7 +100,8 @@ object Packets {
         for (i in 0 until 8) knobs[i] = if (i < p.knobs.size) p.knobs[i] else 0
         b.put(knobs)
         b.putInt((p.clientTimeMs and 0xFFFFFFFFL).toInt())
-        b.putShort(0)
+        b.put((p.gear and 0xFF).toByte())
+        b.put(0)
         b.putShort(0)
         return b.array()
     }
@@ -113,7 +123,8 @@ object Packets {
         val knobs = ByteArray(8)
         b.get(knobs)
         val time = b.int.toLong() and 0xFFFFFFFFL
-        return StatePacket(seq, steer, throttle, brake, clutch, buttons, knobs, time, flags)
+        val gear = b.get().toInt() and 0xFF
+        return StatePacket(seq, steer, throttle, brake, clutch, buttons, knobs, time, flags, gear)
     }
 
     fun find(name: String): ByteArray {

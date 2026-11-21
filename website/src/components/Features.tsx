@@ -11,7 +11,7 @@ const FEATURES = [
   },
   {
     title: 'Pedal zones',
-    text: 'Brake on the left, throttle on the right, clutch underneath when you want a third pedal.',
+    text: 'Brake on the left, throttle on the right. Each one can sit in from the screen edge. Clutch underneath when you want a third pedal.',
     graphic: <PedalsGraphic />,
   },
   {
@@ -26,7 +26,7 @@ const FEATURES = [
   },
   {
     title: 'A pad the sim knows',
-    text: 'ViGEmBus presents an Xbox 360 controller. vJoy is there for 32 buttons and eight axes.',
+    text: 'ViGEmBus presents an Xbox 360 controller. vJoy is there for 32 buttons and eight axes. Left paddle is shift up, right paddle is shift down.',
     graphic: <PadGraphic />,
   },
 ]

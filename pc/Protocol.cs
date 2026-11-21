@@ -22,6 +22,21 @@ public static class Proto
     public const byte CapVigem = 1;
     public const byte CapVjoy = 2;
     public const byte CapKeyboard = 4;
+
+    /// <summary>Bit 0 of the gear byte. Left paddle, shift up.</summary>
+    public const int GearUp = 1;
+
+    /// <summary>Bit 1 of the gear byte. Right paddle, shift down.</summary>
+    public const int GearDown = 2;
+
+    public const uint VjoyGearUp = 31;
+    public const uint VjoyGearDown = 32;
+
+    /// <summary>VK_PRIOR, Page Up.</summary>
+    public const int GearUpKey = 0x21;
+
+    /// <summary>VK_NEXT, Page Down.</summary>
+    public const int GearDownKey = 0x22;
 }
 
 public sealed class StatePacket
@@ -35,6 +50,9 @@ public sealed class StatePacket
     public byte[] Knobs { get; init; } = new byte[8];
     public uint ClientTimeMs { get; init; }
     public int Flags { get; init; }
+
+    /// <summary>Bit 0 = shift up (left zone), bit 1 = shift down (right zone).</summary>
+    public int Gear { get; init; }
 
     public IEnumerable<int> PressedButtons()
     {
@@ -73,6 +91,7 @@ public static class Packets
             Buttons = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(16, 4)),
             Knobs = knobs,
             ClientTimeMs = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(28, 4)),
+            Gear = bytes[32],
         };
     }
 
