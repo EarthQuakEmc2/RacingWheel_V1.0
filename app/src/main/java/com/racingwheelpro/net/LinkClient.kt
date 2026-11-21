@@ -35,6 +35,7 @@ class LinkClient(
     private val onLatency: (Int) -> Unit,
     private val onLink: (Boolean, String) -> Unit,
     private val onRumble: (Int, Int) -> Unit,
+    private val onServer: (String) -> Unit,
 ) {
     private val appContext = context.applicationContext
     private var multicast: WifiManager.MulticastLock? = null
@@ -287,7 +288,10 @@ class LinkClient(
                 }
                 while (true) {
                     val frame = frames.next() ?: break
-                    if (frame.first == Proto.TCP_PONG && frame.second.size >= 4) {
+                    if (frame.first == Proto.TCP_SERVER) {
+                        val text = frame.second.toString(Charsets.UTF_8)
+                        main.post { onServer(text) }
+                    } else if (frame.first == Proto.TCP_PONG && frame.second.size >= 4) {
                         val echoed = ByteBuffer.wrap(frame.second).order(ByteOrder.LITTLE_ENDIAN).int.toLong() and 0xFFFFFFFFL
                         val nowLow = clock() and 0xFFFFFFFFL
                         var rtt = nowLow - echoed

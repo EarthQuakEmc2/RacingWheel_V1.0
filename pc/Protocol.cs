@@ -19,6 +19,9 @@ public static class Proto
     public const byte TcpPing = 3;
     public const byte TcpPong = 4;
     public const byte TcpBye = 5;
+
+    /// <summary>PC to phone. JSON for the Assetto Corsa server the receiver can see.</summary>
+    public const byte TcpServer = 6;
     public const byte CapVigem = 1;
     public const byte CapVjoy = 2;
     public const byte CapKeyboard = 4;

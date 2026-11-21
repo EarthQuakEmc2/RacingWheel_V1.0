@@ -21,3 +21,13 @@ database_id = "00000000-0000-0000-0000-000000000000"
 
 [ai]
 binding = "AI"
+
+# Push-to-talk rooms. SQLite-backed so the class is allowed on the Workers Free
+# plan. The class does not write rows; audio is forwarded and dropped.
+[[durable_objects.bindings]]
+name = "VOICE_ROOMS"
+class_name = "VoiceRoom"
+
+[[migrations]]
+tag = "v1-voice"
+new_sqlite_classes = ["VoiceRoom"]
