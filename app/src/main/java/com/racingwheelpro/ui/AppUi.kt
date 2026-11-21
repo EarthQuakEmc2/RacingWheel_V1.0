@@ -35,6 +35,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -62,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.racingwheelpro.catalog.WheelCatalog
@@ -88,20 +90,31 @@ fun AppRoot(session: RaceSession) {
             session.notice = ""
         }
     }
-    Column(Modifier.fillMaxSize().background(Carbon)) {
-        LedStrip(session.throttleOut)
-        TopBar(session)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (session.screen) {
-                Screen.Drive -> DriveScreen(session)
-                Screen.Connect -> ConnectScreen(session)
-                Screen.Setup -> SetupScreen(session)
-                Screen.Editor -> EditorScreen(session)
-                Screen.Garage -> GarageScreen(session)
-                Screen.Logs -> LogsScreen(session)
-            }
-            if (session.paywall) {
-                PremiumDialog(session)
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val tablet = isTabletCanvas(maxWidth, maxHeight)
+        val chrome = if (tablet) tabletChrome() else phoneChrome()
+        session.fingertipSlopPx = if (tablet) {
+            with(LocalDensity.current) { 28.dp.toPx() }
+        } else {
+            22f
+        }
+        CompositionLocalProvider(LocalChrome provides chrome) {
+            Column(Modifier.fillMaxSize().background(Carbon)) {
+                LedStrip(session.throttleOut)
+                TopBar(session)
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    when (session.screen) {
+                        Screen.Drive -> DriveScreen(session)
+                        Screen.Connect -> ConnectScreen(session)
+                        Screen.Setup -> SetupScreen(session)
+                        Screen.Editor -> EditorScreen(session)
+                        Screen.Garage -> GarageScreen(session)
+                        Screen.Logs -> LogsScreen(session)
+                    }
+                    if (session.paywall) {
+                        PremiumDialog(session)
+                    }
+                }
             }
         }
     }
@@ -115,9 +128,10 @@ private fun LedStrip(level: Float) {
         SignalRed, SignalRed, SignalRed,
         SignalMagenta, SignalMagenta, SignalBlue, SignalCyan,
     )
+    val chrome = LocalChrome.current
     val lit = (level.coerceIn(0f, 1f) * colors.size).roundToInt()
     Row(
-        Modifier.fillMaxWidth().height(12.dp).padding(horizontal = 10.dp, vertical = 2.dp),
+        Modifier.fillMaxWidth().height(chrome.ledHeight).padding(horizontal = 10.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(3.dp),
     ) {
         colors.forEachIndexed { index, color ->
@@ -134,42 +148,49 @@ private fun LedStrip(level: Float) {
 
 @Composable
 private fun TopBar(session: RaceSession) {
+    val chrome = LocalChrome.current
     Row(
-        Modifier.fillMaxWidth().height(46.dp).background(Panel).padding(horizontal = 8.dp),
+        Modifier.fillMaxWidth().height(chrome.topBar).background(Panel).padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             "RACING WHEEL PRO",
             color = Ink,
-            fontSize = 13.sp,
+            fontSize = chrome.titleSp,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = 1.4.sp,
         )
         Spacer(Modifier.width(12.dp))
-        Text(session.displayName(session.wheel), color = SignalYellow, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Text(session.displayName(session.wheel), color = SignalYellow, fontSize = chrome.titleSp, fontWeight = FontWeight.Medium)
         Spacer(Modifier.width(10.dp))
-        Text(session.steerReadout, color = Ink, fontSize = 13.sp)
+        Text(session.steerReadout, color = Ink, fontSize = chrome.titleSp)
         Spacer(Modifier.weight(1f))
         if (session.notice.isNotEmpty()) {
             Text(session.notice, color = SignalYellow, fontSize = 12.sp, modifier = Modifier.padding(end = 8.dp))
         }
         LinkPill(session)
         Spacer(Modifier.width(8.dp))
-        NavButton("GARAGE", session.screen == Screen.Garage) { session.screen = Screen.Garage }
-        NavButton("LINK", session.screen == Screen.Connect) { session.screen = Screen.Connect }
-        NavButton("SETUP", session.screen == Screen.Setup) { session.screen = Screen.Setup }
-        NavButton("EDIT", session.screen == Screen.Editor) { session.screen = Screen.Editor }
-        NavButton("LOGS", session.screen == Screen.Logs) { session.screen = Screen.Logs }
-        NavButton("DRIVE", session.screen == Screen.Drive) { session.screen = Screen.Drive }
+        Row(
+            Modifier.horizontalScroll(rememberScrollState()),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            NavButton("GARAGE", session.screen == Screen.Garage) { session.screen = Screen.Garage }
+            NavButton("LINK", session.screen == Screen.Connect) { session.screen = Screen.Connect }
+            NavButton("SETUP", session.screen == Screen.Setup) { session.screen = Screen.Setup }
+            NavButton("EDIT", session.screen == Screen.Editor) { session.screen = Screen.Editor }
+            NavButton("LOGS", session.screen == Screen.Logs) { session.screen = Screen.Logs }
+            NavButton("DRIVE", session.screen == Screen.Drive) { session.screen = Screen.Drive }
+        }
     }
 }
 
 @Composable
 private fun LinkPill(session: RaceSession) {
+    val chrome = LocalChrome.current
     val color = if (session.linked) SignalGreen else SignalRed
     val latency = if (session.latencyMs >= 0) "${session.latencyMs} ms" else "— ms"
     Row(
-        Modifier.clip(RoundedCornerShape(20.dp)).background(color.copy(alpha = 0.15f)).padding(horizontal = 10.dp, vertical = 4.dp),
+        Modifier.clip(RoundedCornerShape(20.dp)).background(color.copy(alpha = 0.15f)).padding(horizontal = 12.dp, vertical = if (chrome.tablet) 8.dp else 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.width(8.dp).height(8.dp).clip(RoundedCornerShape(4.dp)).background(color))
@@ -177,32 +198,34 @@ private fun LinkPill(session: RaceSession) {
         Text(
             if (session.linked) "${session.linkLabel}  $latency  ${session.packetHz} Hz" else "No PC",
             color = Ink,
-            fontSize = 11.sp,
+            fontSize = chrome.statusSp,
         )
     }
 }
 
 @Composable
 private fun NavButton(label: String, active: Boolean, onClick: () -> Unit) {
+    val chrome = LocalChrome.current
     Text(
         label,
         color = if (active) SignalYellow else Muted,
-        fontSize = 11.sp,
+        fontSize = chrome.navSp,
         fontWeight = FontWeight.SemiBold,
         letterSpacing = 0.8.sp,
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = chrome.navPadH, vertical = chrome.navPadV),
     )
 }
 
 @Composable
 private fun DriveScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
+    val chrome = LocalChrome.current
     BoxWithConstraints(Modifier.fillMaxSize().background(Carbon)) {
         val pedals = session.profile.pedals
-        val zone = (maxWidth * pedals.zoneFraction).coerceIn(72.dp, 190.dp)
+        val zone = (maxWidth * pedals.zoneFraction).coerceIn(chrome.pedalMin, chrome.pedalMax)
         val brakeGap = maxWidth * PedalInsets.clamp(pedals.brakeInset)
         val throttleGap = maxWidth * PedalInsets.clamp(pedals.throttleInset)
         Column(Modifier.fillMaxSize()) {
@@ -212,6 +235,8 @@ private fun DriveScreen(session: RaceSession) {
                     title = "BRAKE",
                     value = session.brakeOut,
                     color = SignalRed,
+                    valueSp = chrome.pedalValueSp,
+                    titleSp = chrome.pedalTitleSp,
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "brake", y, h) }
                 Column(Modifier.weight(1f).fillMaxHeight()) {
@@ -225,7 +250,9 @@ private fun DriveScreen(session: RaceSession) {
                             title = "CLUTCH",
                             value = session.clutchOut,
                             color = SignalBlue,
-                            modifier = Modifier.fillMaxWidth().height(54.dp),
+                            valueSp = chrome.pedalValueSp,
+                            titleSp = chrome.pedalTitleSp,
+                            modifier = Modifier.fillMaxWidth().height(chrome.clutchHeight),
                         ) { id, phase, y, h -> session.pedalPointer(id, phase, "clutch", y, h) }
                     }
                 }
@@ -233,24 +260,26 @@ private fun DriveScreen(session: RaceSession) {
                     title = "THROTTLE",
                     value = session.throttleOut,
                     color = SignalGreen,
+                    valueSp = chrome.pedalValueSp,
+                    titleSp = chrome.pedalTitleSp,
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "throttle", y, h) }
                 if (throttleGap > 0.5.dp) Spacer(Modifier.width(throttleGap).fillMaxHeight())
             }
             Row(
-                Modifier.fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
+                Modifier.fillMaxWidth().height(chrome.bottomBar).background(Panel).padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     "${session.profile.game}  ·  ${session.sensorName}",
                     color = Muted,
-                    fontSize = 11.sp,
+                    fontSize = chrome.statusSp,
                 )
                 Text(
                     gearReadout(session, layoutTick),
                     color = SignalCyan,
-                    fontSize = 11.sp,
+                    fontSize = chrome.statusSp,
                 )
                 Row {
                     MiniAction("CENTER") { session.recenter() }
@@ -275,12 +304,13 @@ private fun gearReadout(session: RaceSession, layoutTick: Int): String {
 
 @Composable
 private fun MiniAction(label: String, onClick: () -> Unit) {
+    val chrome = LocalChrome.current
     Text(
         label,
         color = Ink,
-        fontSize = 11.sp,
+        fontSize = chrome.statusSp,
         fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.clickable(onClick = onClick).padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = Modifier.clickable(onClick = onClick).padding(horizontal = chrome.miniPadH, vertical = chrome.miniPadV),
     )
 }
 
@@ -290,6 +320,8 @@ private fun PedalColumn(
     value: Float,
     color: Color,
     modifier: Modifier,
+    valueSp: TextUnit = 16.sp,
+    titleSp: TextUnit = 10.sp,
     onPointer: (Long, String, Float, Float) -> Unit,
 ) {
     Box(
@@ -331,8 +363,8 @@ private fun PedalColumn(
             )
         }
         Column(Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("${(value * 100).roundToInt()}", color = Ink, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Text(title, color = Muted, fontSize = 10.sp, letterSpacing = 1.sp)
+            Text("${(value * 100).roundToInt()}", color = Ink, fontSize = valueSp, fontWeight = FontWeight.Bold)
+            Text(title, color = Muted, fontSize = titleSp, letterSpacing = 1.sp)
         }
     }
 }
@@ -365,6 +397,7 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val showZones = editor || session.profile.showShifterZones
     val shiftUp = session.shiftUp
     val shiftDown = session.shiftDown
+    val zoneLabelScale = LocalChrome.current.zoneLabelScale
     val layoutTick = session.layoutRevision
     val upSpec = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
     val downSpec = session.resolvedShifter(ShifterZones.Side.DOWN)
@@ -447,16 +480,16 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     strokeWidth = 4f,
                 )
                 if (showZones) {
-                    val extra = 22f * wheel.imageWidth / rect.width.coerceAtLeast(1f)
+                    val extra = session.fingertipSlopPx * wheel.imageWidth / rect.width.coerceAtLeast(1f)
                     drawShifterZone(
                         ShifterZones.place(ShifterZones.Side.UP, upSpec, wheel.bounds),
                         rect, wheel, extra, shiftUp || selectedShifter == ShifterZones.Side.UP,
-                        SignalCyan, "UP", density, labelPaint, editor,
+                        SignalCyan, "UP", density * zoneLabelScale, labelPaint, editor,
                     )
                     drawShifterZone(
                         ShifterZones.place(ShifterZones.Side.DOWN, downSpec, wheel.bounds),
                         rect, wheel, extra, shiftDown || selectedShifter == ShifterZones.Side.DOWN,
-                        SignalYellow, "DN", density, labelPaint, editor,
+                        SignalYellow, "DN", density * zoneLabelScale, labelPaint, editor,
                     )
                 }
             }
@@ -619,14 +652,15 @@ private fun SetupScreen(session: RaceSession) {
     @Suppress("UNUSED_VARIABLE")
     val revision = tick
     Row(Modifier.fillMaxSize()) {
-        Column(Modifier.width(150.dp).fillMaxHeight().background(Panel).padding(8.dp)) {
+        val chrome = LocalChrome.current
+        Column(Modifier.width(chrome.setupNav).fillMaxHeight().background(Panel).padding(8.dp)) {
             listOf("steer" to "STEERING", "pedals" to "PEDALS", "buttons" to "BUTTONS", "profile" to "PROFILE").forEach { (id, label) ->
                 Text(
                     label,
                     color = if (session.setupPage == id) SignalYellow else Muted,
-                    fontSize = 13.sp,
+                    fontSize = if (chrome.tablet) 16.sp else 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.fillMaxWidth().clickable { session.setupPage = id }.padding(vertical = 10.dp, horizontal = 8.dp),
+                    modifier = Modifier.fillMaxWidth().clickable { session.setupPage = id }.padding(vertical = if (chrome.tablet) 16.dp else 10.dp, horizontal = 8.dp),
                 )
             }
         }
@@ -868,7 +902,8 @@ private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
     Row(Modifier.fillMaxSize()) {
         WheelFace(session, editor = true, modifier = Modifier.weight(1f).fillMaxHeight())
-        Column(Modifier.width(300.dp).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
+        val chrome = LocalChrome.current
+        Column(Modifier.width(chrome.editorPanel).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
             Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))
@@ -1009,7 +1044,7 @@ private fun GarageScreen(session: RaceSession) {
                     val locked = !session.gate.wheelUnlocked(template.id)
                     Column(
                         Modifier
-                            .width(280.dp)
+                            .width(LocalChrome.current.garageCard)
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(10.dp))
                             .background(if (selected && !locked) PanelRaised else Panel)

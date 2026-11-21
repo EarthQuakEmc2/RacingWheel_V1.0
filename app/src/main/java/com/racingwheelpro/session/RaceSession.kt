@@ -103,6 +103,9 @@ class RaceSession(private val context: Context) {
 
     var imageRect: ImgRect = ImgRect.EMPTY
 
+    /** Extra pixels around a hotspot. The tablet layout raises this so thumbs land. */
+    var fingertipSlopPx: Float = 22f
+
     private val smoother = Smoother()
     private var rawRad = 0f
     private var centerRad = 0f
@@ -484,7 +487,7 @@ class RaceSession(private val context: Context) {
                 }
                 val hit = Geometry.hit(
                     wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-                    angle, wheel.hitSlop,
+                    angle, wheel.hitSlop, fingertipSlopPx,
                 )
                 if (hit != null) {
                     val binding = bindingFor(hit.id) ?: return
@@ -614,7 +617,7 @@ class RaceSession(private val context: Context) {
     private fun editorPointer(phase: String, x: Float, y: Float) {
         val hit = Geometry.hit(
             wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-            0f, wheel.hitSlop, 12f,
+            0f, wheel.hitSlop, fingertipSlopPx.coerceAtLeast(12f),
         )
         val norm = wheelNorm(x, y, 0f)
         if (phase == "down") {
@@ -954,8 +957,8 @@ class RaceSession(private val context: Context) {
 
     /** Fingertip slop, in image pixels, so a notch matches the button's hit circle. */
     private fun cutoutExtraPx(): Float {
-        if (imageRect.width < 2f) return 22f
-        return 22f * wheel.imageWidth / imageRect.width
+        if (imageRect.width < 2f) return fingertipSlopPx
+        return fingertipSlopPx * wheel.imageWidth / imageRect.width
     }
 
     private fun tuneFor(side: ShifterZones.Side): ShifterTune =

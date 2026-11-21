@@ -28,8 +28,8 @@ android {
         applicationId = "site.myracingwheel.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.5.1"
+        versionCode = 8
+        versionName = "0.5.1-tablet"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
         buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
