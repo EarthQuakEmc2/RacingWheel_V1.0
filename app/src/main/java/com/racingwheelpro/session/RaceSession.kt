@@ -253,6 +253,7 @@ class RaceSession(private val context: Context) {
         main.removeCallbacksAndMessages(null)
         sensor.stop()
         link.stop()
+        gate.close()
     }
 
     fun connect(host: DiscoveredHost) {
