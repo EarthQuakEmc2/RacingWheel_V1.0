@@ -10,6 +10,11 @@
   "imageHeight": 637,
   "blurb": "SF1000. N, P, K1, K2, SHA, and the center manettino.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0265, "top": 0.0188, "right": 0.9827, "bottom": 0.9513},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.523},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.519}
+  },
   "outputButtons": 17,
   "controls": [
     {

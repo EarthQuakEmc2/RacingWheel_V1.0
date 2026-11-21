@@ -12,7 +12,7 @@ The promotional site lives in [`website/`](website/). Its canonical address is <
 
 ## Free and Premium
 
-Version 0.5.0 keeps every driving feature in the free app and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
+Version 0.5.1 keeps every driving feature in the free app and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
 
 The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. One free wheel, the KS, draws the animated dial pointer so the knob feature can be tried.
 
@@ -44,7 +44,11 @@ These are rendered previews of the app chrome, drawn from the same wheel images 
 
 | Paddle zones | Pedal edge inset |
 | --- | --- |
-| ![Drive screen with shift-up and shift-down rectangles on the KS wheel](docs/screenshots/drive-shifters.jpg) | ![Pedal setup with independent edge sliders](docs/screenshots/setup-pedals.jpg) |
+| ![Drive screen with shift zones notched around buttons on the KS wheel](docs/screenshots/drive-shifters.jpg) | ![Pedal setup with independent edge sliders](docs/screenshots/setup-pedals.jpg) |
+
+| SF1000 paddles | Edit tab |
+| --- | --- |
+| ![SF1000 with shifter zones and button notches](docs/screenshots/drive-shifters-sf1000.jpg) | ![Editor with paddle sliders and drag handles](docs/screenshots/editor-shifters.jpg) |
 
 Hotspot rings on the KS and GS templates:
 
@@ -57,7 +61,7 @@ Hotspot rings on the KS and GS templates:
 - A layout editor. Drag a hotspot, nudge it, resize it, add a button or knob, delete one, save the layout on the phone, copy the JSON, or reset to the built-in map. The drive screen can draw the same rings.
 - Steering from the game-rotation sensor, the accelerometer, or a finger drag when the phone has no usable sensor. Range, sensitivity, dead zone, linearity, smoothing, invert, center calibration, and a haptic tick at full lock.
 - Separate throttle and brake, with position or relative travel, curves, dead zones, outer clamp, invert, instant or fade release, an exclusive-axis option, an optional clutch strip, and a per-pedal inset from the screen edge.
-- Gearshift zones on every wheel. The left rectangle is shift up and the right rectangle is shift down. Each one is 27% of the wheel width by 47% of the wheel height, centered on the paddles, and it rotates with the picture. A touch there does not press a button underneath. The overlay can be hidden.
+- Gearshift zones on every wheel. The left rectangle is shift up and the right rectangle is shift down. Each one starts at 20% of the wheel width and 32% of its height, sitting on that side's grip and paddle. A button circle is cut out of the zone, so the touch goes to the button. The editor resizes each side. The zones rotate with the picture. The overlay can be hidden.
 - Programmable buttons. Each hotspot maps to virtual button 1–32, as momentary, toggle, or long-press. A rotary pulses a left/right pair and also sends a position. Paddles can also be mapped onto a button number.
 - Profiles per wheel and per game. The volume keys can be bound to buttons.
 - Wi-Fi discovery, a manual IP, or USB through `adb reverse`. The drive screen shows link state, latency, and packet rate.
@@ -288,9 +292,11 @@ Each hotspot has a virtual button number from 1 to 32, or none. Momentary holds 
 
 ### Shifter zones
 
-Every wheel reserves a rectangle on each side for the paddle shifters. The left rectangle is shift up. The right rectangle is shift down. Each one is 27% of the wheel's width, measured inward from that edge, and 47% of the wheel's height, centered on the grip line where the paddles are drawn. Those three fractions are `WIDTH_FRACTION`, `HEIGHT_FRACTION`, and `CENTER_Y_FRACTION` in `ShifterZones.kt`.
+Every wheel reserves a rectangle on each side for the paddle shifters. The left rectangle is shift up. The right rectangle is shift down. The default is 20% of that wheel's width, measured inward from the wheel plate, and 32% of the plate's height, centered on the grip. Templates whose art sits higher or lower carry their own center. Those defaults are `wheelBounds` and `shifters` in the template JSON. `WIDTH_FRACTION` and `HEIGHT_FRACTION` in `ShifterZones.kt` are the fallback.
 
-The rectangles are part of the wheel picture. Steering rotates them with the art, and the hit test unwinds that rotation, so a tap lands on the paddle that is drawn under the finger. Once the finger is down, the shift stays held while the wheel turns, the same way a face button stays held. A button or knob whose center sits inside a rectangle is not pressable on the drive screen, so the paddles and the programmable buttons do not share that area. The layout editor can still grab that control and move it.
+The rectangles are part of the wheel picture. Steering rotates them with the art, and the hit test unwinds that rotation, so a tap lands on the paddle that is drawn under the finger. Once the finger is down, the shift stays held while the wheel turns, the same way a face button stays held. Where the rectangle crosses a button or a knob, that circle plus a small margin is cut out of the zone. The overlay shows the notch, and a touch in the notch presses the button. Moving a hotspot or resizing a paddle recomputes the cut-out.
+
+The layout editor resizes each paddle on its own. Drag the inner edge for width, the top or bottom edge for height, or the middle to slide it. The sliders do the same thing. **RESET PADDLES** restores this wheel's defaults. Width is 8–45% of the wheel, height is 16–65%, and the band stays on the plate. The sizes are stored in the profile.
 
 Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
 

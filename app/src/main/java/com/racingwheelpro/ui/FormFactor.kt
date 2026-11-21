@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.sp
 /**
  * A 6 by 4.5 inch landscape panel is 960 by 720 dp: 4:3, about 7.5 inches on the diagonal.
  * Phone landscape is much shorter and wider, so only that squarer window uses the tablet chrome.
- * Shifter zones stay 27% by 47% of the wheel picture. See [com.racingwheelpro.input.ShifterZones].
+ * Shifter zones keep the phone defaults and the editor resize. See [com.racingwheelpro.input.ShifterZones].
  */
 fun isTabletCanvas(width: Dp, height: Dp): Boolean {
     if (height < 560.dp || width < 720.dp) return false

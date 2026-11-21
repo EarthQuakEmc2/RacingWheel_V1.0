@@ -9,7 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Tablet layout for a 6 by 4.5 inch screen (4:3, about 7.5 inches). Pedal strips, navigation, the clutch bar, garage cards, and button hit slop grow for that canvas. Shifter zones stay 27% of the wheel width by 47% of its height. This branch is not merged to main. `versionName` is `0.5.0-tablet`.
+- Tablet layout for a 6 by 4.5 inch screen (4:3, about 7.5 inches). Pedal strips, navigation, the clutch bar, garage cards, and button hit slop grow for that canvas. Shifter zones keep the 0.5.1 defaults and the editor resize. This branch is not merged to main. `versionName` is `0.5.1-tablet`.
+
+## [0.5.1] - 2026-11-21
+
+Paddle zones can be resized, and they no longer cover a button.
+
+### Added
+
+- The edit tab resizes each shifter on its own. Width, height, and vertical position have sliders, and the zone itself has drag handles: the inner edge sets the width, the top and bottom edges set the height, and the middle slides the band. Reset paddles restores that wheel's default. The sizes are stored in the profile. Width is clamped to 8–45% of the wheel and height to 16–65%.
+- Default zones are 20% of the wheel width and 32% of its height, placed on the grip and the paddle. Each template carries its own vertical center when the art sits higher or lower, plus the wheel plate bounds so the band starts at the wheel rather than the transparent margin.
+
+### Changed
+
+- A button or knob circle, plus a small margin, is cut out of any shifter rectangle it crosses. The overlay draws the notch, including a half-circle when the control sits on the edge. A touch in the notch presses the button. The cut-out is recomputed as the zone or the hotspot moves, and it stays aligned while the wheel turns.
+- Android `versionCode` is 7, `versionName` is 0.5.1.
 
 ## [0.5.0] - 2026-11-21
 
@@ -112,7 +126,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.2.1...v0.3.0

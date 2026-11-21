@@ -10,6 +10,6 @@ What changes on that screen:
 - The top bar, the bottom bar, and the navigation targets are taller.
 - Face-button and editor hit slop grows to 28 dp.
 - The clutch strip, the setup list, the editor panel, and the garage cards are wider.
-- Shifter zones stay 27% of the wheel width by 47% of the wheel height, centered on the paddles. Left is still shift up and right is still shift down.
+- Shifter zones keep the phone rules: 20% of the wheel width, 32% of its height on the grip, notched around buttons, and resizable in the editor. Left is still shift up and right is still shift down.
 
-`versionName` is `0.5.0-tablet` and `versionCode` is 7, so a debug APK from this branch installs over the 0.5.0 phone build.
+`versionName` is `0.5.1-tablet` and `versionCode` is 8, so a debug APK from this branch installs over the 0.5.1 phone build.

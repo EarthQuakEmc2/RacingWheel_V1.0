@@ -31,6 +31,8 @@ import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.DiscoveredHost
 import com.racingwheelpro.model.Profile
 import com.racingwheelpro.model.Screen
+import com.racingwheelpro.model.ShifterSpec
+import com.racingwheelpro.model.ShifterTune
 import com.racingwheelpro.model.WheelTemplate
 import com.racingwheelpro.model.defaultProfile
 import com.racingwheelpro.net.LinkClient
@@ -84,6 +86,7 @@ class RaceSession(private val context: Context) {
     var showHotspots by mutableStateOf(false)
     var shiftUp by mutableStateOf(false)
     var shiftDown by mutableStateOf(false)
+    var selectedShifter by mutableStateOf<ShifterZones.Side?>(null)
     var layoutRevision by mutableIntStateOf(0)
     var selectedControl by mutableStateOf<String?>(null)
     var notice by mutableStateOf("")
@@ -115,6 +118,7 @@ class RaceSession(private val context: Context) {
     private val rotaryAccum = HashMap<Long, Float>()
     private val pedalFingers = HashMap<Long, PedalTouch>()
     private val shifterFingers = HashMap<Long, ShifterTouch>()
+    private var shifterDrag: ShifterDrag? = null
     private val toggled = HashSet<Int>()
     private val pulses = HashMap<Int, Long>()
     private val keyHeld = HashMap<Int, Int>()
@@ -368,6 +372,8 @@ class RaceSession(private val context: Context) {
             showShifterZones = profile.showShifterZones,
             gearUpButton = profile.gearUpButton,
             gearDownButton = profile.gearDownButton,
+            shiftUpTune = copyTune(profile.shiftUpTune),
+            shiftDownTune = copyTune(profile.shiftDownTune),
         )
         profiles = profiles + copy
         profile = copy
@@ -398,6 +404,27 @@ class RaceSession(private val context: Context) {
         profile.pedals.brakeInset = com.racingwheelpro.input.PedalInsets.DEFAULT
         profile.pedals.throttleInset = com.racingwheelpro.input.PedalInsets.DEFAULT
         touchProfile()
+    }
+
+    fun resolvedShifter(side: ShifterZones.Side): ShifterSpec {
+        val base = if (side == ShifterZones.Side.UP) wheel.shiftUp else wheel.shiftDown
+        val tune = if (side == ShifterZones.Side.UP) profile.shiftUpTune else profile.shiftDownTune
+        return ShifterZones.clamp(tune.resolve(base))
+    }
+
+    fun setShifter(side: ShifterZones.Side, spec: ShifterSpec) {
+        val clamped = ShifterZones.clamp(spec)
+        tuneFor(side).adopt(clamped)
+        selectedShifter = side
+        touchProfile()
+    }
+
+    fun resetShifters() {
+        profile.shiftUpTune.clear()
+        profile.shiftDownTune.clear()
+        selectedShifter = null
+        touchProfile()
+        notice = "Paddles reset for this wheel"
     }
 
     private val saveProfile = Runnable { profilesStore.save(profile) }
@@ -459,7 +486,7 @@ class RaceSession(private val context: Context) {
                     return
                 }
                 val hit = Geometry.hit(
-                    driveControls(), x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
+                    wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
                     angle, wheel.hitSlop, fingertipSlopPx,
                 )
                 if (hit != null) {
@@ -592,14 +619,40 @@ class RaceSession(private val context: Context) {
             wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
             0f, wheel.hitSlop, fingertipSlopPx.coerceAtLeast(12f),
         )
+        val norm = wheelNorm(x, y, 0f)
         if (phase == "down") {
-            selectedControl = hit?.id
-        } else if (phase == "move" && selectedControl != null) {
-            val (lx, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, 0f)
-            val nx = ((lx - imageRect.left) / imageRect.width).coerceIn(0.02f, 0.98f)
-            val ny = ((ly - imageRect.top) / imageRect.height).coerceIn(0.02f, 0.98f)
-            val c = wheel.controls.find { it.id == selectedControl } ?: return
-            replaceControl(c.copy(cx = nx, cy = ny))
+            if (hit != null) {
+                shifterDrag = null
+                selectedShifter = null
+                selectedControl = hit.id
+                return
+            }
+            val grab = if (norm == null) null else shifterGrab(norm.first, norm.second)
+            if (grab != null) {
+                shifterDrag = ShifterDrag(grab.first, grab.second, resolvedShifter(grab.first))
+                selectedShifter = grab.first
+                selectedControl = null
+                return
+            }
+            shifterDrag = null
+            selectedControl = null
+        } else if (phase == "move") {
+            val drag = shifterDrag
+            if (drag != null && norm != null) {
+                applyShifterDrag(drag, norm.first, norm.second)
+                return
+            }
+            if (selectedControl != null && norm != null) {
+                val c = wheel.controls.find { it.id == selectedControl } ?: return
+                replaceControl(
+                    c.copy(
+                        cx = norm.first.coerceIn(0.02f, 0.98f),
+                        cy = norm.second.coerceIn(0.02f, 0.98f),
+                    ),
+                )
+            }
+        } else if (phase == "up") {
+            shifterDrag = null
         }
     }
 
@@ -688,7 +741,6 @@ class RaceSession(private val context: Context) {
         var bestDist = Float.MAX_VALUE
         for (control in wheel.controls) {
             if (!control.isRotary) continue
-            if (ShifterZones.claims(control.cx, control.cy)) continue
             val limit = control.r * imageRect.width * 0.32f
             for ((side, delta) in listOf(-0.62f to -1, 0.62f to 1)) {
                 val tx = control.cx + side * control.r
@@ -879,16 +931,88 @@ class RaceSession(private val context: Context) {
      * unwound first, so the rectangle stays on the paddle art while it turns.
      */
     private fun shifterAt(x: Float, y: Float, angle: Float): ShifterZones.Side? {
+        val norm = wheelNorm(x, y, angle) ?: return null
+        val upZone = ShifterZones.place(ShifterZones.Side.UP, resolvedShifter(ShifterZones.Side.UP), wheel.bounds)
+        val downZone = ShifterZones.place(ShifterZones.Side.DOWN, resolvedShifter(ShifterZones.Side.DOWN), wheel.bounds)
+        return ShifterZones.hit(
+            norm.first,
+            norm.second,
+            upZone,
+            downZone,
+            wheel.controls,
+            wheel.imageWidth,
+            wheel.imageHeight,
+            wheel.hitSlop,
+            cutoutExtraPx(),
+        )
+    }
+
+    private fun wheelNorm(x: Float, y: Float, angle: Float): Pair<Float, Float>? {
         if (imageRect.width < 2f || imageRect.height < 2f) return null
         val (lx, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, angle)
         val nx = (lx - imageRect.left) / imageRect.width
         val ny = (ly - imageRect.top) / imageRect.height
-        return ShifterZones.hit(nx, ny)
+        return nx to ny
     }
 
-    /** Buttons whose centers sit in a paddle rectangle are not pressable while driving. */
-    private fun driveControls(): List<Control> =
-        wheel.controls.filter { !ShifterZones.claims(it.cx, it.cy) }
+    /** Fingertip slop, in image pixels, so a notch matches the button's hit circle. */
+    private fun cutoutExtraPx(): Float {
+        if (imageRect.width < 2f) return fingertipSlopPx
+        return fingertipSlopPx * wheel.imageWidth / imageRect.width
+    }
+
+    private fun tuneFor(side: ShifterZones.Side): ShifterTune =
+        if (side == ShifterZones.Side.UP) profile.shiftUpTune else profile.shiftDownTune
+
+    private fun shifterGrab(nx: Float, ny: Float): Pair<ShifterZones.Side, ShifterZones.Handle>? {
+        if (ShifterZones.inCutout(nx, ny, wheel.controls, wheel.imageWidth, wheel.imageHeight, wheel.hitSlop, cutoutExtraPx())) {
+            return null
+        }
+        val tx = 22f / imageRect.width
+        val ty = 22f / imageRect.height
+        for (side in listOf(ShifterZones.Side.UP, ShifterZones.Side.DOWN)) {
+            val zone = ShifterZones.place(side, resolvedShifter(side), wheel.bounds)
+            val handle = ShifterZones.handleAt(nx, ny, zone, tx, ty) ?: continue
+            return side to handle
+        }
+        return null
+    }
+
+    private fun applyShifterDrag(drag: ShifterDrag, nx: Float, ny: Float) {
+        val bounds = wheel.bounds
+        val start = drag.start
+        val zone = ShifterZones.place(drag.side, start, bounds)
+        val next = when (drag.handle) {
+            ShifterZones.Handle.INNER -> {
+                val width = if (drag.side == ShifterZones.Side.UP) {
+                    (nx - bounds.left) / bounds.width
+                } else {
+                    (bounds.right - nx) / bounds.width
+                }
+                start.copy(width = width)
+            }
+            ShifterZones.Handle.TOP -> {
+                val bottom = zone.bottom
+                val top = ny.coerceAtMost(bottom - bounds.height * ShifterZones.MIN_HEIGHT)
+                val height = (bottom - top) / bounds.height
+                val center = (((top + bottom) / 2f) - bounds.top) / bounds.height
+                start.copy(height = height, centerY = center)
+            }
+            ShifterZones.Handle.BOTTOM -> {
+                val top = zone.top
+                val bottom = ny.coerceAtLeast(top + bounds.height * ShifterZones.MIN_HEIGHT)
+                val height = (bottom - top) / bounds.height
+                val center = (((top + bottom) / 2f) - bounds.top) / bounds.height
+                start.copy(height = height, centerY = center)
+            }
+            ShifterZones.Handle.BODY -> {
+                val center = (ny - bounds.top) / bounds.height
+                start.copy(centerY = center)
+            }
+        }
+        tuneFor(drag.side).adopt(ShifterZones.clamp(next))
+        touchProfile()
+    }
 
     private fun syncShiftFlags() {
         shiftUp = shifterFingers.values.any { it.side == ShifterZones.Side.UP }
@@ -961,6 +1085,12 @@ class RaceSession(private val context: Context) {
     private class PedalTouch(val side: String, var raw: Float, var originY: Float)
 
     private class ShifterTouch(var x: Float, var y: Float, var side: ShifterZones.Side)
+
+    private class ShifterDrag(
+        val side: ShifterZones.Side,
+        val handle: ShifterZones.Handle,
+        val start: ShifterSpec,
+    )
 }
 
 private fun copySteering(s: com.racingwheelpro.model.SteeringSetup) = com.racingwheelpro.model.SteeringSetup(
@@ -974,6 +1104,8 @@ private fun copyPedals(p: com.racingwheelpro.model.PedalSetup) = com.racingwheel
     p.release, p.fadePerSec, p.relativeTravelMm, p.zoneFraction, p.clutchEnabled, p.exclusive,
     p.brakeInset, p.throttleInset,
 )
+
+private fun copyTune(t: ShifterTune) = ShifterTune(t.width, t.height, t.centerY)
 
 private fun copyBinding(b: Binding) = Binding(
     b.controlId, b.mode, b.button, b.longButton, b.incButton, b.decButton, b.label, b.color,

@@ -5,7 +5,10 @@ import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.PedalSetup
 import com.racingwheelpro.model.Profile
+import com.racingwheelpro.model.ShifterSpec
+import com.racingwheelpro.model.ShifterTune
 import com.racingwheelpro.model.SteeringSetup
+import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelTemplate
 import org.json.JSONArray
 import org.json.JSONObject
@@ -80,6 +83,7 @@ class WheelLibrary(private val context: Context) {
                     ),
                 )
             }
+            val shifters = o.optJSONObject("shifters")
             return WheelTemplate(
                 id = o.getString("id"),
                 name = o.optString("name", o.getString("id")),
@@ -92,6 +96,28 @@ class WheelLibrary(private val context: Context) {
                 hitSlop = o.optDouble("hitSlop", 0.008).toFloat(),
                 controls = controls,
                 manufacturer = manufacturerOf(o),
+                bounds = boundsOf(o.optJSONObject("wheelBounds")),
+                shiftUp = specOf(shifters?.optJSONObject("up")),
+                shiftDown = specOf(shifters?.optJSONObject("down")),
+            )
+        }
+
+        fun boundsOf(o: JSONObject?): WheelBounds {
+            if (o == null) return WheelBounds.FULL
+            return WheelBounds(
+                left = o.optDouble("left", 0.0).toFloat(),
+                top = o.optDouble("top", 0.0).toFloat(),
+                right = o.optDouble("right", 1.0).toFloat(),
+                bottom = o.optDouble("bottom", 1.0).toFloat(),
+            )
+        }
+
+        fun specOf(o: JSONObject?): ShifterSpec {
+            if (o == null) return ShifterSpec.DEFAULT
+            return ShifterSpec(
+                width = o.optDouble("width", ShifterSpec.DEFAULT.width.toDouble()).toFloat(),
+                height = o.optDouble("height", ShifterSpec.DEFAULT.height.toDouble()).toFloat(),
+                centerY = o.optDouble("centerY", ShifterSpec.DEFAULT.centerY.toDouble()).toFloat(),
             )
         }
 
@@ -121,6 +147,18 @@ class WheelLibrary(private val context: Context) {
                 }
                 controls.put(o)
             }
+            val bounds = JSONObject()
+                .put("left", t.bounds.left.toDouble())
+                .put("top", t.bounds.top.toDouble())
+                .put("right", t.bounds.right.toDouble())
+                .put("bottom", t.bounds.bottom.toDouble())
+            fun spec(s: ShifterSpec) = JSONObject()
+                .put("width", s.width.toDouble())
+                .put("height", s.height.toDouble())
+                .put("centerY", s.centerY.toDouble())
+            val shifters = JSONObject()
+                .put("up", spec(t.shiftUp))
+                .put("down", spec(t.shiftDown))
             return JSONObject()
                 .put("schema", "racing-wheel-pro.template/v1")
                 .put("id", t.id)
@@ -133,6 +171,8 @@ class WheelLibrary(private val context: Context) {
                 .put("imageHeight", t.imageHeight)
                 .put("blurb", t.blurb)
                 .put("hitSlop", t.hitSlop.toDouble())
+                .put("wheelBounds", bounds)
+                .put("shifters", shifters)
                 .put("controls", controls)
                 .toString(2)
         }
@@ -239,6 +279,8 @@ class ProfileStore(private val context: Context) {
             showShifterZones = o.optBoolean("showShifterZones", true),
             gearUpButton = o.optInt("gearUpButton", 0),
             gearDownButton = o.optInt("gearDownButton", 0),
+            shiftUpTune = tuneOf(o.optJSONObject("shiftUp")),
+            shiftDownTune = tuneOf(o.optJSONObject("shiftDown")),
         )
     }
 
@@ -294,7 +336,7 @@ class ProfileStore(private val context: Context) {
                     .put("color", b.color),
             )
         }
-        return JSONObject()
+        val root = JSONObject()
             .put("id", profile.id)
             .put("name", profile.name)
             .put("game", profile.game)
@@ -308,6 +350,26 @@ class ProfileStore(private val context: Context) {
             .put("steering", steering)
             .put("pedals", pedals)
             .put("bindings", bindings)
-            .toString(2)
+        tuneJson(profile.shiftUpTune)?.let { root.put("shiftUp", it) }
+        tuneJson(profile.shiftDownTune)?.let { root.put("shiftDown", it) }
+        return root.toString(2)
+    }
+
+    private fun tuneOf(o: JSONObject?): ShifterTune {
+        if (o == null) return ShifterTune()
+        return ShifterTune(
+            width = if (o.has("width")) o.getDouble("width").toFloat() else null,
+            height = if (o.has("height")) o.getDouble("height").toFloat() else null,
+            centerY = if (o.has("centerY")) o.getDouble("centerY").toFloat() else null,
+        )
+    }
+
+    private fun tuneJson(tune: ShifterTune): JSONObject? {
+        if (tune.width == null && tune.height == null && tune.centerY == null) return null
+        val o = JSONObject()
+        tune.width?.let { o.put("width", it.toDouble()) }
+        tune.height?.let { o.put("height", it.toDouble()) }
+        tune.centerY?.let { o.put("centerY", it.toDouble()) }
+        return o
     }
 }

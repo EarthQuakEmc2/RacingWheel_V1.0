@@ -12,6 +12,8 @@ import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.ui.isTabletCanvas
 import androidx.compose.ui.unit.dp
 import com.racingwheelpro.model.Control
+import com.racingwheelpro.model.ShifterSpec
+import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
 import com.racingwheelpro.proto.FrameBuffer
@@ -146,8 +148,58 @@ class CoreTest {
         assertTrue(isTabletCanvas(960.dp, 720.dp))
         assertFalse(isTabletCanvas(914.dp, 411.dp))
         assertFalse(isTabletCanvas(800.dp, 800.dp))
-        assertEquals(0.27f, ShifterZones.WIDTH_FRACTION, 0.0001f)
-        assertEquals(0.47f, ShifterZones.HEIGHT_FRACTION, 0.0001f)
+        assertEquals(0.20f, ShifterZones.WIDTH_FRACTION, 0.0001f)
+        assertEquals(0.32f, ShifterZones.HEIGHT_FRACTION, 0.0001f)
+    }
+
+    @Test
+    fun buttonCircleIsCutOutOfTheShifterZone() {
+        val button = Control("edge", "E", "button", "circle", 0.22f, 0.50f, 0.04f, "#FFFFFF")
+        val up = ShifterZones.up
+        val down = ShifterZones.down
+        // Center of the button is outside the 20% rectangle, but the circle crosses the edge.
+        assertFalse(up.contains(button.cx, button.cy))
+        assertNull(
+            ShifterZones.hit(0.19f, 0.50f, up, down, listOf(button), 100, 100, 0f, 0f),
+        )
+        assertEquals(
+            ShifterZones.Side.UP,
+            ShifterZones.hit(0.08f, 0.50f, up, down, listOf(button), 100, 100, 0f, 0f),
+        )
+        // A button fully inside the rectangle is a hole, not a shift.
+        val inside = button.copy(cx = 0.10f)
+        assertNull(ShifterZones.hit(inside.cx, inside.cy, up, down, listOf(inside), 100, 100, 0f, 0f))
+    }
+
+    @Test
+    fun eachSideUsesItsOwnSizeOnTheWheelPlate() {
+        val bounds = WheelBounds(0.10f, 0.20f, 0.90f, 0.80f)
+        val up = ShifterZones.place(ShifterZones.Side.UP, ShifterSpec(0.20f, 0.32f, 0.44f), bounds)
+        val down = ShifterZones.place(ShifterZones.Side.DOWN, ShifterSpec(0.20f, 0.40f, 0.62f), bounds)
+        assertEquals(0.10f, up.left, 0.001f)
+        assertEquals(0.10f + 0.20f * bounds.width, up.right, 0.001f)
+        assertEquals(0.90f, down.right, 0.001f)
+        assertTrue(down.top > up.top)
+        val clamped = ShifterZones.clamp(ShifterSpec(0.9f, 0.05f, 0.01f))
+        assertEquals(ShifterZones.MAX_WIDTH, clamped.width, 0.001f)
+        assertEquals(ShifterZones.MIN_HEIGHT, clamped.height, 0.001f)
+        assertEquals(ShifterZones.MIN_HEIGHT / 2f, clamped.centerY, 0.001f)
+        assertEquals(0.20f, ShifterZones.WIDTH_FRACTION, 0.001f)
+        assertTrue(ShifterZones.HEIGHT_FRACTION < 0.47f)
+    }
+
+    @Test
+    fun templateShiftersAreTwentyPercentAndFollowTheArt() {
+        val templates = loadAssetTemplates().associateBy { it.id }
+        val ks = templates.getValue("moza_ks")
+        val cup = templates.getValue("porsche_gt3_cup")
+        val fsr = templates.getValue("moza_fsr")
+        assertEquals(0.20f, ks.shiftUp.width, 0.001f)
+        assertEquals(0.32f, ks.shiftUp.height, 0.001f)
+        assertEquals(0.20f, ks.shiftDown.width, 0.001f)
+        assertTrue(ks.bounds.left > 0.05f)
+        assertTrue(fsr.bounds.left > ks.bounds.left)
+        assertTrue(cup.shiftUp.centerY < ks.shiftUp.centerY - 0.04f)
     }
 
     @Test

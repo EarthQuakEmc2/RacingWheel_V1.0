@@ -27,6 +27,60 @@ data class Control(
     val isRotary: Boolean get() = kind == "rotary"
 }
 
+/** Opaque wheel plate inside the picture, as fractions of the image. */
+data class WheelBounds(
+    val left: Float = 0f,
+    val top: Float = 0f,
+    val right: Float = 1f,
+    val bottom: Float = 1f,
+) {
+    val width: Float get() = (right - left).coerceAtLeast(0.05f)
+    val height: Float get() = (bottom - top).coerceAtLeast(0.05f)
+
+    companion object {
+        val FULL = WheelBounds()
+    }
+}
+
+/**
+ * One paddle, measured on the wheel plate.
+ * [width] and [height] are fractions of [WheelBounds]. [centerY] is 0 at the top of the plate.
+ */
+data class ShifterSpec(
+    val width: Float = 0.20f,
+    val height: Float = 0.32f,
+    val centerY: Float = 0.50f,
+) {
+    companion object {
+        val DEFAULT = ShifterSpec()
+    }
+}
+
+/** Profile override. Null fields keep the wheel template's default. */
+class ShifterTune(
+    var width: Float? = null,
+    var height: Float? = null,
+    var centerY: Float? = null,
+) {
+    fun resolve(base: ShifterSpec): ShifterSpec = ShifterSpec(
+        width = width ?: base.width,
+        height = height ?: base.height,
+        centerY = centerY ?: base.centerY,
+    )
+
+    fun clear() {
+        width = null
+        height = null
+        centerY = null
+    }
+
+    fun adopt(spec: ShifterSpec) {
+        width = spec.width
+        height = spec.height
+        centerY = spec.centerY
+    }
+}
+
 data class WheelTemplate(
     val id: String,
     val name: String,
@@ -40,6 +94,9 @@ data class WheelTemplate(
     val controls: List<Control>,
     /** Car brand, or MOZA. Blank templates fall back to the maker name. */
     val manufacturer: String = "",
+    val bounds: WheelBounds = WheelBounds.FULL,
+    val shiftUp: ShifterSpec = ShifterSpec.DEFAULT,
+    val shiftDown: ShifterSpec = ShifterSpec.DEFAULT,
 ) {
     val faceButtons: Int get() = controls.count { !it.isRotary }
     val rotaries: Int get() = controls.count { it.isRotary }
@@ -151,6 +208,8 @@ class Profile(
     var gearUpButton: Int = 0,
     /** Virtual button for the right paddle, or 0 to leave it on the gear channel only. */
     var gearDownButton: Int = 0,
+    val shiftUpTune: ShifterTune = ShifterTune(),
+    val shiftDownTune: ShifterTune = ShifterTune(),
 )
 
 data class DiscoveredHost(

@@ -10,6 +10,11 @@
   "imageHeight": 455,
   "blurb": "Cup wheel. HS, RAD, DRK, PIT, and the two glowing encoders.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0639, "top": 0.1560, "right": 0.9361, "bottom": 0.9495},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.436},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.442}
+  },
   "outputButtons": 14,
   "controls": [
     {

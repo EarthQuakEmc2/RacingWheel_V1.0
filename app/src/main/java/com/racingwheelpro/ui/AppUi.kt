@@ -51,6 +51,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -72,6 +73,7 @@ import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
+import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.Screen
 import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
@@ -392,10 +394,14 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val selected = session.selectedControl
     val overlay = session.gate.knobOverlay(wheel.id)
     val knobRevision = session.knobRevision
-    val showZones = session.profile.showShifterZones
+    val showZones = editor || session.profile.showShifterZones
     val shiftUp = session.shiftUp
     val shiftDown = session.shiftDown
     val zoneLabelScale = LocalChrome.current.zoneLabelScale
+    val layoutTick = session.layoutRevision
+    val upSpec = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
+    val downSpec = session.resolvedShifter(ShifterZones.Side.DOWN)
+    val selectedShifter = session.selectedShifter
     Box(
         modifier.pointerInput(editor) {
             awaitPointerEventScope {
@@ -474,8 +480,17 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     strokeWidth = 4f,
                 )
                 if (showZones) {
-                    drawShifterZone(ShifterZones.up, rect, shiftUp, SignalCyan, "UP", density * zoneLabelScale, labelPaint)
-                    drawShifterZone(ShifterZones.down, rect, shiftDown, SignalYellow, "DN", density * zoneLabelScale, labelPaint)
+                    val extra = session.fingertipSlopPx * wheel.imageWidth / rect.width.coerceAtLeast(1f)
+                    drawShifterZone(
+                        ShifterZones.place(ShifterZones.Side.UP, upSpec, wheel.bounds),
+                        rect, wheel, extra, shiftUp || selectedShifter == ShifterZones.Side.UP,
+                        SignalCyan, "UP", density * zoneLabelScale, labelPaint, editor,
+                    )
+                    drawShifterZone(
+                        ShifterZones.place(ShifterZones.Side.DOWN, downSpec, wheel.bounds),
+                        rect, wheel, extra, shiftDown || selectedShifter == ShifterZones.Side.DOWN,
+                        SignalYellow, "DN", density * zoneLabelScale, labelPaint, editor,
+                    )
                 }
             }
         }
@@ -485,34 +500,53 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
 private fun DrawScope.drawShifterZone(
     zone: ShifterZones.Zone,
     rect: com.racingwheelpro.input.ImgRect,
+    wheel: com.racingwheelpro.model.WheelTemplate,
+    extraPx: Float,
     held: Boolean,
     color: Color,
     label: String,
     density: Float,
     labelPaint: Paint,
+    handles: Boolean,
 ) {
     val x = rect.left + zone.left * rect.width
     val y = rect.top + zone.top * rect.height
     val w = (zone.right - zone.left) * rect.width
     val h = (zone.bottom - zone.top) * rect.height
-    val corner = androidx.compose.ui.geometry.CornerRadius(8f, 8f)
-    drawRoundRect(
-        color = color.copy(alpha = if (held) 0.34f else 0.13f),
-        topLeft = Offset(x, y),
-        size = androidx.compose.ui.geometry.Size(w, h),
-        cornerRadius = corner,
-    )
-    drawRoundRect(
-        color = color.copy(alpha = if (held) 0.92f else 0.42f),
-        topLeft = Offset(x, y),
-        size = androidx.compose.ui.geometry.Size(w, h),
-        cornerRadius = corner,
-        style = Stroke(width = if (held) 3.5f else 1.6f),
-    )
+    val path = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRoundRect(
+            androidx.compose.ui.geometry.RoundRect(
+                x, y, x + w, y + h,
+                androidx.compose.ui.geometry.CornerRadius(8f, 8f),
+            ),
+        )
+        val scale = rect.width / wheel.imageWidth.coerceAtLeast(1)
+        for (control in wheel.controls) {
+            val rad = ShifterZones.cutoutRadiusPx(control, wheel.imageWidth, wheel.hitSlop, extraPx) * scale
+            val px = rect.left + control.cx * rect.width
+            val py = rect.top + control.cy * rect.height
+            addOval(androidx.compose.ui.geometry.Rect(px - rad, py - rad, px + rad, py + rad))
+        }
+    }
+    drawPath(path, color.copy(alpha = if (held) 0.34f else 0.16f))
+    drawPath(path, color.copy(alpha = if (held) 0.95f else 0.55f), style = Stroke(width = if (held) 3.5f else 1.8f))
     labelPaint.color = android.graphics.Color.WHITE
     labelPaint.textSize = 13f * density
     labelPaint.textAlign = Paint.Align.CENTER
     drawContext.canvas.nativeCanvas.drawText(label, x + w / 2f, y + h / 2f + 4f * density, labelPaint)
+    if (handles) {
+        val innerX = if (zone.side == ShifterZones.Side.UP) x + w else x
+        val spots = listOf(
+            Offset(innerX, y + h / 2f),
+            Offset(x + w / 2f, y),
+            Offset(x + w / 2f, y + h),
+        )
+        for (spot in spots) {
+            drawCircle(Color.Black.copy(alpha = 0.65f), 7f, spot)
+            drawCircle(color, 5.5f, spot)
+        }
+    }
 }
 
 private fun DrawScope.drawKnobPointer(
@@ -707,8 +741,8 @@ private fun SetupScreen(session: RaceSession) {
                 "buttons" -> {
                     SectionTitle("Shifter zones")
                     Text(
-                        "Left side of the wheel is shift up. Right side is shift down. Each zone is 27% of the wheel width by 47% of its height, over the paddles. " +
-                            "A touch there shifts instead of pressing a button, and it keeps shifting while the wheel turns.",
+                        "Left side of the wheel is shift up. Right side is shift down. Each zone starts at 20% of the wheel width over the grip and the paddle. " +
+                            "A button circle is cut out of the zone. Resize the paddles in the editor. A held shift stays down while the wheel turns.",
                         color = Muted,
                         fontSize = 12.sp,
                     )
@@ -825,13 +859,55 @@ private fun BindingRow(label: String, rotary: Boolean, binding: Binding, bump: (
 }
 
 @Composable
+private fun ShifterEditor(session: RaceSession, layoutTick: Int) {
+    val up = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
+    val down = session.resolvedShifter(ShifterZones.Side.DOWN)
+    Text("SHIFTERS", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.1.sp, fontWeight = FontWeight.SemiBold)
+    Text(
+        "Left is shift up, right is shift down. Drag an edge, or use the sliders. A button keeps its circle.",
+        color = Muted,
+        fontSize = 12.sp,
+    )
+    ShifterSliders("UP", up, session.selectedShifter == ShifterZones.Side.UP) { next ->
+        session.setShifter(ShifterZones.Side.UP, next)
+    }
+    ShifterSliders("DN", down, session.selectedShifter == ShifterZones.Side.DOWN) { next ->
+        session.setShifter(ShifterZones.Side.DOWN, next)
+    }
+    ActionChip("RESET PADDLES") { session.resetShifters() }
+    Spacer(Modifier.height(8.dp))
+}
+
+@Composable
+private fun ShifterSliders(
+    title: String,
+    spec: ShifterSpec,
+    selected: Boolean,
+    onChange: (ShifterSpec) -> Unit,
+) {
+    Text(title, color = if (selected) SignalYellow else Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+    SliderRow("Width", spec.width, ShifterZones.MIN_WIDTH..ShifterZones.MAX_WIDTH, { "%.0f%% of wheel".format(it * 100) }) {
+        onChange(spec.copy(width = it))
+    }
+    SliderRow("Height", spec.height, ShifterZones.MIN_HEIGHT..ShifterZones.MAX_HEIGHT, { "%.0f%% of wheel".format(it * 100) }) {
+        onChange(spec.copy(height = it))
+    }
+    SliderRow("Vertical center", spec.centerY, 0.16f..0.84f, { "%.0f%%".format(it * 100) }) {
+        onChange(spec.copy(centerY = it))
+    }
+}
+
+@Composable
 private fun EditorScreen(session: RaceSession) {
+    val layoutTick = session.layoutRevision
     Row(Modifier.fillMaxSize()) {
         WheelFace(session, editor = true, modifier = Modifier.weight(1f).fillMaxHeight())
         val chrome = LocalChrome.current
         Column(Modifier.width(chrome.editorPanel).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
             Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
+            Spacer(Modifier.height(8.dp))
+            ShifterEditor(session, layoutTick)
             Spacer(Modifier.height(8.dp))
             Row(Modifier.horizontalScroll(rememberScrollState())) {
                 ActionChip("NUDGE") {}

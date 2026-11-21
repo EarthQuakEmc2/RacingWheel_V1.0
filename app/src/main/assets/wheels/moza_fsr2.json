@@ -10,6 +10,11 @@
   "imageHeight": 437,
   "blurb": "Formula wheel with a wide dash screen and five face rotaries.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0676, "top": 0.1007, "right": 0.9114, "bottom": 0.8902},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.517},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.517}
+  },
   "outputButtons": 19,
   "controls": [
     {

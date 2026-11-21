@@ -10,6 +10,11 @@
   "imageHeight": 337,
   "blurb": "488 GT3. Pit, flash, drink, washer, MIX and MAP.",
   "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0198, "top": 0.0890, "right": 0.9856, "bottom": 0.9703},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.488},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.488}
+  },
   "outputButtons": 14,
   "controls": [
     {
