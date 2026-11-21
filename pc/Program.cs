@@ -84,6 +84,11 @@ internal static class Program
             Console.Error.WriteLine("self-test: lap cut");
             return 1;
         }
+        if (AcRaceIni.RoomFor("Official Monza #1", "192.168.1.10", 9600) != "OFFICIAL-MONZA-1")
+        {
+            Console.Error.WriteLine("self-test: voice room");
+            return 1;
+        }
         Console.WriteLine("self-test ok");
         return 0;
     }
@@ -193,6 +198,7 @@ internal sealed class Receiver : IDisposable
     private LocalUi? _ui;
     private bool _acOpen;
     private DateTime _acSeen = DateTime.MinValue;
+    private string _acPlayer = "";
     private string _uiUrl = "";
 
     public Receiver(Options opt)
@@ -342,6 +348,7 @@ internal sealed class Receiver : IDisposable
                 using var stream = client.GetStream();
                 stream.ReadTimeout = 200;
                 var buffer = new List<byte>(256);
+                var lastServerPush = DateTime.MinValue;
                 var tmp = new byte[1024];
                 while (_run && client.Connected)
                 {
@@ -370,6 +377,14 @@ internal sealed class Receiver : IDisposable
                             var pong = Packets.Pong(t, (uint)Environment.TickCount);
                             stream.Write(pong);
                         }
+                    }
+                    if ((DateTime.UtcNow - lastServerPush).TotalSeconds >= 2)
+                    {
+                        lastServerPush = DateTime.UtcNow;
+                        string player;
+                        lock (_gate) player = _acPlayer;
+                        try { stream.Write(AcRaceIni.Read(player).ToFrame()); }
+                        catch (IOException) { break; }
                     }
                 }
             }
@@ -501,10 +516,12 @@ internal sealed class Receiver : IDisposable
             if (ac.TryRead(out var snap) && !string.IsNullOrWhiteSpace(snap.Track))
             {
                 _store.OnAc(snap);
+                var player = snap.PlayerName ?? "";
                 lock (_gate)
                 {
                     _acOpen = true;
                     _acSeen = DateTime.UtcNow;
+                    _acPlayer = player;
                 }
             }
             else if ((DateTime.UtcNow - _acSeen).TotalSeconds > 2)

@@ -320,6 +320,22 @@ class CoreTest {
     }
 
     @Test
+    fun templateJsonKeepsARadioHotspot() {
+        val raw = """
+            {"id":"sample","name":"Sample","maker":"MOZA Racing","style":"gt","image":"x.png",
+             "imageWidth":100,"imageHeight":80,"controls":[
+               {"id":"ptt","label":"PTT","kind":"ptt","cx":0.5,"cy":0.8,"r":0.034,"color":"#E10600"}
+             ]}
+        """.trimIndent()
+        val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(WheelLibrary.parseTemplate(raw)))
+        val radio = again.controls.single()
+        assertEquals("ptt", radio.kind)
+        assertEquals("PTT", radio.label)
+        assertEquals(0.8f, radio.cy, 0.001f)
+        assertFalse(radio.isRotary)
+    }
+
+    @Test
     fun templateJsonRoundTripsKnobCalibration() {
         val raw = """
             {"id":"sample","name":"Sample","maker":"MOZA Racing","style":"gt","image":"x.png",

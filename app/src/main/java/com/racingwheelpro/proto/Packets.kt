@@ -32,7 +32,8 @@ import java.nio.charset.StandardCharsets
  * Rumble (PC -> phone UDP source): "RWPR", large u8, small u8.
  * TCP frames: u8 type, u16 length, payload.
  *   1 HELLO (utf-8 json), 2 STATE (the 36-byte packet), 3 PING (u32 time),
- *   4 PONG (u32 echoed time, u32 server time), 5 BYE.
+ *   4 PONG (u32 echoed time, u32 server time), 5 BYE,
+ *   6 SERVER (utf-8 json: Assetto Corsa multiplayer name, ip, port, player).
  */
 object Proto {
     const val VERSION = 1
@@ -50,6 +51,9 @@ object Proto {
     const val TCP_PING = 3
     const val TCP_PONG = 4
     const val TCP_BYE = 5
+
+    /** PC -> phone. The Assetto Corsa server the receiver can see. */
+    const val TCP_SERVER = 6
 
     const val CAP_VIGEM = 1
     const val CAP_VJOY = 2

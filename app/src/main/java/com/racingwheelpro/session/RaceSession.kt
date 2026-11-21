@@ -39,6 +39,8 @@ import com.racingwheelpro.net.LinkClient
 import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
 import com.racingwheelpro.proto.StatePacket
+import com.racingwheelpro.voice.PTT_KIND
+import com.racingwheelpro.voice.createVoiceBridge
 import org.json.JSONObject
 import java.io.File
 import kotlin.math.abs
@@ -115,6 +117,7 @@ class RaceSession(private val context: Context) {
     private val rotaryAccum = HashMap<Long, Float>()
     private val pedalFingers = HashMap<Long, PedalTouch>()
     private val shifterFingers = HashMap<Long, ShifterTouch>()
+    private val pttFingers = HashMap<Long, String>()
     private var shifterDrag: ShifterDrag? = null
     private val toggled = HashSet<Int>()
     private val pulses = HashMap<Int, Long>()
@@ -154,6 +157,8 @@ class RaceSession(private val context: Context) {
         },
     )
 
+    val voice = createVoiceBridge()
+
     private val link = LinkClient(
         context = context,
         main = main,
@@ -180,6 +185,7 @@ class RaceSession(private val context: Context) {
                 buzz((10 + large / 20).toLong())
             }
         },
+        onServer = { voice.onServerFrame(it) },
     )
 
     private val frame = object : Runnable {
@@ -212,6 +218,8 @@ class RaceSession(private val context: Context) {
     fun start() {
         if (running) return
         running = true
+        voice.attach(context)
+        voice.start()
         gate.addListener { main.post { applyEntitlement() } }
         val loaded = library.load()
         templates = loaded
@@ -225,7 +233,7 @@ class RaceSession(private val context: Context) {
         val initialWheel = loaded.find { it.id == active?.wheelId }
             ?: loaded.firstOrNull { gate.wheelUnlocked(it.id) }
             ?: loaded.first()
-        wheel = initialWheel
+        wheel = stage(initialWheel)
         profile = active ?: defaultProfile(initialWheel).also {
             if (genericNames) it.name = displayName(initialWheel)
             profiles = profiles + it
@@ -257,6 +265,7 @@ class RaceSession(private val context: Context) {
 
     fun stop() {
         running = false
+        voice.stop()
         inputLog.stop()
         logRevision++
         main.removeCallbacksAndMessages(null)
@@ -305,7 +314,7 @@ class RaceSession(private val context: Context) {
             return
         }
         profile = next
-        templates.find { it.id == next.wheelId }?.let { wheel = it }
+        templates.find { it.id == next.wheelId }?.let { wheel = stage(it) }
         ensureBindings()
         syncKnobBytes()
         profilesStore.setActive(id)
@@ -386,7 +395,7 @@ class RaceSession(private val context: Context) {
         profilesStore.delete(profile.id)
         profiles = profiles.filter { it.id != profile.id }
         profile = profiles.first()
-        templates.find { it.id == profile.wheelId }?.let { wheel = it }
+        templates.find { it.id == profile.wheelId }?.let { wheel = stage(it) }
         ensureBindings()
         profilesStore.setActive(profile.id)
     }
@@ -471,7 +480,7 @@ class RaceSession(private val context: Context) {
                     shifterFingers[id] = ShifterTouch(x, y, side)
                     syncShiftFlags()
                     buzz(12)
-                    pressedControls = holds.values.map { it.controlId }.toSet()
+                    refreshPressed()
                     return
                 }
                 val nudge = knobNudgeAt(x, y, angle)
@@ -479,14 +488,20 @@ class RaceSession(private val context: Context) {
                     val binding = bindingFor(nudge.first.id) ?: return
                     holds[id] = Hold(nudge.first.id, binding, SystemClock.elapsedRealtime(), nudge = true)
                     nudgeKnob(nudge.first.id, nudge.second)
-                    pressedControls = holds.values.map { it.controlId }.toSet()
+                    refreshPressed()
                     return
                 }
                 val hit = Geometry.hit(
                     wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
                     angle, wheel.hitSlop,
                 )
-                if (hit != null) {
+                if (hit != null && hit.kind == PTT_KIND) {
+                    if (voice.enabled) {
+                        pttFingers[id] = hit.id
+                        voice.onPtt(true)
+                        buzz(12)
+                    }
+                } else if (hit != null) {
                     val binding = bindingFor(hit.id) ?: return
                     holds[id] = Hold(hit.id, binding, SystemClock.elapsedRealtime())
                     if (hit.isRotary) {
@@ -500,6 +515,7 @@ class RaceSession(private val context: Context) {
                 }
             }
             "move" -> {
+                if (pttFingers.containsKey(id)) return
                 val paddle = shifterFingers[id]
                 if (paddle != null) {
                     paddle.x = x
@@ -526,12 +542,14 @@ class RaceSession(private val context: Context) {
                 }
             }
             "up" -> {
+                val releasedRadio = pttFingers.remove(id)
                 shifterFingers.remove(id)
                 syncShiftFlags()
                 releasePointer(id)
+                if (releasedRadio != null && pttFingers.isEmpty()) voice.onPtt(false)
             }
         }
-        pressedControls = holds.values.map { it.controlId }.toSet()
+        refreshPressed()
     }
 
     fun pedalPointer(id: Long, phase: String, side: String, y: Float, height: Float) {
@@ -563,32 +581,57 @@ class RaceSession(private val context: Context) {
     }
 
     fun addControl(kind: String) {
+        if (kind == PTT_KIND) {
+            if (!voice.enabled) return
+            val existing = wheel.controls.find { it.kind == PTT_KIND }
+            if (existing != null) {
+                selectedControl = existing.id
+                voice.onPttAdded(wheel.id)
+                return
+            }
+        }
         val n = wheel.controls.size + 1
         val id = "custom$n"
         val rotary = kind == "rotary"
+        val radio = kind == PTT_KIND
         val control = Control(
-            id = id,
-            label = if (rotary) "K$n" else "B$n",
-            kind = if (rotary) "rotary" else "button",
+            id = if (radio) "ptt" else id,
+            label = when {
+                radio -> "PTT"
+                rotary -> "K$n"
+                else -> "B$n"
+            },
+            kind = when {
+                radio -> PTT_KIND
+                rotary -> "rotary"
+                else -> "button"
+            },
             shape = "circle",
-            cx = 0.5f,
-            cy = 0.55f,
-            r = if (rotary) 0.04f else 0.018f,
-            color = "#F5C518",
+            cx = if (radio) 0.50f else 0.5f,
+            cy = if (radio) 0.80f else 0.55f,
+            r = when {
+                radio -> 0.034f
+                rotary -> 0.04f
+                else -> 0.018f
+            },
+            color = if (radio) "#E10600" else "#F5C518",
             positions = 12,
             knobSlot = wheel.rotaries,
         )
         wheel = wheel.copy(controls = wheel.controls + control)
         templates = templates.map { if (it.id == wheel.id) wheel else it }
-        selectedControl = id
+        selectedControl = control.id
+        if (radio) voice.onPttAdded(wheel.id)
         ensureBindings()
     }
 
     fun deleteSelected() {
         val id = selectedControl ?: return
+        val removed = wheel.controls.find { it.id == id }
         wheel = wheel.copy(controls = wheel.controls.filter { it.id != id })
         templates = templates.map { if (it.id == wheel.id) wheel else it }
         profile.bindings.removeAll { it.controlId == id }
+        if (removed?.kind == PTT_KIND) voice.onPttRemoved(wheel.id)
         selectedControl = null
         touchProfile()
     }
@@ -601,8 +644,8 @@ class RaceSession(private val context: Context) {
     fun resetLayout() {
         val asset = library.assetTemplate(wheel.id) ?: return
         library.deleteOverride(wheel.id)
-        wheel = asset
         templates = templates.map { if (it.id == asset.id) asset else it }
+        wheel = stage(asset)
         selectedControl = null
         notice = "Restored the built-in layout"
     }
@@ -752,8 +795,20 @@ class RaceSession(private val context: Context) {
         return best
     }
 
+    private fun stage(next: WheelTemplate): WheelTemplate {
+        val shown = voice.decorate(next)
+        templates = templates.map { if (it.id == shown.id) shown else it }
+        return shown
+    }
+
+    private fun refreshPressed() {
+        val ids = holds.values.map { it.controlId }.toMutableSet()
+        ids.addAll(pttFingers.values)
+        pressedControls = ids
+    }
+
     private fun assignWheel(next: WheelTemplate) {
-        wheel = next
+        wheel = stage(next)
         val existing = profiles.find { it.wheelId == next.id }
         profile = existing ?: defaultProfile(next).also {
             if (genericNames) it.name = displayName(next)
@@ -1032,6 +1087,7 @@ class RaceSession(private val context: Context) {
     private fun ensureBindings() {
         val known = profile.bindings.map { it.controlId }.toSet()
         for (control in wheel.controls) {
+            if (control.kind == PTT_KIND) continue
             if (control.id in known) continue
             profile.bindings.add(
                 Binding(

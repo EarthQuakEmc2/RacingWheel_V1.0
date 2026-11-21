@@ -75,6 +75,8 @@ import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.Screen
 import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
+import com.racingwheelpro.voice.PTT_KIND
+import com.racingwheelpro.voice.VoiceChrome
 import kotlinx.coroutines.delay
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -215,11 +217,18 @@ private fun DriveScreen(session: RaceSession) {
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "brake", y, h) }
                 Column(Modifier.weight(1f).fillMaxHeight()) {
-                    WheelFace(
-                        session = session,
-                        editor = false,
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                    )
+                    Box(Modifier.weight(1f).fillMaxWidth()) {
+                        WheelFace(
+                            session = session,
+                            editor = false,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                        VoiceChrome(
+                            session,
+                            editor = false,
+                            modifier = Modifier.align(Alignment.TopCenter).padding(top = 4.dp),
+                        )
+                    }
                     if (pedals.clutchEnabled) {
                         PedalColumn(
                             title = "CLUTCH",
@@ -424,6 +433,20 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     val px = rect.left + control.cx * rect.width
                     val py = rect.top + control.cy * rect.height
                     val rad = control.r * rect.width
+                    if (control.kind == PTT_KIND) {
+                        if (session.voice.enabled) {
+                            drawRadio(
+                                px, py, rad,
+                                pressed = control.id in pressed,
+                                transmitting = session.voice.transmitting,
+                                selected = control.id == selected,
+                                editor = editor,
+                                density = density,
+                                labelPaint = labelPaint,
+                            )
+                        }
+                        continue
+                    }
                     val tint = hexColor(control.color)
                     if (control.id in pressed) {
                         drawCircle(tint.copy(alpha = 0.45f), rad, Offset(px, py))
@@ -461,6 +484,34 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                 }
             }
         }
+    }
+}
+
+private fun DrawScope.drawRadio(
+    px: Float,
+    py: Float,
+    rad: Float,
+    pressed: Boolean,
+    transmitting: Boolean,
+    selected: Boolean,
+    editor: Boolean,
+    density: Float,
+    labelPaint: Paint,
+) {
+    drawCircle(Color.Black.copy(alpha = 0.78f), rad, Offset(px, py))
+    if (transmitting) drawCircle(SignalRed.copy(alpha = 0.55f), rad, Offset(px, py))
+    else if (pressed) drawCircle(SignalRed.copy(alpha = 0.28f), rad, Offset(px, py))
+    val ring = if (selected || transmitting) 5.5f else 3f
+    drawCircle(if (transmitting) SignalRed else SignalYellow, rad, Offset(px, py), style = Stroke(ring))
+    labelPaint.color = android.graphics.Color.WHITE
+    labelPaint.textAlign = Paint.Align.CENTER
+    labelPaint.textSize = 12f * density
+    drawContext.canvas.nativeCanvas.drawText(if (transmitting) "TX" else "PTT", px, py + 4f * density, labelPaint)
+    if (editor) {
+        labelPaint.textSize = 11f * density
+        labelPaint.color = android.graphics.Color.rgb(245, 197, 24)
+        drawContext.canvas.nativeCanvas.drawText("RADIO", px, py - rad - 6f, labelPaint)
+        labelPaint.color = android.graphics.Color.WHITE
     }
 }
 
@@ -868,7 +919,7 @@ private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
     Row(Modifier.fillMaxSize()) {
         WheelFace(session, editor = true, modifier = Modifier.weight(1f).fillMaxHeight())
-        Column(Modifier.width(300.dp).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
+        Column(Modifier.width(if (session.voice.enabled) 340.dp else 300.dp).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
             Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))
@@ -888,6 +939,13 @@ private fun EditorScreen(session: RaceSession) {
                 ActionChip("ADD BUTTON") { session.addControl("button") }
                 Spacer(Modifier.width(6.dp))
                 ActionChip("ADD KNOB") { session.addControl("rotary") }
+                if (session.voice.enabled) {
+                    Spacer(Modifier.width(6.dp))
+                    ActionChip("ADD RADIO") { session.addControl(PTT_KIND) }
+                }
+            }
+            if (session.voice.enabled) {
+                VoiceChrome(session, editor = true)
             }
             Spacer(Modifier.height(6.dp))
             Row {
