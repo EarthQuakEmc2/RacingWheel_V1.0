@@ -100,6 +100,9 @@ class RaceSession(private val context: Context) {
 
     var imageRect: ImgRect = ImgRect.EMPTY
 
+    /** Extra pixels around a hotspot. The tablet layout raises this so thumbs land. */
+    var fingertipSlopPx: Float = 22f
+
     private val smoother = Smoother()
     private var rawRad = 0f
     private var centerRad = 0f
@@ -457,7 +460,7 @@ class RaceSession(private val context: Context) {
                 }
                 val hit = Geometry.hit(
                     driveControls(), x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-                    angle, wheel.hitSlop,
+                    angle, wheel.hitSlop, fingertipSlopPx,
                 )
                 if (hit != null) {
                     val binding = bindingFor(hit.id) ?: return
@@ -587,7 +590,7 @@ class RaceSession(private val context: Context) {
     private fun editorPointer(phase: String, x: Float, y: Float) {
         val hit = Geometry.hit(
             wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-            0f, wheel.hitSlop, 12f,
+            0f, wheel.hitSlop, fingertipSlopPx.coerceAtLeast(12f),
         )
         if (phase == "down") {
             selectedControl = hit?.id

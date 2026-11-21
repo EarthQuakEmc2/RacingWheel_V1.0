@@ -9,6 +9,8 @@ import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
+import com.racingwheelpro.ui.isTabletCanvas
+import androidx.compose.ui.unit.dp
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
@@ -137,6 +139,15 @@ class CoreTest {
         val button = Control("edge", "E", "button", "circle", 0.08f, 0.50f, 0.04f, "#FFFFFF")
         assertTrue(ShifterZones.claims(button.cx, button.cy))
         assertEquals(ShifterZones.Side.UP, ShifterZones.hit(button.cx, button.cy))
+    }
+
+    @Test
+    fun tabletCanvasMatchesTheSixByFourPointFivePanel() {
+        assertTrue(isTabletCanvas(960.dp, 720.dp))
+        assertFalse(isTabletCanvas(914.dp, 411.dp))
+        assertFalse(isTabletCanvas(800.dp, 800.dp))
+        assertEquals(0.27f, ShifterZones.WIDTH_FRACTION, 0.0001f)
+        assertEquals(0.47f, ShifterZones.HEIGHT_FRACTION, 0.0001f)
     }
 
     @Test

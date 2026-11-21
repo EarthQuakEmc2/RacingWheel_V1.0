@@ -201,6 +201,47 @@ def connect_screen():
     print("ui-connect.jpg")
 
 
+def tablet_drive(doc):
+    """4:3 frame for a 6 x 4.5 inch tablet. Zones stay 27% by 47% of the wheel."""
+    tw, th = 1600, 1200
+    scale = tw / 960.0
+    im = Image.new("RGBA", (tw, th), CARBON)
+    d = ImageDraw.Draw(im)
+    colors = [GREEN] * 5 + [YELLOW] * 3 + [RED] * 3 + [(224, 64, 251, 255), (224, 64, 251, 255), (47, 128, 237, 255), CYAN]
+    gap = 6
+    x = 16
+    usable = tw - 32
+    lw = (usable - gap * (len(colors) - 1)) // len(colors)
+    led_h = int(18 * scale)
+    for c in colors:
+        d.rounded_rectangle((x, 8, x + lw, 8 + led_h), 2, fill=c)
+        x += lw + gap
+    top = 16 + led_h
+    bar = int(64 * scale)
+    d.rectangle((0, top, tw, top + bar), fill=PANEL)
+    d.text((16, top + 18), "RACING WHEEL PRO", fill=INK, font=font(26))
+    d.text((340, top + 18), doc["name"], fill=YELLOW, font=font(26))
+    d.text((tw - 520, top + 20), "GARAGE   LINK   SETUP   EDIT   LOGS   DRIVE", fill=MUTED, font=font(20))
+    zone = int(173 * scale)
+    body_top = top + bar
+    body_h = th - body_top - int(52 * scale)
+    pedal(d, (12, body_top + 8, zone - 20, body_h - 16), "BRAKE", 0.22, RED)
+    pedal(d, (tw - zone + 8, body_top + 8, zone - 20, body_h - 16), "THROTTLE", 0.62, GREEN)
+    wheel = Image.open(WHEELS / doc["image"]).convert("RGBA")
+    slot = (zone, body_top, tw - 2 * zone, body_h)
+    plate, _ = wheel_plate(wheel, slot, zones=True)
+    im.alpha_composite(plate, (slot[0], slot[1]))
+    d = ImageDraw.Draw(im)
+    foot = th - int(52 * scale)
+    d.rectangle((0, foot, tw, th), fill=PANEL)
+    d.text((16, foot + 16), "Assetto Corsa  ·  game rotation", fill=MUTED, font=font(22))
+    d.text((620, foot + 16), "Buttons clear", fill=CYAN, font=font(22))
+    d.text((tw - 420, foot + 16), "CENTER    SHOW HITS    SWEEP", fill=INK, font=font(22))
+    OUT.mkdir(parents=True, exist_ok=True)
+    im.convert("RGB").save(OUT / "ui-drive-tablet.jpg", quality=92)
+    print("ui-drive-tablet.jpg")
+
+
 def main():
     docs = {}
     for path in sorted(WHEELS.glob("*.json")):
@@ -239,7 +280,8 @@ def main():
     pedal_setup()
     shots = ROOT / "docs" / "screenshots"
     shots.mkdir(parents=True, exist_ok=True)
-    for name in ("ui-drive-shifters.jpg", "ui-drive-shifters-turned.jpg", "ui-setup-pedals.jpg"):
+    tablet_drive(docs["moza_ks"])
+    for name in ("ui-drive-shifters.jpg", "ui-drive-shifters-turned.jpg", "ui-setup-pedals.jpg", "ui-drive-tablet.jpg"):
         src = OUT / name
         if src.exists():
             (shots / name.removeprefix("ui-")).write_bytes(src.read_bytes())

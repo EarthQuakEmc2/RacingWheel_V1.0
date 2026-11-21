@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Nothing yet.
+- Tablet layout for a 6 by 4.5 inch screen (4:3, about 7.5 inches). Pedal strips, navigation, the clutch bar, garage cards, and button hit slop grow for that canvas. Shifter zones stay 27% of the wheel width by 47% of its height. This branch is not merged to main. `versionName` is `0.5.0-tablet`.
 
 ## [0.5.0] - 2026-11-21
 
