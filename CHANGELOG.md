@@ -26,7 +26,7 @@ Test release. v0.5.0 stays the stable download on the website and at `releases/l
 
 ### Added
 
-- A Telegram link for chat, update news, polls, and downloads. On the phone it is Setup, then Profile, then Join our Telegram. The Windows receiver prints it at startup and shows Join our Telegram on its local page (http://127.0.0.1:41513/). The website footer and the download section use the same link. The address is the `telegram` value in `community.json` at the root of the repo. It is a placeholder, `https://t.me/RacingWheelPro`, marked TODO until the real @username is filled in. The site source includes the link. The live site is not updated by this release and still serves v0.5.0.
+- A Telegram link for chat, update news, polls, and downloads: https://t.me/racingwheelpro. On the phone it is Setup, then Profile, then Join our Telegram. The Windows receiver prints it at startup and shows Join our Telegram on its local page (http://127.0.0.1:41513/). The website footer and the download section use the same link. The address is the `telegram` value in `community.json` at the root of the repo. The site source includes the link. The live site is not updated by this release and still serves v0.5.0.
 
 ### Changed
 
