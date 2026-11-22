@@ -177,9 +177,8 @@ class CoreTest {
     fun telegramLinkComesFromTheRepoConfig() {
         val file = File("../community.json")
         val text = file.readText()
-        assertTrue(text.contains("TODO"))
         val url = Regex(""""telegram"\s*:\s*"([^"]+)"""").find(text)!!.groupValues[1]
-        assertEquals("https://t.me/RacingWheelPro", url)
+        assertEquals("https://t.me/racingwheelpro", url)
         assertEquals(url, BuildConfig.TELEGRAM_URL)
     }
 
