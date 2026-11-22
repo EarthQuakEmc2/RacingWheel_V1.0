@@ -66,15 +66,15 @@ public class GearMapTests
     }
 
     [Fact]
-    public void TelegramLinkIsTheRepoPlaceholder()
+    public void TelegramLinkIsTheCommunityChannel()
     {
-        Assert.Equal("https://t.me/RacingWheelPro", Community.Telegram);
+        Assert.Equal("https://t.me/racingwheelpro", Community.Telegram);
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir != null && !File.Exists(Path.Combine(dir.FullName, "community.json")))
             dir = dir.Parent;
         Assert.NotNull(dir);
         var text = File.ReadAllText(Path.Combine(dir!.FullName, "community.json"));
-        Assert.Contains("TODO", text);
+        Assert.DoesNotContain("TODO", text);
         Assert.Contains(Community.Telegram, text);
     }
 
