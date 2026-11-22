@@ -19,6 +19,7 @@ import com.racingwheelpro.billing.createPremiumGate
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.data.ProfileStore
 import com.racingwheelpro.data.WheelLibrary
+import com.racingwheelpro.input.GearChannel
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.ImgRect
 import com.racingwheelpro.input.KnobMath
@@ -102,6 +103,9 @@ class RaceSession(private val context: Context) {
     val gate = createPremiumGate(context)
 
     var imageRect: ImgRect = ImgRect.EMPTY
+
+    /** Extra pixels around a hotspot. The tablet layout raises this so thumbs land. */
+    var fingertipSlopPx: Float = 22f
 
     private val smoother = Smoother()
     private var rawRad = 0f
@@ -482,9 +486,9 @@ class RaceSession(private val context: Context) {
                     pressedControls = holds.values.map { it.controlId }.toSet()
                     return
                 }
-                val hit = Geometry.hit(
+                val hit = controlInNotch(x, y, angle) ?: Geometry.hit(
                     wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-                    angle, wheel.hitSlop,
+                    angle, wheel.hitSlop, fingertipSlopPx,
                 )
                 if (hit != null) {
                     val binding = bindingFor(hit.id) ?: return
@@ -614,8 +618,8 @@ class RaceSession(private val context: Context) {
     private fun editorPointer(phase: String, x: Float, y: Float) {
         val hit = Geometry.hit(
             wheel.controls, x, y, imageRect, wheel.imageWidth, wheel.imageHeight,
-            0f, wheel.hitSlop, 12f,
-        )
+            0f, wheel.hitSlop, fingertipSlopPx.coerceAtLeast(12f),
+        ) ?: controlInNotch(x, y, 0f)
         val norm = wheelNorm(x, y, 0f)
         if (phase == "down") {
             if (hit != null) {
@@ -851,9 +855,7 @@ class RaceSession(private val context: Context) {
         if (locked && !atLock) buzz(18)
         atLock = locked
         val mask = buttonMask(now)
-        var gear = 0
-        if (shiftUp) gear = gear or Proto.GEAR_UP
-        if (shiftDown) gear = gear or Proto.GEAR_DOWN
+        val gear = GearChannel.bits(shiftUp, shiftDown)
         steerVisualDeg = degrees.coerceIn(-setup.visualClamp, setup.visualClamp)
         steerReadout = "${degrees.roundToInt()}°"
         steerOut = steer
@@ -875,8 +877,6 @@ class RaceSession(private val context: Context) {
         pulses.keys.forEach { raise(it) }
         toggled.forEach { raise(it) }
         keyHeld.values.forEach { raise(it) }
-        if (shiftUp) raise(profile.gearUpButton)
-        if (shiftDown) raise(profile.gearDownButton)
         for (hold in holds.values) {
             val binding = hold.binding
             when (binding.mode) {
@@ -894,7 +894,7 @@ class RaceSession(private val context: Context) {
                 }
             }
         }
-        return mask
+        return GearChannel.merge(mask, shiftUp, shiftDown, profile.gearUpButton, profile.gearDownButton)
     }
 
     private fun buildPacket(
@@ -920,6 +920,27 @@ class RaceSession(private val context: Context) {
                 flags = if (usingTouch()) 1 else 0,
                 gear = gear,
             ),
+        )
+    }
+
+    /**
+     * A touch inside a paddle rectangle and inside a button cut-out, including the
+     * margin ring. That touch belongs to the button, not the paddle.
+     */
+    private fun controlInNotch(x: Float, y: Float, angle: Float): Control? {
+        val norm = wheelNorm(x, y, angle) ?: return null
+        val upZone = ShifterZones.place(ShifterZones.Side.UP, resolvedShifter(ShifterZones.Side.UP), wheel.bounds)
+        val downZone = ShifterZones.place(ShifterZones.Side.DOWN, resolvedShifter(ShifterZones.Side.DOWN), wheel.bounds)
+        return ShifterZones.notchControl(
+            norm.first,
+            norm.second,
+            upZone,
+            downZone,
+            wheel.controls,
+            wheel.imageWidth,
+            wheel.imageHeight,
+            wheel.hitSlop,
+            cutoutExtraPx(),
         )
     }
 
@@ -954,8 +975,8 @@ class RaceSession(private val context: Context) {
 
     /** Fingertip slop, in image pixels, so a notch matches the button's hit circle. */
     private fun cutoutExtraPx(): Float {
-        if (imageRect.width < 2f) return 22f
-        return 22f * wheel.imageWidth / imageRect.width
+        if (imageRect.width < 2f) return fingertipSlopPx
+        return fingertipSlopPx * wheel.imageWidth / imageRect.width
     }
 
     private fun tuneFor(side: ShifterZones.Side): ShifterTune =

@@ -1,14 +1,18 @@
 package com.racingwheelpro
 
+import com.racingwheelpro.BuildConfig
 import com.racingwheelpro.catalog.EntitlementPolicy
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.data.WheelLibrary
 import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
+import com.racingwheelpro.input.GearChannel
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
+import com.racingwheelpro.ui.isTabletCanvas
+import androidx.compose.ui.unit.dp
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.WheelBounds
@@ -139,6 +143,72 @@ class CoreTest {
         val button = Control("edge", "E", "button", "circle", 0.08f, 0.50f, 0.04f, "#FFFFFF")
         assertTrue(ShifterZones.claims(button.cx, button.cy))
         assertEquals(ShifterZones.Side.UP, ShifterZones.hit(button.cx, button.cy))
+    }
+
+    @Test
+    fun tabletCanvasMatchesTheSixByFourPointFivePanel() {
+        assertTrue(isTabletCanvas(960.dp, 720.dp))
+        assertFalse(isTabletCanvas(914.dp, 411.dp))
+        assertFalse(isTabletCanvas(800.dp, 800.dp))
+        assertEquals(0.20f, ShifterZones.WIDTH_FRACTION, 0.0001f)
+        assertEquals(0.32f, ShifterZones.HEIGHT_FRACTION, 0.0001f)
+    }
+
+    @Test
+    fun notchBelongsToTheButtonAndTheRestOfThePaddleDoesNot() {
+        val up = ShifterZones.up
+        val down = ShifterZones.down
+        val edge = Control("edge", "E", "button", "circle", 0.20f, 0.50f, 0.04f, "#FFFFFF")
+        val far = Control("far", "F", "button", "circle", 0.50f, 0.50f, 0.02f, "#FF8800")
+        val controls = listOf(edge, far)
+        assertEquals(listOf("edge"), ShifterZones.cutoutsOn(up, controls, 100, 100, 0f, 0f).map { it.id })
+        assertEquals(listOf("edge"), ShifterZones.cutoutsOn(up, controls, 200, 100, 0f, 0f).map { it.id })
+        assertTrue(ShifterZones.cutoutsOn(down, controls, 200, 100, 0f, 0f).isEmpty())
+        // Center of the button sits on the zone edge: the overlay bite is a half circle.
+        assertNull(ShifterZones.hit(edge.cx, edge.cy, up, down, controls, 100, 100, 0f, 0f))
+        assertEquals("edge", ShifterZones.notchControl(0.18f, 0.50f, up, down, controls, 100, 100, 0f, 0f)?.id)
+        assertEquals(ShifterZones.Side.UP, ShifterZones.hit(0.06f, 0.50f, up, down, controls, 100, 100, 0f, 0f))
+        assertNull(ShifterZones.notchControl(0.06f, 0.50f, up, down, controls, 100, 100, 0f, 0f))
+        // A press on the up zone does not claim the far button, and the far button is not drawn into the up zone.
+        assertFalse(ShifterZones.circleMeetsZone(up, far, 100, 100, 0f, 0f))
+    }
+
+    @Test
+    fun telegramLinkComesFromTheRepoConfig() {
+        val file = File("../community.json")
+        val text = file.readText()
+        val url = Regex(""""telegram"\s*:\s*"([^"]+)"""").find(text)!!.groupValues[1]
+        assertEquals("https://t.me/racingwheelpro", url)
+        assertEquals(url, BuildConfig.TELEGRAM_URL)
+    }
+
+    @Test
+    fun gearUpSetsOneBitAndDoesNotPressTheOtherButtons() {
+        assertEquals(Proto.GEAR_UP, GearChannel.bits(shiftUp = true, shiftDown = false))
+        assertEquals(Proto.GEAR_DOWN, GearChannel.bits(shiftUp = false, shiftDown = true))
+        assertEquals(0, GearChannel.bits(shiftUp = false, shiftDown = false))
+        val untouched = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 0, downButton = 0)
+        assertEquals(0L, untouched)
+        val mapped = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 5, downButton = 0)
+        assertEquals(1L shl 4, mapped)
+        val withFace = GearChannel.merge(1L, shiftUp = false, shiftDown = true, upButton = 0, downButton = 0)
+        assertEquals(1L, withFace)
+        assertEquals(0L, GearChannel.buttonBit(0))
+        assertEquals(0L, GearChannel.buttonBit(33))
+    }
+
+    @Test
+    fun realWheelCutsOnlyTheButtonsThatCrossThePaddle() {
+        val ks = loadAssetTemplates().first { it.id == "moza_ks" }
+        val up = ShifterZones.place(ShifterZones.Side.UP, ks.shiftUp, ks.bounds)
+        val down = ShifterZones.place(ShifterZones.Side.DOWN, ks.shiftDown, ks.bounds)
+        val upCuts = ShifterZones.cutoutsOn(up, ks.controls, ks.imageWidth, ks.imageHeight, ks.hitSlop, 0f)
+        val downCuts = ShifterZones.cutoutsOn(down, ks.controls, ks.imageWidth, ks.imageHeight, ks.hitSlop, 0f)
+        assertTrue(upCuts.isNotEmpty())
+        assertTrue(downCuts.isNotEmpty())
+        assertTrue(upCuts.size < ks.controls.size)
+        assertTrue(downCuts.size < ks.controls.size)
+        assertTrue(upCuts.none { it.id in downCuts.map { cut -> cut.id } })
     }
 
     @Test

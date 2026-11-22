@@ -6,6 +6,10 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const community = JSON.parse(
+  fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../community.json'), 'utf8'),
+)
+
 /** Static hosts can serve /privacy/ from a copied index without a rewrite rule. */
 function privacyRoute(): Plugin {
   return {
@@ -25,6 +29,9 @@ function privacyRoute(): Plugin {
  */
 export default defineConfig(() => ({
   base: '/',
+  define: {
+    __TELEGRAM_URL__: JSON.stringify(community.telegram),
+  },
   plugins: [react(), privacyRoute()],
   server: {
     fs: {

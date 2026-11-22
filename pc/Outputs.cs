@@ -33,11 +33,19 @@ public static class OutputFactory
             joy = VjoyOutput.TryCreate(vjoyId, log);
         }
         var chosen = pad ?? joy ?? new MonitorOutput();
+        IOutput result = chosen;
         if (keyboard)
         {
-            return new KeyboardOverlay(chosen, pad != null && mode != "vjoy");
+            result = new KeyboardOverlay(chosen, pad != null && mode != "vjoy");
         }
-        return chosen;
+        // ViGEm has no button 31. When the wheel is the Xbox pad, a second vJoy
+        // device carries only the two paddle buttons so the game can bind them.
+        if (pad != null && joy == null)
+        {
+            var gear = VjoyGearDevice.TryCreate(vjoyId, log);
+            if (gear != null) result = new GearOnSecondDevice(result, gear);
+        }
+        return result;
     }
 }
 
@@ -141,19 +149,75 @@ public sealed class VigemOutput : IOutput
 public sealed class VjoyOutput : IOutput
 {
     private readonly uint _id;
+    private readonly GearMap.Assignment _gear;
     public string Name => "vJoy device " + _id;
     public int Caps => Proto.CapVjoy;
     public event Action<byte, byte>? Rumble { add { } remove { } }
 
-    private VjoyOutput(uint id) => _id = id;
+    private VjoyOutput(uint id, GearMap.Assignment gear)
+    {
+        _id = id;
+        _gear = gear;
+    }
 
     public static VjoyOutput? TryCreate(int id, Action<string> log)
+    {
+        var acquired = VjoySession.Acquire(id, log, sharesWheelButtons: true);
+        if (acquired == null) return null;
+        return new VjoyOutput(acquired.Value.Id, acquired.Value.Map);
+    }
+
+    public void Apply(StatePacket state)
+    {
+        VjoyNative.SetAxis(Axis11(state.Steer), _id, HidAxis.X);
+        VjoyNative.SetAxis(Axis01(state.Throttle), _id, HidAxis.Y);
+        VjoyNative.SetAxis(Axis01(state.Brake), _id, HidAxis.Z);
+        VjoyNative.SetAxis(Axis01(state.Clutch), _id, HidAxis.Rx);
+        VjoyNative.SetAxis(Axis01(Knob01(state, 0)), _id, HidAxis.Ry);
+        VjoyNative.SetAxis(Axis01(Knob01(state, 1)), _id, HidAxis.Rz);
+        VjoyNative.SetAxis(Axis01(Knob01(state, 2)), _id, HidAxis.Slider);
+        VjoyNative.SetAxis(Axis01(Knob01(state, 3)), _id, HidAxis.Dial);
+        VjoySession.WriteButtons(_id, GearMap.Compose(state.Buttons, state.Gear, _gear));
+    }
+
+    public void Dispose()
+    {
+        try { VjoyNative.RelinquishVJD(_id); } catch { /* driver already stopped */ }
+    }
+
+    private static int Axis11(float v) => (int)Math.Round((Math.Clamp(v, -1f, 1f) * 0.5f + 0.5f) * 32766f) + 1;
+    private static int Axis01(float v) => (int)Math.Round(Math.Clamp(v, 0f, 1f) * 32766f) + 1;
+    private static float Knob01(StatePacket state, int slot) =>
+        slot < state.Knobs.Length ? Math.Clamp(state.Knobs[slot] / 11f, 0f, 1f) : 0f;
+}
+
+/// <summary>Axis usages shared by the wheel device and the paddle-only device.</summary>
+internal static class HidAxis
+{
+    public const uint X = 0x30;
+    public const uint Y = 0x31;
+    public const uint Z = 0x32;
+    public const uint Rx = 0x33;
+    public const uint Ry = 0x34;
+    public const uint Rz = 0x35;
+    public const uint Slider = 0x36;
+    public const uint Dial = 0x37;
+    public static readonly uint[] All = { X, Y, Z, Rx, Ry, Rz, Slider, Dial };
+}
+
+internal static class VjoySession
+{
+    public readonly record struct Open(uint Id, GearMap.Assignment Map);
+
+    public static Open? Acquire(int id, Action<string> log, bool sharesWheelButtons)
     {
         try
         {
             if (!VjoyNative.vJoyEnabled())
             {
-                log("vJoy is installed but the driver is disabled.");
+                log(sharesWheelButtons
+                    ? "vJoy is installed but the driver is disabled."
+                    : "vJoy is not enabled, so the paddles stay on Page Up and Page Down. Enable vJoy and set device 1 to 32 buttons for joystick buttons.");
                 return null;
             }
             var rId = (uint)Math.Clamp(id, 1, 16);
@@ -168,12 +232,22 @@ public sealed class VjoyOutput : IOutput
                 log("vJoy device " + rId + " could not be acquired.");
                 return null;
             }
-            log("vJoy device " + rId + " acquired. Configure it for 8 axes and 32 buttons.");
-            return new VjoyOutput(rId);
+            var count = VjoyNative.GetVJDButtonNumber(rId);
+            var map = GearMap.Resolve(count);
+            if (map.Up == 0)
+            {
+                log(GearMap.AcquireMessage(rId, map, sharesWheelButtons));
+                VjoyNative.RelinquishVJD(rId);
+                return null;
+            }
+            log(GearMap.AcquireMessage(rId, map, sharesWheelButtons));
+            return new Open(rId, map);
         }
         catch (DllNotFoundException)
         {
-            log("vJoyInterface.dll was not found. Install vJoy, or leave output on ViGEm.");
+            log(sharesWheelButtons
+                ? "vJoyInterface.dll was not found. Install vJoy, or leave output on ViGEm."
+                : "vJoyInterface.dll was not found. Page Up and Page Down still shift. Install vJoy and set 32 buttons so Assetto Corsa can bind joystick buttons.");
             return null;
         }
         catch (Exception ex)
@@ -183,45 +257,88 @@ public sealed class VjoyOutput : IOutput
         }
     }
 
+    public static void WriteButtons(uint id, bool[] states)
+    {
+        for (var i = 0; i < states.Length; i++)
+            VjoyNative.SetBtn(states[i], id, (uint)(i + 1));
+    }
+
+    /// <summary>vJoy's 15-bit center. An untouched axis sits here instead of full left.</summary>
+    public static void CenterAxes(uint id)
+    {
+        foreach (var axis in HidAxis.All)
+            VjoyNative.SetAxis(16384, id, axis);
+    }
+}
+
+/// <summary>
+/// Paddle buttons on their own vJoy device. Axes stay centered so this device
+/// does not steer the car. Only the two gear buttons change.
+/// </summary>
+internal sealed class VjoyGearDevice : IDisposable
+{
+    private readonly uint _id;
+    private readonly GearMap.Assignment _gear;
+    public string Label { get; }
+
+    private VjoyGearDevice(uint id, GearMap.Assignment gear)
+    {
+        _id = id;
+        _gear = gear;
+        Label = "vJoy gear " + gear.Up + "/" + gear.Down;
+    }
+
+    public static VjoyGearDevice? TryCreate(int id, Action<string> log)
+    {
+        var acquired = VjoySession.Acquire(id, log, sharesWheelButtons: false);
+        if (acquired == null) return null;
+        VjoySession.CenterAxes(acquired.Value.Id);
+        VjoySession.WriteButtons(acquired.Value.Id, GearMap.Compose(0, 0, acquired.Value.Map));
+        return new VjoyGearDevice(acquired.Value.Id, acquired.Value.Map);
+    }
+
+    public void ApplyGear(int gear) =>
+        VjoySession.WriteButtons(_id, GearMap.Compose(0, gear, _gear));
+
+    public void Dispose()
+    {
+        try
+        {
+            VjoySession.WriteButtons(_id, GearMap.Compose(0, 0, _gear));
+            VjoyNative.RelinquishVJD(_id);
+        }
+        catch { /* driver already stopped */ }
+    }
+}
+
+internal sealed class GearOnSecondDevice : IOutput
+{
+    private readonly IOutput _inner;
+    private readonly VjoyGearDevice _gear;
+    public string Name => _inner.Name + " + " + _gear.Label;
+    public int Caps => _inner.Caps | Proto.CapVjoy;
+    public event Action<byte, byte>? Rumble
+    {
+        add => _inner.Rumble += value;
+        remove => _inner.Rumble -= value;
+    }
+
+    public GearOnSecondDevice(IOutput inner, VjoyGearDevice gear)
+    {
+        _inner = inner;
+        _gear = gear;
+    }
+
     public void Apply(StatePacket state)
     {
-        VjoyNative.SetAxis(Axis11(state.Steer), _id, Hid.X);
-        VjoyNative.SetAxis(Axis01(state.Throttle), _id, Hid.Y);
-        VjoyNative.SetAxis(Axis01(state.Brake), _id, Hid.Z);
-        VjoyNative.SetAxis(Axis01(state.Clutch), _id, Hid.Rx);
-        VjoyNative.SetAxis(Axis01(Knob01(state, 0)), _id, Hid.Ry);
-        VjoyNative.SetAxis(Axis01(Knob01(state, 1)), _id, Hid.Rz);
-        VjoyNative.SetAxis(Axis01(Knob01(state, 2)), _id, Hid.Slider);
-        VjoyNative.SetAxis(Axis01(Knob01(state, 3)), _id, Hid.Dial);
-        for (uint b = 1; b <= 32; b++)
-        {
-            var down = (state.Buttons & (1u << (int)(b - 1))) != 0;
-            VjoyNative.SetBtn(down, _id, b);
-        }
-        if ((state.Gear & Proto.GearUp) != 0) VjoyNative.SetBtn(true, _id, Proto.VjoyGearUp);
-        if ((state.Gear & Proto.GearDown) != 0) VjoyNative.SetBtn(true, _id, Proto.VjoyGearDown);
+        _inner.Apply(state);
+        _gear.ApplyGear(state.Gear);
     }
 
     public void Dispose()
     {
-        try { VjoyNative.RelinquishVJD(_id); } catch { /* driver already stopped */ }
-    }
-
-    private static int Axis11(float v) => (int)Math.Round((Math.Clamp(v, -1f, 1f) * 0.5f + 0.5f) * 32766f) + 1;
-    private static int Axis01(float v) => (int)Math.Round(Math.Clamp(v, 0f, 1f) * 32766f) + 1;
-    private static float Knob01(StatePacket state, int slot) =>
-        slot < state.Knobs.Length ? Math.Clamp(state.Knobs[slot] / 11f, 0f, 1f) : 0f;
-
-    private static class Hid
-    {
-        public const uint X = 0x30;
-        public const uint Y = 0x31;
-        public const uint Z = 0x32;
-        public const uint Rx = 0x33;
-        public const uint Ry = 0x34;
-        public const uint Rz = 0x35;
-        public const uint Slider = 0x36;
-        public const uint Dial = 0x37;
+        _gear.Dispose();
+        _inner.Dispose();
     }
 }
 
@@ -246,6 +363,9 @@ internal static class VjoyNative
 
     [DllImport("vJoyInterface.dll", CallingConvention = CallingConvention.Cdecl)]
     public static extern bool SetBtn(bool value, uint rID, uint nBtn);
+
+    [DllImport("vJoyInterface.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static extern int GetVJDButtonNumber(uint rID);
 }
 
 public sealed class MonitorOutput : IOutput
@@ -332,44 +452,21 @@ internal static class KeySender
 {
     public static void Key(int vk, bool down)
     {
-        var input = new INPUT
+        var input = new KeyboardLayout.INPUT
         {
             type = 1,
-            U = new INPUTUNION
+            U = new KeyboardLayout.InputUnion
             {
-                ki = new KEYBDINPUT
+                ki = new KeyboardLayout.KEYBDINPUT
                 {
                     wVk = (ushort)vk,
                     dwFlags = down ? 0u : 2u,
                 },
             },
         };
-        SendInput(1, new[] { input }, Marshal.SizeOf<INPUT>());
+        SendInput(1, new[] { input }, KeyboardLayout.InputStride);
     }
 
     [DllImport("user32.dll", SetLastError = true)]
-    private static extern uint SendInput(uint nInputs, INPUT[] inputs, int cbSize);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct INPUT
-    {
-        public uint type;
-        public INPUTUNION U;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    private struct INPUTUNION
-    {
-        [FieldOffset(0)] public KEYBDINPUT ki;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct KEYBDINPUT
-    {
-        public ushort wVk;
-        public ushort wScan;
-        public uint dwFlags;
-        public uint time;
-        public IntPtr dwExtraInfo;
-    }
+    private static extern uint SendInput(uint nInputs, KeyboardLayout.INPUT[] inputs, int cbSize);
 }

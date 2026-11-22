@@ -150,6 +150,11 @@ button{background:#e10600;border-color:#e10600;cursor:pointer}
 </section>
 </div>
 <section>
+<h2>Community</h2>
+<p>Chat with other drivers, hear about updates, vote in polls, and grab downloads.</p>
+<p><a href="{{WebUtility.HtmlEncode(Community.Telegram)}}" style="color:#f5c518">Join our Telegram</a></p>
+</section>
+<section>
 <h2>Logs</h2>
 <p class="muted">{{WebUtility.HtmlEncode(state.LogStatus)}} Files are gzipped JSON and CSV in {{WebUtility.HtmlEncode(state.LogDir)}}.</p>
 <table><thead><tr><th>Started</th><th>Track</th><th>Car</th><th>Laps</th><th>Best ms</th><th>File</th></tr></thead>
