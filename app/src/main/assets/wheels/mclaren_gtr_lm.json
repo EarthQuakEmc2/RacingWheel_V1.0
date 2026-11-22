@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.511}
   },
   "outputButtons": 14,
+  "display": {
+    "left": 0.3138,
+    "top": 0.1798,
+    "right": 0.6967,
+    "bottom": 0.4058
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2373,
+    "top": 0.0479,
+    "right": 0.7732,
+    "bottom": 0.1327
+  },
   "controls": [
     {
       "id": "talk",

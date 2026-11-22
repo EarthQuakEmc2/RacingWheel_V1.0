@@ -16,6 +16,12 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.515}
   },
   "outputButtons": 8,
+  "display": {
+    "left": 0.3466,
+    "top": 0.3135,
+    "right": 0.6248,
+    "bottom": 0.5055
+  },
   "controls": [
     {
       "id": "light",

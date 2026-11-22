@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.517}
   },
   "outputButtons": 19,
+  "display": {
+    "left": 0.2701,
+    "top": 0.2033,
+    "right": 0.7089,
+    "bottom": 0.4323
+  },
+  "revLights": {
+    "count": 13,
+    "left": 0.3039,
+    "top": 0.1165,
+    "right": 0.6751,
+    "bottom": 0.1875
+  },
   "controls": [
     {
       "id": "drs",

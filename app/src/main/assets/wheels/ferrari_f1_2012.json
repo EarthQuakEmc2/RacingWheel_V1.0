@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.516}
   },
   "outputButtons": 15,
+  "display": {
+    "left": 0.3132,
+    "top": 0.176,
+    "right": 0.6823,
+    "bottom": 0.4014
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2394,
+    "top": 0.0633,
+    "right": 0.7561,
+    "bottom": 0.1478
+  },
   "controls": [
     {
       "id": "k",

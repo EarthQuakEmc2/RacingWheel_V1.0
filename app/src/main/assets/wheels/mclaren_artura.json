@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.504}
   },
   "outputButtons": 18,
+  "display": {
+    "left": 0.3341,
+    "top": 0.1998,
+    "right": 0.6733,
+    "bottom": 0.4067
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2663,
+    "top": 0.0791,
+    "right": 0.7411,
+    "bottom": 0.1567
+  },
   "controls": [
     {
       "id": "lim",

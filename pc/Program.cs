@@ -101,6 +101,57 @@ internal static class Program
             Console.Error.WriteLine("self-test: lap cut");
             return 1;
         }
+        var dashSnap = new AcSnapshot
+        {
+            Status = 2,
+            Gear = 6,
+            Rpm = 7400,
+            MaxRpm = 8500,
+            SpeedKmh = 187.4f,
+            Gas = 0.8f,
+            Brake = 0f,
+            Fuel = 22f,
+            MaxFuel = 40f,
+            TcLevel = 4,
+            AbsLevel = 2,
+            Position = 3,
+            CurrentTimeMs = 86321,
+            PerformanceMeter = -0.42f,
+            CompletedLaps = 2,
+            Tc = 0.25f,
+            Abs = 0f,
+        };
+        var dash = Packets.Telemetry(dashSnap, 9);
+        var back = Packets.ParseTelemetry(dash);
+        if (back == null || !back.Live || back.Gear != 5 || back.Rpm != 7400 || Math.Abs(back.SpeedKmh - 187.4f) > 0.15f)
+        {
+            Console.Error.WriteLine("self-test: dash packet");
+            return 1;
+        }
+        if (back.Tc != 4 || back.Abs != 2 || back.FuelPct != 55 || back.Position != 3 || back.DeltaMs != -420)
+        {
+            Console.Error.WriteLine("self-test: dash fields");
+            return 1;
+        }
+        var physics = new byte[AcFields.PhysicsBytes];
+        var graphics = new byte[AcFields.GraphicsFallbackBytes];
+        var page = new byte[AcFields.StaticBytes];
+        System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(physics.AsSpan(AcFields.Gas), 0.5f);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(physics.AsSpan(AcFields.Gear), 3);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(page.AsSpan(AcFields.MaxRpm), 9000);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(graphics.AsSpan(AcFields.Position), 7);
+        System.Buffers.Binary.BinaryPrimitives.WriteSingleLittleEndian(graphics.AsSpan(AcFields.NormalizedPosition), 0.25f);
+        var decoded = AcFields.Decode(physics, graphics, page);
+        if (Math.Abs(decoded.Gas - 0.5f) > 0.001f || decoded.Gear != 3 || decoded.MaxRpm != 9000 || decoded.Position != 7)
+        {
+            Console.Error.WriteLine("self-test: shared memory offsets");
+            return 1;
+        }
+        if (Math.Abs(decoded.NormalizedPosition - 0.25f) > 0.001f || decoded.TcLevel != 255)
+        {
+            Console.Error.WriteLine("self-test: shared memory extras");
+            return 1;
+        }
         Console.WriteLine("self-test ok");
         return 0;
     }
@@ -211,6 +262,11 @@ internal sealed class Receiver : IDisposable
     private bool _acOpen;
     private DateTime _acSeen = DateTime.MinValue;
     private string _uiUrl = "";
+    private int _dashSeq;
+    private int _dashPackets;
+    private int _dashHz;
+    private DateTime _lastDash = DateTime.MinValue;
+    private DateTime _dashWindow = DateTime.UtcNow;
 
     public Receiver(Options opt)
     {
@@ -458,8 +514,33 @@ internal sealed class Receiver : IDisposable
             _ => "-",
         };
         var code = string.IsNullOrEmpty(_account.Code) ? "----" : _account.Code;
+        var dash = _dashHz;
         Console.Write(
-            $"\r{peer,-16} steer {s.Steer,6:0.00}  thr {s.Throttle,4:0.00}  brk {s.Brake,4:0.00}  clt {s.Clutch,4:0.00}  gear {gear,-4}  btn {buttons,-12} in {inputHz,3} Hz  out {outputHz,3} Hz  {(ac ? "AC" : "noAC"),4}  {code}  age {(age < 0 ? "  -" : age + "ms"),5}   ");
+            $"\r{peer,-16} steer {s.Steer,6:0.00}  thr {s.Throttle,4:0.00}  brk {s.Brake,4:0.00}  clt {s.Clutch,4:0.00}  gear {gear,-4}  btn {buttons,-12} in {inputHz,3} Hz  out {outputHz,3} Hz  dash {dash,2} Hz  {(ac ? "AC" : "noAC"),4}  {code}  age {(age < 0 ? "  -" : age + "ms"),5}   ");
+    }
+
+    /// <summary>About 25 Hz. The phone drops the screen if packets stop for a moment.</summary>
+    private void SendDash(AcSnapshot snap)
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _lastDash).TotalMilliseconds < 40) return;
+        IPEndPoint? dest;
+        lock (_gate) dest = _phone;
+        if (dest is not IPEndPoint ep) return;
+        _lastDash = now;
+        var packet = Packets.Telemetry(snap, _dashSeq++);
+        try
+        {
+            _telemetry.Send(packet, packet.Length, ep);
+            _dashPackets++;
+        }
+        catch { /* phone already gone */ }
+        if ((now - _dashWindow).TotalSeconds >= 1)
+        {
+            _dashHz = _dashPackets;
+            _dashPackets = 0;
+            _dashWindow = now;
+        }
     }
 
     private void TelemetryLoop(byte[] beacon)
@@ -524,6 +605,11 @@ internal sealed class Receiver : IDisposable
                     _acOpen = true;
                     _acSeen = DateTime.UtcNow;
                 }
+                SendDash(snap);
+            }
+            else if (ac.TryRead(out var loose) && (loose.Rpm > 0 || loose.SpeedKmh > 1f))
+            {
+                SendDash(loose);
             }
             else if ((DateTime.UtcNow - _acSeen).TotalSeconds > 2)
             {

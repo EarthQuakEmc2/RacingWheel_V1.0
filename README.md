@@ -12,9 +12,9 @@ The promotional site lives in [`website/`](website/). Its canonical address is <
 
 ## Free and Premium
 
-Version 0.5.2 is a test build (GitHub prerelease). The website download stays on 0.5.0. The app keeps every driving feature in the free build and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
+Version 0.6.0-preview is a test build (GitHub prerelease, not merged). The website download stays on 0.5.0. The app keeps every driving feature in the free build and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge. Shift lights, the wheel screen, and the turning knobs are in this preview.
 
-The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. One free wheel, the KS, draws the animated dial pointer so the knob feature can be tried.
+The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. Every wheel you can drive draws the turning knob, the shift lights, and the telemetry screen.
 
 Gradle flavors are `free` and `premium`. The free flavor compiles with no Play Billing library. The premium flavor on this branch unlocks every wheel and every dial pointer, again with no billing library, which is what keeps the published source fully usable under [LICENSE_EXCEPTIONS](LICENSE_EXCEPTIONS). The Play Billing client for the one-time product `racing_wheel_premium` lives only on the `paid-version` branch and is not merged. The split is written out in [docs/BILLING.md](docs/BILLING.md).
 
@@ -300,9 +300,25 @@ The layout editor resizes each paddle on its own. Drag the inner edge for width,
 
 Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
 
+The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy it holds button 31 for shift up and button 32 for shift down when the device has at least 32 buttons. Open vJoyConf, set device 1 to 8 axes and 32 buttons, apply, and restart the receiver. With fewer buttons the console names the last two it can use, and those can overlap wheel buttons until the count is 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out. An Xbox pad from ViGEm has no button 31, so when that pad is the wheel the receiver also opens vJoy and puts only the two paddle buttons on it. Assetto Corsa then sees two different joystick buttons.
+
 The public Telegram channel is https://t.me/racingwheelpro, the `telegram` field in `community.json` at the repo root. The phone, the receiver, and the website all read that one value. On the phone it is Setup → Profile → Join our Telegram. The receiver prints it at startup and links it from the local page.
 
-The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy it holds button 31 for shift up and button 32 for shift down when the device has at least 32 buttons. Open vJoyConf, set device 1 to 8 axes and 32 buttons, apply, and restart the receiver. With fewer buttons the console names the last two it can use, and those can overlap wheel buttons until the count is 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out. An Xbox pad from ViGEm has no button 31, so when that pad is the wheel the receiver also opens vJoy and puts only the two paddle buttons on it. Assetto Corsa then sees two different joystick buttons.
+### Rev lights
+
+Wheels with a shift-light row on the rim light that row from the left. Green is on the left, then yellow, then red, then blue and purple. Throttle mode, which is the default, fills the row from how far the throttle pedal is pressed. RPM mode is under Setup → Pedals → Rev lights. It stays dark until 75% of the engine's maximum rpm and is full at the redline. RPM mode needs the telemetry packet below. If that packet stops, the lights fall back to the throttle. The same colors run in the thin strip at the top of the app. A wheel with no shift lights in the picture does not grow a fake row. Its top strip still works.
+
+### Wheel screen
+
+Every template has a `display` rectangle. On a wheel with a built-in screen, that rectangle covers the screen. On a wheel without one, it sits on the open part of the face. The phone draws gear, speed, rpm, the current lap, the gap to the best lap, race position, fuel percent, and the TC and ABS settings. Gear is R, N, then 1 and up. A negative delta is green (faster than your best). "NO SIGNAL" means no fresh packet.
+
+### Knobs
+
+A dial turns. Tap + or −, or drag around the knob, and the cap rotates to the next detent. The pointer lands on the number printed around it. Detent 1 is the mark in the artwork. A 12-position knob turns 30 degrees per step.
+
+A thumb wheel or scroll wheel is marked `"gesture": "thumb"` in the template. Drag up, toward the top of the wheel picture, for the next position. Drag down for the previous one. The cap spins so the movement is visible. The FSR side encoders, the SF1000 side encoders, the 911 RSR encoders, and the Mercedes page wheels are thumb wheels.
+
+Assetto Corsa binds buttons, not a knob position. Each step pulses one button. + and a forward drag pulse the increase button. − and a backward drag pulse the decrease button. The press is long enough for the control screen to see it. The absolute position is also stored in the knob slot (0–7) on the state packet. vJoy copies slots 0–3 onto axes Ry, Rz, Slider, and Dial. For a 12-position knob, position 0 is the low end of that axis and position 11 is the high end. Bind the two buttons in the game. On the MOZA KS, turbo decrease is button 12 and turbo increase is button 13. TC is 14 and 15. ABS is 16 and 17. Buttons 1–14 are the Xbox pad. Buttons 15–32 are keyboard keys, which Assetto Corsa can bind as well. The button numbers for any other wheel are in its template and can be changed under Setup → Buttons.
 
 ## Protocol
 
@@ -332,6 +348,35 @@ State (`RWPS`, 36 bytes) goes to UDP 41511 about 100 times a second. TCP carries
 TCP frames are a type byte, a little-endian length, and a payload. Type 1 is a JSON hello (`name`, `wheel`, `profile`, `protocol`). Type 2 is a state packet. Type 3 is a ping (`u32` client time). Type 4 is a pong (echoed client time, then server time). Type 5 is goodbye. The phone shows half of that round trip as latency.
 
 Rumble (`RWPR`, large motor, small motor) travels back to the UDP port the phone is sending from. The phone vibrates when the large motor is active.
+
+Dash telemetry (`RWPT`, 40 bytes) travels the same way, about 25 times a second, while Assetto Corsa's shared memory is open. An older phone ignores it. An older receiver never sends it.
+
+| Offset | Type | Field |
+| --- | --- | --- |
+| 0 | 4 bytes | `RWPT` |
+| 4 | u8 | version = 1 |
+| 5 | u8 | flags, bit 0 = the game is live |
+| 6 | u16 | sequence |
+| 8 | u16 | rpm |
+| 10 | u16 | maximum rpm |
+| 12 | u16 | speed, km/h times 10 |
+| 14 | i8 | gear. −1 reverse, 0 neutral, 1 and up. Assetto Corsa's 0 is reverse, so the receiver subtracts one. |
+| 15 | u8 | throttle 0..255 |
+| 16 | u8 | brake 0..255 |
+| 17 | u8 | TC setting. 255 means the game did not report it. |
+| 18 | u8 | ABS setting. 255 means unknown. |
+| 19 | u8 | fuel percent 0..100. 255 means unknown. |
+| 20 | u8 | race position. 0 means unknown. |
+| 21 | u8 | session status. 0 off, 1 replay, 2 live, 3 pause. |
+| 22 | i32 | current lap, milliseconds |
+| 26 | i32 | last lap, milliseconds |
+| 30 | i32 | best lap, milliseconds |
+| 34 | i16 | delta, milliseconds. Negative is faster than the best lap. |
+| 36 | u16 | completed laps |
+| 38 | u8 | TC working now, 0..255 |
+| 39 | u8 | ABS working now, 0..255 |
+
+To try it with Assetto Corsa: start `RacingWheelPro-PC.exe`, start the game, and connect the phone on the same Wi-Fi (or use `adb reverse` for USB). Open a track. The wheel screen fills in, and the console prints `dash` in Hz next to the input rate. In the game's controls, bind each knob's increase and decrease buttons, and bind gear up and gear down to the vJoy paddle buttons (31 and 32 when the device has 32 buttons). Choose RPM under Setup → Pedals if the shift lights should follow the engine instead of the throttle pedal.
 
 ## Build from source
 

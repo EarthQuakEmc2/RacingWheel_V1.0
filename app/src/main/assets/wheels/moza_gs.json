@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.510}
   },
   "outputButtons": 20,
+  "display": {
+    "left": 0.3213,
+    "top": 0.2585,
+    "right": 0.6607,
+    "bottom": 0.4428
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.275,
+    "top": 0.1734,
+    "right": 0.707,
+    "bottom": 0.2372
+  },
   "controls": [
     {
       "id": "l_blu",

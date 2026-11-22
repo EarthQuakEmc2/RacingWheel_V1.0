@@ -8,7 +8,10 @@ import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
 import com.racingwheelpro.input.GearChannel
 import com.racingwheelpro.input.Geometry
+import com.racingwheelpro.input.DashFormat
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.KnobSpin
+import com.racingwheelpro.input.RevLights
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Control
@@ -16,6 +19,7 @@ import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
+import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.proto.FrameBuffer
 import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
@@ -414,6 +418,95 @@ class CoreTest {
         // Jump from +3 to -3 is a wrap of about -6 rad, which should add +2π.
         val next = u.feed(-3f, true)
         assertTrue(next > 3f)
+    }
+
+    @Test
+    fun revLightsFillLeftToRightAndRpmWaitsForTheTopOfTheRange() {
+        assertEquals(0, RevLights.litCount(0f, 15))
+        assertEquals(15, RevLights.litCount(1f, 15))
+        assertEquals(8, RevLights.litCount(0.5f, 15))
+        val left = RevLights.colorAt(0, 15)
+        val mid = RevLights.colorAt(9, 15)
+        val right = RevLights.colorAt(14, 15)
+        assertTrue(left.g > left.r)
+        assertTrue(mid.r > mid.b)
+        assertTrue(right.b > right.g)
+        assertEquals(0f, RevLights.rpmLevel(6000, 8000), 0.001f)
+        assertEquals(0.5f, RevLights.rpmLevel(7000, 8000), 0.001f)
+        assertEquals(1f, RevLights.rpmLevel(8000, 8000), 0.001f)
+        assertEquals(0.4f, RevLights.sourceLevel("rpm", 0.4f, 8000, 8000, false), 0.001f)
+        assertEquals(1f, RevLights.sourceLevel("rpm", 0.1f, 8000, 8000, true), 0.001f)
+        assertEquals(0.25f, RevLights.sourceLevel("throttle", 0.25f, 8000, 8000, true), 0.001f)
+    }
+
+    @Test
+    fun dashReadsLikeAWheelAndThePacketRoundTrips() {
+        assertEquals("R", DashFormat.gearLabel(-1))
+        assertEquals("N", DashFormat.gearLabel(0))
+        assertEquals("4", DashFormat.gearLabel(4))
+        assertEquals(4, DashFormat.acGearToDisplay(5))
+        assertEquals("1:23.456", DashFormat.lapTime(83456))
+        assertEquals("--:--.---", DashFormat.lapTime(0))
+        assertEquals("-0.42", DashFormat.delta(-420))
+        assertEquals("+1.20", DashFormat.delta(1200))
+        val dash = DashTelemetry(
+            live = true, seq = 9, rpm = 7400, maxRpm = 8500, speedKmh = 187.4f, gear = 5,
+            gas = 200, brake = 0, tc = 4, abs = 2, fuelPct = 55, position = 3, status = 2,
+            currentLapMs = 86321, lastLapMs = 92000, bestLapMs = 86741, deltaMs = -420,
+            laps = 2, tcActive = 64, absActive = 0,
+        )
+        val back = Packets.parseTelemetry(Packets.telemetry(dash))
+        assertNotNull(back)
+        back!!
+        assertTrue(back.live)
+        assertEquals(5, back.gear)
+        assertEquals(7400, back.rpm)
+        assertEquals(187.4f, back.speedKmh, 0.15f)
+        assertEquals(4, back.tc)
+        assertEquals(55, back.fuelPct)
+        assertEquals(3, back.position)
+        assertEquals(-420, back.deltaMs)
+        assertEquals(Proto.TELEMETRY_LEN, Packets.telemetry(dash).size)
+        assertNull(Packets.parseTelemetry(byteArrayOf(1, 2, 3, 4)))
+    }
+
+    @Test
+    fun knobDiscTurnsOntoTheSelectedMark() {
+        assertEquals(0f, KnobSpin.discDegrees(-60f, 0, 12, true), 0.01f)
+        assertEquals(30f, KnobSpin.discDegrees(-60f, 1, 12, true), 0.01f)
+        val turned = KnobMath.normalizeDeg(-60f + KnobSpin.discDegrees(-60f, 4, 12, true))
+        assertEquals(KnobMath.detentDegrees(-60f, 4, 12, true), turned, 0.01f)
+        assertEquals(-30f, KnobSpin.discDegrees(-90f, 1, 12, false), 0.01f)
+        assertTrue(KnobSpin.thumbStepPx(10f) >= 14f)
+    }
+
+    @Test
+    fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
+        val templates = loadAssetTemplates()
+        assertEquals(34, templates.size)
+        templates.forEach { wheel ->
+            val screen = wheel.display
+            assertNotNull(wheel.id, screen)
+            screen!!
+            assertTrue(wheel.id, screen.right > screen.left + 0.05f)
+            assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            if (wheel.revLights.count > 0) {
+                val row = wheel.revLights.rect
+                assertNotNull(wheel.id, row)
+                assertTrue(wheel.id, row!!.right > row.left)
+                assertTrue(wheel.revLights.count in 4..24)
+            }
+        }
+        val ks = templates.first { it.id == "moza_ks" }
+        assertTrue(ks.revLights.count >= 8)
+        assertEquals("dial", ks.controls.first { it.id == "turbo" }.gesture)
+        val fsr = templates.first { it.id == "moza_fsr" }
+        assertEquals("thumb", fsr.controls.first { it.id == "enc_l" }.gesture)
+        assertEquals("thumb", fsr.controls.first { it.id == "enc_r" }.gesture)
+        val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(fsr))
+        assertEquals(fsr.display!!.left, again.display!!.left, 0.0001f)
+        assertEquals(fsr.revLights.count, again.revLights.count)
+        assertEquals("thumb", again.controls.first { it.id == "enc_l" }.gesture)
     }
 
     private fun loadAssetTemplates(): List<WheelTemplate> {

@@ -27,6 +27,9 @@ import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.input.Smoother
 import com.racingwheelpro.input.SteeringSensor
 import com.racingwheelpro.input.Curves
+import com.racingwheelpro.input.KnobSpin
+import com.racingwheelpro.input.RevLights
+import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.DiscoveredHost
@@ -97,6 +100,10 @@ class RaceSession(private val context: Context) {
     var premiumUnlocked by mutableStateOf(false)
     var premiumDetail by mutableStateOf("")
     var knobRevision by mutableIntStateOf(0)
+    var telemetry by mutableStateOf(DashTelemetry.EMPTY)
+    var dashLive by mutableStateOf(false)
+    var revLightMode by mutableStateOf("throttle")
+    private var telemetryAt = 0L
 
     val inputLog = InputLog(File(context.filesDir, "input-logs"))
     val genericNames: Boolean = BuildConfig.GENERIC_NAMES
@@ -181,6 +188,7 @@ class RaceSession(private val context: Context) {
                 buzz((10 + large / 20).toLong())
             }
         },
+        onTelemetry = { applyTelemetry(it) },
     )
 
     private val frame = object : Runnable {
@@ -234,6 +242,7 @@ class RaceSession(private val context: Context) {
         }
         ensureBindings()
         syncKnobBytes()
+        adoptRevMode()
         applyEntitlement()
         gate.start()
         wire = buildPacket(0f, 0f, 0f, 0f, 0L, 0)
@@ -306,6 +315,7 @@ class RaceSession(private val context: Context) {
             return
         }
         profile = next
+        adoptRevMode()
         templates.find { it.id == next.wheelId }?.let { wheel = it }
         ensureBindings()
         syncKnobBytes()
@@ -341,6 +351,31 @@ class RaceSession(private val context: Context) {
         return owner?.let { displayName(it) } ?: "Profile"
     }
 
+    fun revLevel(): Float = RevLights.sourceLevel(
+        revLightMode,
+        throttleOut,
+        telemetry.rpm,
+        telemetry.maxRpm,
+        dashLive,
+    )
+
+    fun chooseRevLights(mode: String) {
+        val next = if (mode == "rpm") "rpm" else "throttle"
+        revLightMode = next
+        profile.revLights = next
+        touchProfile()
+    }
+
+    fun applyTelemetry(next: DashTelemetry) {
+        telemetry = next
+        telemetryAt = SystemClock.elapsedRealtime()
+        dashLive = next.live
+    }
+
+    private fun adoptRevMode() {
+        revLightMode = if (profile.revLights == "rpm") "rpm" else "throttle"
+    }
+
     fun knobPosition(controlId: String): Int {
         val control = wheel.controls.find { it.id == controlId } ?: return 0
         return knobAt(control)
@@ -372,6 +407,7 @@ class RaceSession(private val context: Context) {
             gearDownButton = profile.gearDownButton,
             shiftUpTune = copyTune(profile.shiftUpTune),
             shiftDownTune = copyTune(profile.shiftDownTune),
+            revLights = profile.revLights,
         )
         profiles = profiles + copy
         profile = copy
@@ -491,7 +527,7 @@ class RaceSession(private val context: Context) {
                     val binding = bindingFor(hit.id) ?: return
                     holds[id] = Hold(hit.id, binding, SystemClock.elapsedRealtime())
                     if (hit.isRotary) {
-                        rotaryAngle[id] = knobAngle(hit, x, y, angle)
+                        rotaryAngle[id] = if (hit.isThumb) localY(x, y, angle) else knobAngle(hit, x, y, angle)
                         rotaryAccum[id] = 0f
                     } else if (binding.mode != "toggle") {
                         buzz(12)
@@ -515,7 +551,10 @@ class RaceSession(private val context: Context) {
                 val hold = holds[id]
                 if (hold != null) {
                     val control = wheel.controls.find { it.id == hold.controlId }
-                    if (control?.isRotary == true && !hold.nudge) dragRotary(id, control, hold.binding, x, y, angle)
+                    if (control?.isRotary == true && !hold.nudge) {
+                        if (control.isThumb) dragThumb(id, control, hold.binding, x, y, angle)
+                        else dragRotary(id, control, hold.binding, x, y, angle)
+                    }
                 } else if (usingTouch()) {
                     val prev = steerFingers[id]
                     if (prev != null) {
@@ -690,6 +729,33 @@ class RaceSession(private val context: Context) {
         buzz(8)
     }
 
+    /** Drag up on the wheel picture (smaller local y) is the next detent. */
+    private fun dragThumb(id: Long, control: Control, binding: Binding, x: Float, y: Float, angle: Float) {
+        val ly = localY(x, y, angle)
+        val prev = rotaryAngle[id] ?: ly
+        rotaryAngle[id] = ly
+        var accum = (rotaryAccum[id] ?: 0f) + (ly - prev)
+        val stepPx = KnobSpin.thumbStepPx(control.r * imageRect.width)
+        var steps = 0
+        while (accum <= -stepPx) {
+            accum += stepPx
+            steps += 1
+        }
+        while (accum >= stepPx) {
+            accum -= stepPx
+            steps -= 1
+        }
+        rotaryAccum[id] = accum
+        if (steps == 0) return
+        stepKnob(control, binding, steps)
+        buzz(6)
+    }
+
+    private fun localY(x: Float, y: Float, rotation: Float): Float {
+        val (_, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, rotation)
+        return ly
+    }
+
     private fun knobKey(control: Control) = "${wheel.id}:${control.id}"
 
     private fun knobAt(control: Control): Int {
@@ -740,9 +806,14 @@ class RaceSession(private val context: Context) {
         for (control in wheel.controls) {
             if (!control.isRotary) continue
             val limit = control.r * imageRect.width * 0.32f
-            for ((side, delta) in listOf(-0.62f to -1, 0.62f to 1)) {
-                val tx = control.cx + side * control.r
-                val ty = control.cy
+            val targets = if (control.isThumb) {
+                listOf(Triple(0f, -0.62f, 1), Triple(0f, 0.62f, -1))
+            } else {
+                listOf(Triple(-0.62f, 0f, -1), Triple(0.62f, 0f, 1))
+            }
+            for ((ox, oy, delta) in targets) {
+                val tx = control.cx + ox * control.r
+                val ty = control.cy + oy * control.r
                 val dist = hypot((nx - tx) * imageRect.width, (ny - ty) * imageRect.height)
                 if (dist <= limit && dist < bestDist) {
                     bestDist = dist
@@ -761,6 +832,7 @@ class RaceSession(private val context: Context) {
             profiles = profiles + it
             profilesStore.save(it)
         }
+        adoptRevMode()
         ensureBindings()
         syncKnobBytes()
         selectedControl = null
@@ -858,6 +930,8 @@ class RaceSession(private val context: Context) {
         steerOut = steer
         throttleOut = throttle
         brakeOut = brake
+        val fresh = telemetry.live && now - telemetryAt < 700
+        if (fresh != dashLive) dashLive = fresh
         clutchOut = clutch
         heldButtons = (1..32).filter { mask and (1L shl (it - 1)) != 0L }
         wire = buildPacket(steer, throttle, brake, clutch, mask, gear)

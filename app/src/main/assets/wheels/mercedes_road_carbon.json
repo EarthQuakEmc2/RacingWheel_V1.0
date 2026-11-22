@@ -16,6 +16,12 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.524}
   },
   "outputButtons": 7,
+  "display": {
+    "left": 0.3801,
+    "top": 0.3942,
+    "right": 0.6383,
+    "bottom": 0.5736
+  },
   "controls": [
     {
       "id": "pad_l",

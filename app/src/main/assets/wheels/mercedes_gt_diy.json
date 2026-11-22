@@ -16,6 +16,12 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.516}
   },
   "outputButtons": 10,
+  "display": {
+    "left": 0.3357,
+    "top": 0.2978,
+    "right": 0.6558,
+    "bottom": 0.5069
+  },
   "controls": [
     {
       "id": "radio",
@@ -87,6 +93,7 @@
       "id": "page_l",
       "label": "PAGE",
       "kind": "rotary",
+      "gesture": "thumb",
       "shape": "circle",
       "cx": 0.25532,
       "cy": 0.44192,
@@ -103,6 +110,7 @@
       "id": "page_r",
       "label": "PAGE",
       "kind": "rotary",
+      "gesture": "thumb",
       "shape": "circle",
       "cx": 0.73759,
       "cy": 0.41667,

@@ -23,9 +23,31 @@ data class Control(
     val startAngle: Float = -90f,
     /** When true, higher detents move clockwise on the screen. */
     val clockwise: Boolean = true,
+    /**
+     * `dial` rotates to a printed mark. `thumb` is a scroll wheel: drag up and down.
+     */
+    val gesture: String = "dial",
 ) {
     val isRotary: Boolean get() = kind == "rotary"
+    val isThumb: Boolean get() = gesture == "thumb"
 }
+
+/** A rectangle in fractions of the wheel image. */
+data class NormRect(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+) {
+    val width: Float get() = right - left
+    val height: Float get() = bottom - top
+}
+
+/** Shift-light row on the rim. [count] of 0 means this wheel has no rev lights. */
+data class RevLightSpec(
+    val count: Int = 0,
+    val rect: NormRect? = null,
+)
 
 /** Opaque wheel plate inside the picture, as fractions of the image. */
 data class WheelBounds(
@@ -97,6 +119,9 @@ data class WheelTemplate(
     val bounds: WheelBounds = WheelBounds.FULL,
     val shiftUp: ShifterSpec = ShifterSpec.DEFAULT,
     val shiftDown: ShifterSpec = ShifterSpec.DEFAULT,
+    /** Built-in screen, in fractions of the image. Telemetry is drawn here. */
+    val display: NormRect? = null,
+    val revLights: RevLightSpec = RevLightSpec(),
 ) {
     val faceButtons: Int get() = controls.count { !it.isRotary }
     val rotaries: Int get() = controls.count { it.isRotary }
@@ -210,6 +235,8 @@ class Profile(
     var gearDownButton: Int = 0,
     val shiftUpTune: ShifterTune = ShifterTune(),
     val shiftDownTune: ShifterTune = ShifterTune(),
+    /** `throttle` or `rpm`. RPM uses Assetto Corsa when a telemetry packet is live. */
+    var revLights: String = "throttle",
 )
 
 data class DiscoveredHost(
