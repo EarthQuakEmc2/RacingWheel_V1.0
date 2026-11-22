@@ -21,7 +21,7 @@ const ITEMS = [
   },
   {
     q: 'Windows SmartScreen blocks the exe.',
-    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.5.1 release, choose More info, then Run anyway.',
+    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.5.0 release, choose More info, then Run anyway.',
   },
   {
     q: 'How do the paddle shifters reach the game?',

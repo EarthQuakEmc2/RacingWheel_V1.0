@@ -137,6 +137,69 @@ object ShifterZones {
     /** Kept so a point inside the default rectangle can be asserted without a button list. */
     fun claims(cx: Float, cy: Float): Boolean = contains(cx, cy) != null
 
+    /**
+     * Button circles that cross [zone]. The overlay subtracts these and nothing else,
+     * so a paddle press cannot paint a disc on every other button.
+     */
+    fun cutoutsOn(
+        zone: Zone,
+        controls: List<Control>,
+        imageW: Int,
+        imageH: Int,
+        hitSlop: Float,
+        extraPx: Float,
+    ): List<Control> = controls.filter { circleMeetsZone(zone, it, imageW, imageH, hitSlop, extraPx) }
+
+    fun circleMeetsZone(
+        zone: Zone,
+        control: Control,
+        imageW: Int,
+        imageH: Int,
+        hitSlop: Float,
+        extraPx: Float,
+    ): Boolean {
+        if (imageW < 1 || imageH < 1) return false
+        val cx = control.cx * imageW
+        val cy = control.cy * imageH
+        val radius = cutoutRadiusPx(control, imageW, hitSlop, extraPx)
+        val nearestX = cx.coerceIn(zone.left * imageW, zone.right * imageW)
+        val nearestY = cy.coerceIn(zone.top * imageH, zone.bottom * imageH)
+        return hypot(cx - nearestX, cy - nearestY) <= radius
+    }
+
+    /**
+     * The button whose cut-out contains [nx], [ny], when that point is also inside a
+     * paddle rectangle. The margin ring is part of the notch, so this is wider than
+     * the drawn hotspot. Null when the point belongs to the paddle itself.
+     */
+    fun notchControl(
+        nx: Float,
+        ny: Float,
+        upZone: Zone,
+        downZone: Zone,
+        controls: List<Control>,
+        imageW: Int,
+        imageH: Int,
+        hitSlop: Float,
+        extraPx: Float,
+    ): Control? {
+        if (imageW < 1 || imageH < 1) return null
+        if (!upZone.contains(nx, ny) && !downZone.contains(nx, ny)) return null
+        var best: Control? = null
+        var bestD = Float.MAX_VALUE
+        for (control in controls) {
+            val limit = cutoutRadiusPx(control, imageW, hitSlop, extraPx)
+            val dx = (nx - control.cx) * imageW
+            val dy = (ny - control.cy) * imageH
+            val d = hypot(dx, dy)
+            if (d <= limit && d < bestD) {
+                best = control
+                bestD = d
+            }
+        }
+        return best
+    }
+
     fun handleAt(
         nx: Float,
         ny: Float,

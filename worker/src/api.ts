@@ -81,7 +81,7 @@ async function route(request: Request, env: Env, url: URL): Promise<Response> {
   const method = request.method.toUpperCase();
   const db = env.DB;
 
-  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.5.1' });
+  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.5.0' });
   if (method === 'GET' && path === '/api/voice') return json(voicePublicInfo());
   if (method === 'GET' && path === '/api/voice/ws') return openVoice(request, env, url);
   if (method === 'GET' && path === '/api/tracks') return json({ tracks: TRACKS });

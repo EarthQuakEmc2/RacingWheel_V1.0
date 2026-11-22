@@ -50,7 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.racingwheelpro.BuildConfig
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.KnobMath
@@ -531,22 +532,28 @@ private fun DrawScope.drawShifterZone(
     val y = rect.top + zone.top * rect.height
     val w = (zone.right - zone.left) * rect.width
     val h = (zone.bottom - zone.top) * rect.height
-    val path = Path().apply {
-        fillType = PathFillType.EvenOdd
+    val zonePath = Path().apply {
         addRoundRect(
             androidx.compose.ui.geometry.RoundRect(
                 x, y, x + w, y + h,
                 androidx.compose.ui.geometry.CornerRadius(8f, 8f),
             ),
         )
-        val scale = rect.width / wheel.imageWidth.coerceAtLeast(1)
-        for (control in wheel.controls) {
-            val rad = ShifterZones.cutoutRadiusPx(control, wheel.imageWidth, wheel.hitSlop, extraPx) * scale
-            val px = rect.left + control.cx * rect.width
-            val py = rect.top + control.cy * rect.height
-            addOval(androidx.compose.ui.geometry.Rect(px - rad, py - rad, px + rad, py + rad))
-        }
     }
+    val scale = rect.width / wheel.imageWidth.coerceAtLeast(1)
+    val holes = Path()
+    var anyHole = false
+    for (control in ShifterZones.cutoutsOn(
+        zone, wheel.controls, wheel.imageWidth, wheel.imageHeight, wheel.hitSlop, extraPx,
+    )) {
+        val rad = ShifterZones.cutoutRadiusPx(control, wheel.imageWidth, wheel.hitSlop, extraPx) * scale
+        val px = rect.left + control.cx * rect.width
+        val py = rect.top + control.cy * rect.height
+        holes.addOval(androidx.compose.ui.geometry.Rect(px - rad, py - rad, px + rad, py + rad))
+        anyHole = true
+    }
+    val drawn = Path()
+    val path = if (anyHole && drawn.op(zonePath, holes, PathOperation.Difference)) drawn else zonePath
     drawPath(path, color.copy(alpha = if (held) 0.34f else 0.16f))
     drawPath(path, color.copy(alpha = if (held) 0.95f else 0.55f), style = Stroke(width = if (held) 3.5f else 1.8f))
     labelPaint.color = android.graphics.Color.WHITE
@@ -776,7 +783,7 @@ private fun SetupScreen(session: RaceSession) {
                         bump()
                     }
                     Text(
-                        "The receiver types Page Up and Page Down, and vJoy buttons 31 and 32. Set a button number here if the game should also see that pad button. 0 leaves the paddle on the gear channel only.",
+                        "The receiver types Page Up and Page Down. vJoy button 31 is shift up and button 32 is shift down when the device has 32 buttons. With fewer, the console names the last two. Set a button number here if the game should also see that pad button. 0 leaves the paddle on the gear channel only.",
                         color = Muted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(bottom = 10.dp),
@@ -814,6 +821,23 @@ private fun SetupScreen(session: RaceSession) {
                             modifier = Modifier.fillMaxWidth().clickable { session.selectProfile(item.id) }.padding(vertical = 6.dp),
                         )
                     }
+                    Spacer(Modifier.height(16.dp))
+                    SectionTitle("Community")
+                    val context = LocalContext.current
+                    Text(
+                        "Join our Telegram",
+                        color = SignalYellow,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            val view = Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.TELEGRAM_URL))
+                            runCatching { context.startActivity(view) }
+                        }.padding(vertical = 6.dp),
+                    )
+                    Text(
+                        "Chat with other drivers, hear about updates, vote in polls, and grab downloads.",
+                        color = Muted,
+                        fontSize = 12.sp,
+                    )
                 }
             }
         }

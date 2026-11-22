@@ -1,6 +1,8 @@
-const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.1/RacingWheelPro.apk'
-const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.1/RacingWheelPro-PC.exe'
-const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.5.1'
+import { telegramUrl } from '../lib/telegram'
+
+const APK = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.0/RacingWheelPro.apk'
+const EXE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/download/v0.5.0/RacingWheelPro-PC.exe'
+const RELEASE = 'https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.5.0'
 
 export default function Download() {
   return (
@@ -31,8 +33,12 @@ export default function Download() {
           </article>
         </div>
         <p className="release-row">
-          <a href={RELEASE}>Android app and Windows receiver on the v0.5.1 release</a>
+          <a href={RELEASE}>Android app and Windows receiver on the v0.5.0 release</a>
           <span>GPL-3.0 · 21 Nov 2026</span>
+        </p>
+        <p className="release-row">
+          <a href={telegramUrl}>Join our Telegram</a>
+          <span>Chat, updates, polls, and downloads</span>
         </p>
       </div>
     </section>

@@ -12,7 +12,7 @@ The promotional site lives in [`website/`](website/). Its canonical address is <
 
 ## Free and Premium
 
-Version 0.5.1 keeps every driving feature in the free app and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
+Version 0.5.2 is a test build (GitHub prerelease). The website download stays on 0.5.0. The app keeps every driving feature in the free build and locks the extra wheel pictures. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down), and each pedal can sit in from the screen edge.
 
 The free build includes four wheels, chosen because their numbered dials line up with the hotspot centers: MOZA KS, Thrustmaster SF1000, Mercedes-AMG F1 (the STRAT and HPP rings), and the Ascher McLaren. The other templates stay in the garage as locked tiles. The tile and the banner say **Unlock Racing Wheel Premium - $3.99**. Steering, throttle, brake, buttons, the layout editor, and the Windows receiver do not check that lock. One free wheel, the KS, draws the animated dial pointer so the knob feature can be tried.
 
@@ -294,13 +294,15 @@ Each hotspot has a virtual button number from 1 to 32, or none. Momentary holds 
 
 Every wheel reserves a rectangle on each side for the paddle shifters. The left rectangle is shift up. The right rectangle is shift down. The default is 20% of that wheel's width, measured inward from the wheel plate, and 32% of the plate's height, centered on the grip. Templates whose art sits higher or lower carry their own center. Those defaults are `wheelBounds` and `shifters` in the template JSON. `WIDTH_FRACTION` and `HEIGHT_FRACTION` in `ShifterZones.kt` are the fallback.
 
-The rectangles are part of the wheel picture. Steering rotates them with the art, and the hit test unwinds that rotation, so a tap lands on the paddle that is drawn under the finger. Once the finger is down, the shift stays held while the wheel turns, the same way a face button stays held. Where the rectangle crosses a button or a knob, that circle plus a small margin is cut out of the zone. The overlay shows the notch, and a touch in the notch presses the button. Moving a hotspot or resizing a paddle recomputes the cut-out.
+The rectangles are part of the wheel picture. Steering rotates them with the art, and the hit test unwinds that rotation, so a tap lands on the paddle that is drawn under the finger. Once the finger is down, the shift stays held while the wheel turns, the same way a face button stays held. Where the rectangle crosses a button or a knob, that circle plus a small margin is cut out of the zone. The overlay draws only that bite, a half circle when the control sits on the edge, and a touch there presses the button. Other buttons are not highlighted. Moving a hotspot or resizing a paddle recomputes the cut-out.
 
 The layout editor resizes each paddle on its own. Drag the inner edge for width, the top or bottom edge for height, or the middle to slide it. The sliders do the same thing. **RESET PADDLES** restores this wheel's defaults. Width is 8–45% of the wheel, height is 16–65%, and the band stays on the plate. The sizes are stored in the profile.
 
 Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
 
-The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down, and it holds vJoy buttons 31 and 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out.
+The public Telegram channel is the `telegram` field in `community.json` at the repo root. The phone, the receiver, and the website all read that one value. The current address is a placeholder until the real @username is written there. On the phone it is Setup → Profile → Join our Telegram. The receiver prints it at startup and links it from the local page.
+
+The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy it holds button 31 for shift up and button 32 for shift down when the device has at least 32 buttons. Open vJoyConf, set device 1 to 8 axes and 32 buttons, apply, and restart the receiver. With fewer buttons the console names the last two it can use, and those can overlap wheel buttons until the count is 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out. An Xbox pad from ViGEm has no button 31, so when that pad is the wheel the receiver also opens vJoy and puts only the two paddle buttons on it. Assetto Corsa then sees two different joystick buttons.
 
 ## Protocol
 

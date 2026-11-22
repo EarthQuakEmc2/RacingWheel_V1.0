@@ -23,6 +23,13 @@ val genericNames = secret("RWP_GENERIC_NAMES") == "true" ||
 /** Compile the :voice module into this APK. -Pracingwheel.voice=false leaves it out. */
 val voiceEnabled = (findProperty("racingwheel.voice") as String?) != "false"
 
+val telegramUrl = run {
+    val text = rootProject.file("community.json").readText()
+    val match = Regex(""""telegram"\s*:\s*"([^"]+)"""").find(text)
+        ?: error("community.json is missing the telegram URL")
+    match.groupValues[1]
+}
+
 android {
     namespace = "com.racingwheelpro"
     compileSdk = 35
@@ -37,6 +44,7 @@ android {
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
         buildConfigField("boolean", "VOICE_ENABLED", voiceEnabled.toString())
         buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
+        buildConfigField("String", "TELEGRAM_URL", "\"$telegramUrl\"")
     }
 
     flavorDimensions += "tier"

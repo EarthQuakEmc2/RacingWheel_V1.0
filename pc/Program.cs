@@ -45,6 +45,23 @@ internal static class Program
             Console.Error.WriteLine("self-test: gear mismatch");
             return 1;
         }
+        var gearUp = GearMap.Compose(0, Proto.GearUp, GearMap.Resolve(32));
+        var gearDown = GearMap.Compose(0, Proto.GearDown, GearMap.Resolve(8));
+        if (gearUp.Count(b => b) != 1 || !gearUp[30] || gearDown.Length != 8 || gearDown.Count(b => b) != 1 || !gearDown[7])
+        {
+            Console.Error.WriteLine("self-test: gear buttons");
+            return 1;
+        }
+        if (IntPtr.Size == 8 && KeyboardLayout.InputStride != 40)
+        {
+            Console.Error.WriteLine("self-test: keyboard input size " + KeyboardLayout.InputStride);
+            return 1;
+        }
+        if (!Community.Telegram.StartsWith("https://t.me/", StringComparison.Ordinal))
+        {
+            Console.Error.WriteLine("self-test: telegram link");
+            return 1;
+        }
         if (!Packets.IsFind(Packets.HostBeacon(1, 2, 0, "x").Take(0).ToArray()) &&
             !Packets.IsFind(new byte[] { (byte)'R', (byte)'W', (byte)'P', (byte)'F' }))
         {
@@ -232,6 +249,7 @@ internal sealed class Receiver : IDisposable
         Console.Error.WriteLine($"  discovery UDP {_opt.Discovery}   telemetry UDP {_opt.Udp}   TCP {_opt.Tcp}");
         Console.Error.WriteLine($"  output: {_output.Name}");
         Console.Error.WriteLine("  Waiting for the phone. Ctrl+C stops.");
+        Console.Error.WriteLine("  Community  " + Community.Telegram);
         if (!_opt.NoUi) _uiUrl = StartUi();
         if (_uiUrl.Length > 0) Console.Error.WriteLine("  Logs UI  " + _uiUrl);
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; _run = false; };
