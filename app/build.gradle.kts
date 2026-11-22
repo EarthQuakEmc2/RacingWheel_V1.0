@@ -20,6 +20,13 @@ fun secret(name: String): String? {
 val genericNames = secret("RWP_GENERIC_NAMES") == "true" ||
     (findProperty("racingwheel.genericNames") as String?) == "true"
 
+val telegramUrl = run {
+    val text = rootProject.file("community.json").readText()
+    val match = Regex(""""telegram"\s*:\s*"([^"]+)"""").find(text)
+        ?: error("community.json is missing the telegram URL")
+    match.groupValues[1]
+}
+
 android {
     namespace = "com.racingwheelpro"
     compileSdk = 35
@@ -28,11 +35,12 @@ android {
         applicationId = "site.myracingwheel.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.5.1"
+        versionCode = 8
+        versionName = "0.5.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
         buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
+        buildConfigField("String", "TELEGRAM_URL", "\"$telegramUrl\"")
     }
 
     flavorDimensions += "tier"

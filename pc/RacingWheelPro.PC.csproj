@@ -16,6 +16,11 @@
     <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="..\community.json">
+      <LogicalName>community.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="RacingWheelPro.PC.Tests/**" />
     <None Remove="RacingWheelPro.PC.Tests/**" />
     <EmbeddedResource Remove="RacingWheelPro.PC.Tests/**" />
