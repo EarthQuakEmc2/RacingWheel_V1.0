@@ -432,6 +432,7 @@ async function leaderboard(url: URL, db: D1Like) {
 }
 
 async function requireUser(request: Request, env: Env, allowDevice = false): Promise<Auth | Response> {
+  if (!env.DB?.prepare) return json({ error: 'Sign in required' }, 401);
   const header = request.headers.get('authorization') || '';
   const bearer = header.toLowerCase().startsWith('bearer ') ? header.slice(7).trim() : '';
   if (allowDevice && bearer) {
