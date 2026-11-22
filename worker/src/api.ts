@@ -23,6 +23,7 @@ import {
 } from './metrics';
 import { parseUpload } from './srt';
 import { TRACKS, catalogLength, trackLabel } from './tracks';
+import { prepareVoice, voicePublicInfo } from './voice_logic';
 
 export const COACH_MODEL = '@cf/openai/gpt-oss-120b';
 const MAX_BODY = 8_000_000;
@@ -44,10 +45,17 @@ export interface AiBinding {
   run(model: string, input: unknown): Promise<unknown>;
 }
 
+export interface VoiceRoomNamespace {
+  idFromName(name: string): unknown;
+  get(id: unknown): { fetch(request: Request): Promise<Response> };
+}
+
 export interface Env {
   DB: D1Like;
   ASSETS?: { fetch(request: Request): Promise<Response> };
   AI?: AiBinding;
+  /** SQLite-backed Durable Object. One instance per voice room. Absent in unit tests. */
+  VOICE_ROOMS?: VoiceRoomNamespace;
 }
 
 type Auth = { userId: string; premium: number; deviceId: string | null };
@@ -73,7 +81,9 @@ async function route(request: Request, env: Env, url: URL): Promise<Response> {
   const method = request.method.toUpperCase();
   const db = env.DB;
 
-  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.5.1' });
+  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.5.0' });
+  if (method === 'GET' && path === '/api/voice') return json(voicePublicInfo());
+  if (method === 'GET' && path === '/api/voice/ws') return openVoice(request, env, url);
   if (method === 'GET' && path === '/api/tracks') return json({ tracks: TRACKS });
   if (method === 'GET' && path === '/api/cars') return json({ cars: CARS });
 
@@ -120,6 +130,18 @@ async function route(request: Request, env: Env, url: URL): Promise<Response> {
   if (method === 'GET' && path === '/api/leaderboard') return leaderboard(url, db);
 
   return json({ error: 'Not found' }, 404);
+}
+
+/** Anonymous room. A website cookie is not available to the phone, so the room code is the join key. */
+async function openVoice(request: Request, env: Env, url: URL): Promise<Response> {
+  if ((request.headers.get('upgrade') || '').toLowerCase() !== 'websocket') {
+    return json({ error: 'WebSocket upgrade required' }, 426);
+  }
+  const prepared = prepareVoice(url.searchParams.get('room'), url.searchParams.get('name'));
+  if (!prepared.ok) return json({ error: prepared.error }, prepared.status);
+  if (!env.VOICE_ROOMS) return json({ error: 'Voice relay is not configured' }, 503);
+  const id = env.VOICE_ROOMS.idFromName(prepared.room);
+  return env.VOICE_ROOMS.get(id).fetch(request);
 }
 
 async function register(request: Request, env: Env) {

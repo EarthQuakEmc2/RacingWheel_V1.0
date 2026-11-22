@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.5.2] - 2026-11-22
+
+Test release. v0.5.0 stays the stable download on the website and at `releases/latest`. This build is a GitHub prerelease for testing.
+
+### Fixed
+
+- Tapping shift up lights only the up zone, and tapping shift down lights only the down zone. The other buttons on the wheel stay as they were. One tap sends one gear-up or one gear-down, not a press of every button.
+- Where a paddle zone crosses a button, the overlay now shows a notch cut out of the zone. If the button sits on the edge, that notch is a half circle. A tap inside the notch, including the small margin around the button, presses that button. A tap on the rest of the zone still shifts.
+- Assetto Corsa's control screen can see gear up and gear down as two different joystick buttons. The receiver types Page Up for gear up and Page Down for gear down as well.
+- On vJoy, gear up is button 31 and gear down is button 32 when the device has at least 32 buttons. Open vJoyConf, set the device to 8 axes and 32 buttons, apply, and start the receiver again. If the device has fewer buttons, the console prints the two button numbers it is using instead. Those can overlap wheel buttons until the count is 32. Each gear button is set once per update, so the press stays down long enough for the game to notice it.
+- The keyboard keys for the paddles (and for wheel buttons past the Xbox pad) were never delivered, because the key packet was the wrong size. Page Up and Page Down now arrive while the zone is held.
+- When the wheel itself is the Xbox pad, that pad has no button 31. If vJoy is installed, the receiver also opens it and moves only the two paddle buttons there, with the axes held in the center so the car is not steered by that second device.
+
+### Added
+
+- A Telegram link for chat, update news, polls, and downloads: https://t.me/racingwheelpro. On the phone it is Setup, then Profile, then Join our Telegram. The Windows receiver prints it at startup and shows Join our Telegram on its local page (http://127.0.0.1:41513/). The website footer and the download section use the same link. The address is the `telegram` value in `community.json` at the root of the repo. The site source includes the link. The live site is not updated by this release and still serves v0.5.0.
+
+### Changed
+
+- Android `versionCode` is 8, `versionName` is 0.5.2.
+- v0.5.1 is marked as a prerelease so the latest stable release remains v0.5.0.
+
 ## [0.5.1] - 2026-11-21
 
 Paddle zones can be resized, and they no longer cover a button.
@@ -126,7 +148,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.3.0...v0.4.0

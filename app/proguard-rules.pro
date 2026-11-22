@@ -15,3 +15,5 @@
 -keep class com.racingwheelpro.billing.FreePremiumGate { *; }
 -keep class com.racingwheelpro.billing.OpenPremiumGate { *; }
 -keep class com.racingwheelpro.billing.PlayPremiumGate { *; }
+-keep class com.racingwheelpro.voice.** { *; }
+-keep class io.github.jaredmdobson.concentus.** { *; }

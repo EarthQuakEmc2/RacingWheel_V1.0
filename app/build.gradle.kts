@@ -20,6 +20,16 @@ fun secret(name: String): String? {
 val genericNames = secret("RWP_GENERIC_NAMES") == "true" ||
     (findProperty("racingwheel.genericNames") as String?) == "true"
 
+/** Compile the :voice module into this APK. -Pracingwheel.voice=false leaves it out. */
+val voiceEnabled = (findProperty("racingwheel.voice") as String?) != "false"
+
+val telegramUrl = run {
+    val text = rootProject.file("community.json").readText()
+    val match = Regex(""""telegram"\s*:\s*"([^"]+)"""").find(text)
+        ?: error("community.json is missing the telegram URL")
+    match.groupValues[1]
+}
+
 android {
     namespace = "com.racingwheelpro"
     compileSdk = 35
@@ -29,10 +39,12 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 7
-        versionName = "0.5.1"
+        versionName = if (voiceEnabled) "0.5.1-ptt" else "0.5.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
+        buildConfigField("boolean", "VOICE_ENABLED", voiceEnabled.toString())
         buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
+        buildConfigField("String", "TELEGRAM_URL", "\"$telegramUrl\"")
     }
 
     flavorDimensions += "tier"
@@ -99,9 +111,30 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    sourceSets {
+        getByName("main") {
+            if (voiceEnabled) {
+                java.srcDir("src/voice/java")
+            } else {
+                java.srcDir("src/novoice/java")
+            }
+        }
+        if (voiceEnabled) {
+            getByName("debug") {
+                manifest.srcFile("src/voice/AndroidManifest.xml")
+            }
+            getByName("release") {
+                manifest.srcFile("src/voice/AndroidManifest.xml")
+            }
+        }
+    }
 }
 
 dependencies {
+    if (voiceEnabled) {
+        implementation(project(":voice"))
+    }
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
