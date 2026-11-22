@@ -19,6 +19,7 @@ import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
+import com.racingwheelpro.startup.StartupChecks
 import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.proto.FrameBuffer
 import com.racingwheelpro.proto.Packets
@@ -507,6 +508,52 @@ class CoreTest {
         assertEquals(fsr.display!!.left, again.display!!.left, 0.0001f)
         assertEquals(fsr.revLights.count, again.revLights.count)
         assertEquals("thumb", again.controls.first { it.id == "enc_l" }.gesture)
+    }
+
+    @Test
+    fun startupSplashUsesOnlyChecksThatRan() {
+        val health = StartupChecks.parseHealth("""{"ok":true,"version":"0.5.0"}""")
+        assertNotNull(health)
+        assertEquals("0.5.0", health!!.version)
+        assertNull(StartupChecks.parseHealth("not json"))
+        val secure = StartupChecks.secureStep(tlsAccepted = true, reached = true)
+        assertTrue(secure.ok)
+        assertEquals("Secure connection verified", secure.detail)
+        val offline = StartupChecks.secureStep(tlsAccepted = false, reached = false)
+        assertFalse(offline.ok)
+        assertTrue(offline.stopped)
+        assertEquals("Can't reach server – offline mode", offline.detail)
+        val bad = StartupChecks.healthStep(500, StartupChecks.HealthBody(false, ""))
+        assertTrue(bad.stopped)
+        val good = StartupChecks.healthStep(200, health)
+        assertTrue(good.ok)
+        assertTrue(good.detail.contains("0.5.0"))
+        val none = StartupChecks.accountStep(null, null, null)
+        assertTrue(none.ok)
+        assertFalse(none.stopped)
+        assertTrue(none.detail.contains("No account"))
+        val rejected = StartupChecks.accountStep("rwp_session=abc", 401, null)
+        assertTrue(rejected.stopped)
+        val signedIn = StartupChecks.accountStep("rwp_session=abc", 200, "ada@example.com")
+        assertTrue(signedIn.detail.contains("ada@example.com"))
+        assertNull(StartupChecks.sessionCookie(null, null))
+        assertNull(StartupChecks.sessionCookie("  ", "other=1"))
+        assertEquals("rwp_session=tok", StartupChecks.sessionCookie("tok", null))
+        assertTrue(StartupChecks.sessionCookie(null, "rwp_session=fromjar")!!.contains("rwp_session="))
+        val newerApp = StartupChecks.versionNote("0.6.0-preview", "0.5.0")
+        assertTrue(newerApp.contains("0.6.0-preview"))
+        assertTrue(newerApp.contains("0.5.0"))
+        assertFalse(newerApp.contains("update"))
+        val olderApp = StartupChecks.versionNote("0.5.0", "0.6.0")
+        assertTrue(olderApp.contains("newer version"))
+        assertEquals(0, StartupChecks.compareVersions("0.6.0-preview", "0.6.0"))
+        assertEquals(1, StartupChecks.compareVersions("0.6.0-preview", "0.5.0"))
+        val quiet = StartupChecks.receiverStep(emptyList())
+        assertTrue(quiet.ok)
+        assertTrue(quiet.detail.contains("No PC receiver"))
+        assertEquals("Found RIG at 10.0.0.8.", StartupChecks.receiverStep(listOf("RIG at 10.0.0.8")).detail)
+        assertEquals(0.4f, StartupChecks.progress(2), 0.001f)
+        assertEquals("ada@example.com", StartupChecks.parseEmail("""{"email":"ada@example.com"}"""))
     }
 
     private fun loadAssetTemplates(): List<WheelTemplate> {

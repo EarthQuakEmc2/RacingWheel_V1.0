@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import StartupSplash from './components/StartupSplash'
 import Marketing from './Marketing'
 import AccountPage from './pages/Account'
 import LeaderboardPage from './pages/Leaderboard'
@@ -7,6 +8,8 @@ import SessionPage from './pages/Session'
 
 export default function App() {
   return (
+    <>
+    <StartupSplash />
     <Routes>
       <Route path="/" element={<Marketing />} />
       <Route path="/privacy" element={<Privacy />} />
@@ -15,5 +18,6 @@ export default function App() {
       <Route path="/leaderboard" element={<LeaderboardPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }

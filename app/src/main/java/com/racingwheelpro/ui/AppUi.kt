@@ -98,6 +98,8 @@ fun AppRoot(session: RaceSession) {
             session.notice = ""
         }
     }
+    var showSplash by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize().background(Carbon)) {
         LedStrip(session.revLevel())
         TopBar(session)
@@ -113,6 +115,10 @@ fun AppRoot(session: RaceSession) {
             if (session.paywall) {
                 PremiumDialog(session)
             }
+        }
+    }
+        if (showSplash) {
+            StartupSplash(session) { showSplash = false }
         }
     }
 }
