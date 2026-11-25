@@ -1,0 +1,207 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "alfa_f1_triple",
+  "name": "Alfa F1 Triple",
+  "maker": "Alfa Romeo",
+  "manufacturer": "Alfa Romeo",
+  "style": "formula",
+  "image": "alfa_f1_triple.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "Formula wheel with a dash, a shift-light row, and three rotary dials.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.27116,
+    "right": 0.82183,
+    "bottom": 0.70912
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "n",
+      "label": "N",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.37127,
+      "r": 0.02654,
+      "color": "#F5C400",
+      "defaultButton": 17
+    },
+    {
+      "id": "entry",
+      "label": "ENT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.43383,
+      "r": 0.02654,
+      "color": "#3DDC57",
+      "defaultButton": 18
+    },
+    {
+      "id": "radio",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.4964,
+      "r": 0.02654,
+      "color": "#3EC6FF",
+      "defaultButton": 3
+    },
+    {
+      "id": "box",
+      "label": "BOX",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.38577,
+      "cy": 0.50891,
+      "r": 0.02654,
+      "color": "#C8CDD4",
+      "defaultButton": 4
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.61328,
+      "cy": 0.50891,
+      "r": 0.02654,
+      "color": "#3DDC57",
+      "defaultButton": 5
+    },
+    {
+      "id": "pit",
+      "label": "PIT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.37127,
+      "r": 0.02654,
+      "color": "#FF4D4D",
+      "defaultButton": 6
+    },
+    {
+      "id": "drs",
+      "label": "DRS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.43383,
+      "r": 0.02654,
+      "color": "#FF8A00",
+      "defaultButton": 7
+    },
+    {
+      "id": "diff",
+      "label": "DIF",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.4964,
+      "r": 0.02654,
+      "color": "#C040C8",
+      "defaultButton": 8
+    },
+    {
+      "id": "plus",
+      "label": "+1",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.38577,
+      "cy": 0.38378,
+      "r": 0.02654,
+      "color": "#3EC6FF",
+      "defaultButton": 9
+    },
+    {
+      "id": "minus",
+      "label": "-1",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.61328,
+      "cy": 0.38378,
+      "r": 0.02654,
+      "color": "#F5C400",
+      "defaultButton": 10
+    },
+    {
+      "id": "mix",
+      "label": "MIX",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.36681,
+      "cy": 0.60902,
+      "r": 0.05214,
+      "color": "#3EC6FF",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 11,
+      "incButton": 12,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "mode",
+      "label": "MODE",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.49953,
+      "cy": 0.62153,
+      "r": 0.05877,
+      "color": "#F5C400",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 13,
+      "incButton": 14,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "eng",
+      "label": "ENG",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.63224,
+      "cy": 0.60902,
+      "r": 0.05214,
+      "color": "#E8E8EC",
+      "positions": 12,
+      "knobSlot": 2,
+      "decButton": 15,
+      "incButton": 16,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    }
+  ],
+  "display": {
+    "left": 0.34785,
+    "top": 0.33998,
+    "right": 0.6512,
+    "bottom": 0.45886
+  },
+  "revLights": {
+    "count": 15,
+    "left": 0.34785,
+    "top": 0.29619,
+    "right": 0.6512,
+    "bottom": 0.3306
+  }
+}

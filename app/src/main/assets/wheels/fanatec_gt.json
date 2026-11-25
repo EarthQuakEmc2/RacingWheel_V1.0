@@ -1,0 +1,222 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "fanatec_gt",
+  "name": "GT Round",
+  "maker": "Fanatec",
+  "manufacturer": "Fanatec",
+  "style": "gt",
+  "image": "fanatec_gt.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "GT wheel with a round centre screen and lit button rows.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.27116,
+    "right": 0.82183,
+    "bottom": 0.72163
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "flash",
+      "label": "FLS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.33998,
+      "r": 0.02465,
+      "color": "#F5C400",
+      "defaultButton": 17
+    },
+    {
+      "id": "radio",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.38577,
+      "cy": 0.32747,
+      "r": 0.02465,
+      "color": "#3EC6FF",
+      "defaultButton": 18
+    },
+    {
+      "id": "left",
+      "label": "L",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.46161,
+      "cy": 0.32122,
+      "r": 0.02465,
+      "color": "#E8E8EC",
+      "defaultButton": 3
+    },
+    {
+      "id": "start",
+      "label": "GO",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.53744,
+      "cy": 0.32122,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 4
+    },
+    {
+      "id": "right",
+      "label": "RGT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.61328,
+      "cy": 0.32747,
+      "r": 0.02465,
+      "color": "#E8E8EC",
+      "defaultButton": 5
+    },
+    {
+      "id": "night",
+      "label": "NIT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.33998,
+      "r": 0.02465,
+      "color": "#C040C8",
+      "defaultButton": 6
+    },
+    {
+      "id": "b1",
+      "label": "1",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.34785,
+      "cy": 0.63404,
+      "r": 0.02465,
+      "color": "#FF4D4D",
+      "defaultButton": 7
+    },
+    {
+      "id": "b2",
+      "label": "2",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.42369,
+      "cy": 0.64655,
+      "r": 0.02465,
+      "color": "#F5C400",
+      "defaultButton": 8
+    },
+    {
+      "id": "b3",
+      "label": "3",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.49953,
+      "cy": 0.65281,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 9
+    },
+    {
+      "id": "b4",
+      "label": "4",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.57536,
+      "cy": 0.64655,
+      "r": 0.02465,
+      "color": "#3EC6FF",
+      "defaultButton": 10
+    },
+    {
+      "id": "b5",
+      "label": "5",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.6512,
+      "cy": 0.63404,
+      "r": 0.02465,
+      "color": "#E8E8EC",
+      "defaultButton": 11
+    },
+    {
+      "id": "wiper",
+      "label": "WIP",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.72704,
+      "cy": 0.60902,
+      "r": 0.02465,
+      "color": "#C8CDD4",
+      "defaultButton": 12
+    },
+    {
+      "id": "ign",
+      "label": "IGN",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.47137,
+      "r": 0.02465,
+      "color": "#FF4D4D",
+      "defaultButton": 13
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.47137,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 14
+    },
+    {
+      "id": "pit",
+      "label": "PIT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30993,
+      "cy": 0.54645,
+      "r": 0.02465,
+      "color": "#FF8A00",
+      "defaultButton": 15
+    },
+    {
+      "id": "box",
+      "label": "BOX",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.68912,
+      "cy": 0.54645,
+      "r": 0.02465,
+      "color": "#3EC6FF",
+      "defaultButton": 16
+    }
+  ],
+  "display": {
+    "left": 0.40473,
+    "top": 0.39629,
+    "right": 0.59432,
+    "bottom": 0.58399
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.38577,
+    "top": 0.34937,
+    "right": 0.61328,
+    "bottom": 0.3744
+  }
+}

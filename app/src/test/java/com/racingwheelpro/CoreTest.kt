@@ -200,7 +200,7 @@ class CoreTest {
                 }
             }
         }
-        val moved = defaultProfile(templates.first())
+        val moved = defaultProfile(templates.first { it.controls.isNotEmpty() })
         moved.bindings.first().button = 1
         keepPaddlesOnButtonsOneAndTwo(moved)
         assertTrue(moved.bindings.first().button !in 1..2)
@@ -265,7 +265,9 @@ class CoreTest {
         assertEquals(0.32f, ks.shiftUp.height, 0.001f)
         assertEquals(0.20f, ks.shiftDown.width, 0.001f)
         templates.values.forEach { wheel ->
-            assertTrue(wheel.id, wheel.bounds.width in 0.85f..0.95f)
+            assertEquals(wheel.id, 1100, wheel.imageWidth)
+            assertEquals(wheel.id, 1100, wheel.imageHeight)
+            assertTrue(wheel.id, wheel.bounds.width > 0.55f)
         }
         assertTrue(cup.shiftUp.centerY < ks.shiftUp.centerY - 0.04f)
     }
@@ -358,7 +360,7 @@ class CoreTest {
         assertEquals("moza_ks", WheelCatalog.DEMO_KNOB_WHEEL)
         assertTrue(WheelCatalog.freeWheelIds.contains(WheelCatalog.DEMO_KNOB_WHEEL))
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(43, templates.size)
         val generic = templates.map { WheelCatalog.displayName(it, templates, true) }
         assertTrue(generic.any { it == "GT3 Wheel A" || it.startsWith("GT3 Wheel") })
         assertTrue(generic.any { it.startsWith("F1 Wheel") })
@@ -499,9 +501,14 @@ class CoreTest {
     @Test
     fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(43, templates.size)
+        val noScreen = setOf("alfa_classic", "alfa_road", "bmw_m4_gt3")
         templates.forEach { wheel ->
             val screen = wheel.display
+            if (wheel.id in noScreen) {
+                assertNull(wheel.id, screen)
+                return@forEach
+            }
             assertNotNull(wheel.id, screen)
             screen!!
             assertTrue(wheel.id, screen.right > screen.left + 0.05f)

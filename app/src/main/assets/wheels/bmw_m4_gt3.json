@@ -1,0 +1,172 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "bmw_m4_gt3",
+  "name": "M4 GT3",
+  "maker": "BMW",
+  "manufacturer": "BMW",
+  "style": "gt",
+  "image": "bmw_m4_gt3.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "GT wheel with three lit rotary dials: red, blue, and green.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.265,
+    "right": 0.82183,
+    "bottom": 0.71547
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "tc",
+      "label": "TC",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.32889,
+      "cy": 0.52778,
+      "r": 0.06636,
+      "color": "#FF2A2A",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 3,
+      "incButton": 4,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "abs",
+      "label": "ABS",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.49953,
+      "cy": 0.57783,
+      "r": 0.06636,
+      "color": "#2F7BFF",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 5,
+      "incButton": 6,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "map",
+      "label": "MAP",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.67016,
+      "cy": 0.52778,
+      "r": 0.06636,
+      "color": "#29D36A",
+      "positions": 12,
+      "knobSlot": 2,
+      "decButton": 7,
+      "incButton": 8,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "rad",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.29098,
+      "cy": 0.34008,
+      "r": 0.02465,
+      "color": "#3EC6FF",
+      "defaultButton": 9
+    },
+    {
+      "id": "tcbtn",
+      "label": "TC",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.38577,
+      "cy": 0.32757,
+      "r": 0.02465,
+      "color": "#FF4D4D",
+      "defaultButton": 10
+    },
+    {
+      "id": "als",
+      "label": "ALS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.61328,
+      "cy": 0.32757,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 11
+    },
+    {
+      "id": "hi",
+      "label": "HI",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.70808,
+      "cy": 0.34008,
+      "r": 0.02465,
+      "color": "#F5C400",
+      "defaultButton": 12
+    },
+    {
+      "id": "wip",
+      "label": "WIP",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.29098,
+      "cy": 0.42767,
+      "r": 0.02465,
+      "color": "#E8E8EC",
+      "defaultButton": 13
+    },
+    {
+      "id": "psl",
+      "label": "PSL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.70808,
+      "cy": 0.42767,
+      "r": 0.02465,
+      "color": "#C040C8",
+      "defaultButton": 14
+    },
+    {
+      "id": "n",
+      "label": "N",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.40473,
+      "cy": 0.65291,
+      "r": 0.02465,
+      "color": "#F5C400",
+      "defaultButton": 15
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.59432,
+      "cy": 0.65291,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 16
+    }
+  ]
+}

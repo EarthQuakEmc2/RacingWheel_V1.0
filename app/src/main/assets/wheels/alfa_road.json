@@ -1,0 +1,121 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "alfa_road",
+  "name": "Alfa Road",
+  "maker": "Alfa Romeo",
+  "manufacturer": "Alfa Romeo",
+  "style": "road",
+  "image": "alfa_road.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "Road rim with a centre pad and cruise and phone buttons on the spokes.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.23675,
+    "right": 0.82183,
+    "bottom": 0.76856
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "res",
+      "label": "RES",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.34785,
+      "cy": 0.43696,
+      "r": 0.02465,
+      "color": "#C8CDD4",
+      "defaultButton": 9
+    },
+    {
+      "id": "set",
+      "label": "SET",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.34785,
+      "cy": 0.49953,
+      "r": 0.02465,
+      "color": "#C8CDD4",
+      "defaultButton": 10
+    },
+    {
+      "id": "cancel",
+      "label": "CNL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.34785,
+      "cy": 0.56209,
+      "r": 0.02465,
+      "color": "#FF4D4D",
+      "defaultButton": 3
+    },
+    {
+      "id": "phone",
+      "label": "TEL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.6512,
+      "cy": 0.43696,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 4
+    },
+    {
+      "id": "voice",
+      "label": "MIC",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.6512,
+      "cy": 0.49953,
+      "r": 0.02465,
+      "color": "#3EC6FF",
+      "defaultButton": 5
+    },
+    {
+      "id": "cruise",
+      "label": "LIM",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.6512,
+      "cy": 0.56209,
+      "r": 0.02465,
+      "color": "#F5C400",
+      "defaultButton": 6
+    },
+    {
+      "id": "up",
+      "label": "UP",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.57536,
+      "cy": 0.42445,
+      "r": 0.02465,
+      "color": "#E8E8EC",
+      "defaultButton": 7
+    },
+    {
+      "id": "okb",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.57536,
+      "cy": 0.48701,
+      "r": 0.02465,
+      "color": "#3DDC57",
+      "defaultButton": 8
+    }
+  ]
+}

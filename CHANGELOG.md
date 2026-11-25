@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.6.1-preview] - 2026-11-25
+
+Prerelease for testing. v0.6.0 stays the stable download on the website and at `releases/latest`.
+
+### Added
+
+- Nine drawn wheel templates. They are original plates, not copies of photographs. Alfa F1 Triple, Alfa F1 Multi, and Alfa F1 Dash have a dash and shift lights. Alfa Classic is a three-spoke rim with a red top marker. Alfa Road has spoke buttons. MP4-30 has a dash and three dials. Formula Orange has a small screen and eight orange dials. M4 GT3 has red, blue, and green dials. GT Round has a round centre screen and button rows. Every one of them is included. Rotaries turn the same way as the other wheels. Android `versionCode` is 14. The website stays on v0.6.0.
+
 ## [0.6.0] - 2026-11-25
 
 Stable release. Every wheel is included. The paid Play build stays unmerged.
@@ -192,7 +200,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.1-preview...HEAD
+[0.6.1-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...v0.6.1-preview
 [0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0
 [0.6.0-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...v0.6.0-preview
 [0.5.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...v0.5.2

@@ -1,0 +1,163 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "alfa_f1_multi",
+  "name": "Alfa F1 Multi",
+  "maker": "Alfa Romeo",
+  "manufacturer": "Alfa Romeo",
+  "style": "formula",
+  "image": "alfa_f1_multi.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "Formula wheel with a colour dash and a large centre dial.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.27732,
+    "right": 0.82183,
+    "bottom": 0.72779
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "n",
+      "label": "N",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.29098,
+      "cy": 0.37743,
+      "r": 0.02654,
+      "color": "#F5C400",
+      "defaultButton": 13
+    },
+    {
+      "id": "pit",
+      "label": "PIT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.29098,
+      "cy": 0.45251,
+      "r": 0.02654,
+      "color": "#FF4D4D",
+      "defaultButton": 14
+    },
+    {
+      "id": "box",
+      "label": "BOX",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.36681,
+      "cy": 0.49005,
+      "r": 0.02654,
+      "color": "#3EC6FF",
+      "defaultButton": 3
+    },
+    {
+      "id": "drs",
+      "label": "DRS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.70808,
+      "cy": 0.37743,
+      "r": 0.02654,
+      "color": "#3DDC57",
+      "defaultButton": 4
+    },
+    {
+      "id": "ok",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.70808,
+      "cy": 0.45251,
+      "r": 0.02654,
+      "color": "#E8E8EC",
+      "defaultButton": 5
+    },
+    {
+      "id": "radio",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.63224,
+      "cy": 0.49005,
+      "r": 0.02654,
+      "color": "#C040C8",
+      "defaultButton": 6
+    },
+    {
+      "id": "multi",
+      "label": "MULTI",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.49953,
+      "cy": 0.57764,
+      "r": 0.07394,
+      "color": "#FF8A00",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 7,
+      "incButton": 8,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "bb",
+      "label": "BB",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.34785,
+      "cy": 0.6402,
+      "r": 0.03792,
+      "color": "#3EC6FF",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 9,
+      "incButton": 10,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "eb",
+      "label": "EB",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.6512,
+      "cy": 0.6402,
+      "r": 0.03792,
+      "color": "#3DDC57",
+      "positions": 12,
+      "knobSlot": 2,
+      "decButton": 11,
+      "incButton": 12,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    }
+  ],
+  "display": {
+    "left": 0.32889,
+    "top": 0.33363,
+    "right": 0.67016,
+    "bottom": 0.46502
+  },
+  "revLights": {
+    "count": 16,
+    "left": 0.30993,
+    "top": 0.28984,
+    "right": 0.68912,
+    "bottom": 0.32112
+  }
+}
