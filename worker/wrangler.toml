@@ -3,16 +3,16 @@ main = "src/index.ts"
 compatibility_date = "2025-11-01"
 workers_dev = false
 
-# Static site built by website/ (`npm run build`). API paths hit this module;
-# everything else is the existing Vite site, with SPA fallback for /account,
-# /session/:id and /leaderboard. Custom domains are attached in the dashboard,
-# so this file does not declare routes.
+# Static site built by website/ (`npm run build`). The Worker runs first so it
+# can correct a missing content type. Wrangler still sets the type on upload.
+# Custom domains are attached in the dashboard, so this file does not declare routes.
 
 [assets]
 directory = "../website/dist"
 binding = "ASSETS"
+html_handling = "auto-trailing-slash"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = true
 
 [[d1_databases]]
 binding = "DB"

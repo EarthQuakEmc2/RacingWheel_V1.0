@@ -10,6 +10,15 @@ Copyright (C) 2026 Racing Wheel Pro contributors. Licensed under the GNU General
 
 The promotional site lives in [`website/`](website/). Its canonical address is <https://myracingwheel.site/>. The privacy policy is <https://myracingwheel.site/privacy>.
 
+Deploy the site and the API together, from `worker/`, with Wrangler. That upload sets each file's content type from its extension. Do not upload the asset bucket by hand: a missing type is sent as `application/octet-stream`, and the browser downloads the homepage instead of showing it. The Worker also rewrites that generic type from the URL, which only runs because `run_worker_first` is true.
+
+```bash
+cd website && npm ci && npm run build
+cd ../worker && npx wrangler deploy
+```
+
+The longer checklist is [worker/DEPLOY.md](worker/DEPLOY.md).
+
 ## Free and Premium
 
 Version 0.6.0 includes every wheel template. Nothing in the garage is locked, and the paid Play build is not part of this release. Opening the app runs a short splash: it calls `https://myracingwheel.site/api/health` over HTTPS, reads the health JSON, looks for a saved account on the phone, compares versions, and listens briefly for the PC. The website does the same kind of check once per tab. A failed check says what failed and still lets you continue. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down). Gear up is vJoy button 1 and gear down is vJoy button 2. Wheel buttons start at 3. Each pedal can sit in from the screen edge. Shift lights, the wheel screen, and the turning knobs ship in this release.

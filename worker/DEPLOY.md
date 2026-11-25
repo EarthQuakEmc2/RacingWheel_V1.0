@@ -50,7 +50,9 @@ cd worker
 npx wrangler deploy
 ```
 
-Confirm the custom domain still points at `racingwheel-pro`. A request to `/` should be the marketing page. `/account`, `/session/:id` and `/leaderboard` are the same single-page app. `/api/health` should return `{"ok":true,"version":"0.5.0"}`.
+Run that from `worker/` after `website/dist` exists. Wrangler sends each file with its content type. Do not upload the assets with a raw API call. `run_worker_first` is true, and the Worker replaces `application/octet-stream` using the URL extension, so a bad upload still renders.
+
+Confirm the custom domain still points at `racingwheel-pro`. A request to `/` should be the marketing page, with `content-type` starting `text/html`. `/account`, `/session/:id` and `/leaderboard` are the same single-page app. `/api/health` should return `{"ok":true,"version":"0.6.0"}`.
 
 ## Accounts
 
