@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The site deploy is `npx wrangler deploy` from `worker/`, which sets content types. The Worker also replaces `application/octet-stream` on static files so the homepage is rendered.
+
 ### Added
 
 - Nothing yet.
