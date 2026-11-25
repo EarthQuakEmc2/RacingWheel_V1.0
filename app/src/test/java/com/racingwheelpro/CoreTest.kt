@@ -282,6 +282,13 @@ class CoreTest {
     @Test
     fun rotatedHotspotStillHits() {
         val button = Control("box", "BOX", "button", "circle", 0.75f, 0.5f, 0.04f, "#FFFFFF")
+        val phone = Geometry.presentWheel(800f, 360f, 1100, 1100, 0.90f, 0.58f, 64f, 260f)
+        val again = Geometry.presentWheel(800f, 360f, 1100, 1100, 0.90f, 0.58f, 64f, 260f)
+        assertEquals(phone.width, again.width, 0.01f)
+        assertEquals(phone.height, again.height, 0.01f)
+        assertTrue(phone.left >= 64f)
+        assertTrue(phone.right <= 800f - 260f)
+        assertTrue(phone.top >= 0f && phone.bottom <= 360f)
         val rect = Geometry.fitCenter(200f, 100f, 100, 50)
         assertEquals(0f, rect.left, 0.01f)
         // cx 0.75 of a 200-wide fitted image sits at view x = 150.
@@ -358,7 +365,7 @@ class CoreTest {
         assertEquals("moza_ks", WheelCatalog.DEMO_KNOB_WHEEL)
         assertTrue(WheelCatalog.freeWheelIds.contains(WheelCatalog.DEMO_KNOB_WHEEL))
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(35, templates.size)
         val generic = templates.map { WheelCatalog.displayName(it, templates, true) }
         assertTrue(generic.any { it == "GT3 Wheel A" || it.startsWith("GT3 Wheel") })
         assertTrue(generic.any { it.startsWith("F1 Wheel") })
@@ -499,7 +506,7 @@ class CoreTest {
     @Test
     fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(35, templates.size)
         templates.forEach { wheel ->
             val screen = wheel.display
             assertNotNull(wheel.id, screen)

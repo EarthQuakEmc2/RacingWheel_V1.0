@@ -31,6 +31,62 @@ object Geometry {
         return ImgRect((viewW - w) / 2f, (viewH - h) / 2f, w, h)
     }
 
+    /** How much larger the wheel is drawn than the 0.6.2 center column, before the screen cap. */
+    const val WHEEL_BOOST = 1.85f
+
+    /**
+     * One wheel size for Drive and Edit. Starts from the old center-column fit,
+     * grows by [WHEEL_BOOST], then stops so the wheel plate still sits inside the
+     * screen with a small margin. [contentW] and [contentH] are the plate's
+     * fraction of the bitmap, so a short formula rim can grow without the
+     * transparent padding deciding the size.
+     */
+    fun presentWheel(
+        screenW: Float,
+        screenH: Float,
+        imgW: Int,
+        imgH: Int,
+        contentW: Float = 1f,
+        contentH: Float = 1f,
+        reserveLeft: Float = 0f,
+        reserveRight: Float = 0f,
+    ): ImgRect {
+        if (screenW <= 1f || screenH <= 1f || imgW <= 0 || imgH <= 0) return ImgRect.EMPTY
+        val margin = min(screenW, screenH) * 0.035f
+        val legacyW = (screenW - reserveLeft - reserveRight).coerceAtLeast(1f) * 0.72f
+        val legacyH = (screenH * 0.86f).coerceAtLeast(1f)
+        val base = fitCenter(legacyW, legacyH, imgW, imgH)
+        var w = base.width * WHEEL_BOOST
+        var h = base.height * WHEEL_BOOST
+        val cw = contentW.coerceIn(0.45f, 1f)
+        val ch = contentH.coerceIn(0.45f, 1f)
+        val boxLeft = reserveLeft + margin
+        val boxTop = margin
+        val maxW = (screenW - reserveLeft - reserveRight - margin * 2f).coerceAtLeast(1f)
+        val maxH = (screenH - margin * 2f).coerceAtLeast(1f)
+        if (w * cw > maxW) {
+            val s = maxW / (w * cw)
+            w *= s
+            h *= s
+        }
+        if (h * ch > maxH) {
+            val s = maxH / (h * ch)
+            w *= s
+            h *= s
+        }
+        if (w > maxW) {
+            val s = maxW / w
+            w *= s
+            h *= s
+        }
+        if (h > maxH) {
+            val s = maxH / h
+            w *= s
+            h *= s
+        }
+        return ImgRect(boxLeft + (maxW - w) / 2f, boxTop + (maxH - h) / 2f, w, h)
+    }
+
     /**
      * Forward of Android's clockwise canvas rotation (Y grows downward):
      * x' = cx + dx cos θ − dy sin θ

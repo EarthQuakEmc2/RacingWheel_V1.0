@@ -296,15 +296,14 @@ internal sealed class Receiver : IDisposable
 
     public int Run()
     {
-        FileLog.Info("Racing Wheel Pro receiver");
+        FileLog.Info("Racing Wheel Pro receiver 0.6.3");
         FileLog.Info($"discovery UDP {_opt.Discovery}   telemetry UDP {_opt.Udp}   TCP {_opt.Tcp}");
         FileLog.Info("output: " + _output.Name);
         FileLog.Info("log: " + FileLog.DirectoryPath);
-        FileLog.Info("Waiting for the phone.");
         if (!_opt.NoUi) _uiUrl = StartUi();
         if (_uiUrl.Length > 0) FileLog.Info("Logs UI  " + _uiUrl);
-        TrayIcon.Start(() => _run = false);
-        Console.CancelKeyPress += (_, e) => { e.Cancel = true; _run = false; };
+        ConsoleLifetime.Hook(() => _run = false);
+        StatusBoard.Open();
         var beacon = Packets.HostBeacon(_opt.Tcp, _opt.Udp, _output.Caps, Environment.MachineName);
         Task.Run(AcceptLoop);
         Task.Run(() => TelemetryLoop(beacon));
@@ -326,9 +325,9 @@ internal sealed class Receiver : IDisposable
                 nextBeacon = now.AddMilliseconds(500);
             }
             Drain(_discovery, replyFind: true, beacon);
-            if ((DateTime.UtcNow - _lastPrint).TotalSeconds > 30)
+            if ((DateTime.UtcNow - _lastPrint).TotalMilliseconds > 400)
             {
-                PrintDash();
+                PaintStatus();
                 _lastPrint = DateTime.UtcNow;
             }
             Thread.Sleep(20);
@@ -490,26 +489,26 @@ internal sealed class Receiver : IDisposable
         }
     }
 
-    private void PrintDash()
+    private void PaintStatus()
     {
-        StatePacket s;
         string peer;
-        bool ac;
-        int inputHz;
-        int outputHz;
+        bool phone;
         lock (_gate)
         {
-            s = _latest;
-            peer = _phone?.Address.ToString() ?? (_opt.Simulate ? "simulate" : "—");
-            ac = _acOpen;
-            inputHz = _inputHz;
-            outputHz = _outputHz;
+            var ageMs = _lastRx == DateTime.MinValue ? int.MaxValue : (DateTime.UtcNow - _lastRx).TotalMilliseconds;
+            phone = ageMs < 1500;
+            peer = _phone?.Address.ToString() ?? "";
         }
-        var age = _lastRx == DateTime.MinValue ? -1 : (int)(DateTime.UtcNow - _lastRx).TotalMilliseconds;
-        var code = string.IsNullOrEmpty(_account.Code) ? "----" : _account.Code;
-        var dash = _dashHz;
-        FileLog.Info(
-            $"{peer} in {inputHz} Hz  out {outputHz} Hz  dash {dash} Hz  {(ac ? "AC" : "noAC")}  {code}  age {(age < 0 ? "-" : age + "ms")}");
+        var lines = new[]
+        {
+            "Racing Wheel Pro  0.6.3",
+            "Listening  " + StatusBoard.LanAddress() + "   UDP " + _opt.Udp + "   TCP " + _opt.Tcp,
+            phone ? "Phone  connected  " + peer : "Phone  not connected",
+            "Output  " + _output.Name,
+            "Log  " + FileLog.DirectoryPath,
+            "Ctrl+C or close this window to exit",
+        };
+        StatusBoard.Draw(lines);
     }
 
     /// <summary>About 25 Hz. The phone drops the screen if packets stop for a moment.</summary>

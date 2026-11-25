@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-11-25
+
+### Changed
+
+- The Windows receiver shows a command window again. A short status block stays in place: version, address and ports, whether the phone is connected, and vJoy or ViGEm. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. Closing the window or Ctrl+C exits. Android `versionCode` is 17, `versionName` is 0.6.3.
+- The wheel is the same size in Drive and in Edit, and larger on a phone, while the whole plate stays on screen.
+
+### Added
+
+- Master Wheel F1, a free formula wheel.
+
 ## [0.6.2] - 2026-11-25
 
 Stable release. Same features as 0.6.0, with the white Master Wheel icon.
@@ -213,7 +224,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2-preview...v0.6.2
 [0.6.2-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...v0.6.2-preview
 [0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0

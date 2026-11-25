@@ -1,0 +1,207 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "master_wheel_f1",
+  "name": "Master Wheel F1",
+  "maker": "Master Wheel",
+  "manufacturer": "Master Wheel",
+  "style": "formula",
+  "image": "master_wheel_f1.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "Formula wheel. N, P, Drink, K1, K2, SI, SHA, OIL, and three dials.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.0455,
+    "top": 0.2073,
+    "right": 0.9536,
+    "bottom": 0.7927
+  },
+  "shifters": {
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.52
+    }
+  },
+  "display": {
+    "left": 0.37,
+    "top": 0.33,
+    "right": 0.63,
+    "bottom": 0.45
+  },
+  "revLights": {
+    "count": 15,
+    "left": 0.34,
+    "top": 0.275,
+    "right": 0.66,
+    "bottom": 0.312
+  },
+  "controls": [
+    {
+      "id": "n",
+      "label": "N",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.173,
+      "cy": 0.287,
+      "r": 0.028,
+      "color": "#F5C400",
+      "defaultButton": 3
+    },
+    {
+      "id": "p",
+      "label": "P",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.827,
+      "cy": 0.283,
+      "r": 0.028,
+      "color": "#FF6A00",
+      "defaultButton": 4
+    },
+    {
+      "id": "drink",
+      "label": "DRINK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.28,
+      "cy": 0.34,
+      "r": 0.018,
+      "color": "#E8E6E3",
+      "defaultButton": 5
+    },
+    {
+      "id": "k1",
+      "label": "K1",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.255,
+      "cy": 0.539,
+      "r": 0.026,
+      "color": "#3EC6FF",
+      "defaultButton": 6
+    },
+    {
+      "id": "k2",
+      "label": "K2",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.753,
+      "cy": 0.538,
+      "r": 0.026,
+      "color": "#3EC6FF",
+      "defaultButton": 7
+    },
+    {
+      "id": "si",
+      "label": "SI",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.7,
+      "cy": 0.4,
+      "r": 0.018,
+      "color": "#F5C400",
+      "defaultButton": 8
+    },
+    {
+      "id": "sha",
+      "label": "SHA",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.3,
+      "cy": 0.6,
+      "r": 0.018,
+      "color": "#C040C8",
+      "defaultButton": 9
+    },
+    {
+      "id": "oil",
+      "label": "OIL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.7,
+      "cy": 0.6,
+      "r": 0.018,
+      "color": "#F5C400",
+      "defaultButton": 10
+    },
+    {
+      "id": "plus",
+      "label": "+",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.78,
+      "cy": 0.36,
+      "r": 0.016,
+      "color": "#E8E6E3",
+      "defaultButton": 11
+    },
+    {
+      "id": "minus",
+      "label": "-",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.84,
+      "cy": 0.4,
+      "r": 0.016,
+      "color": "#E8E6E3",
+      "defaultButton": 12
+    },
+    {
+      "id": "dial_l",
+      "label": "DIAL",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.3,
+      "cy": 0.69,
+      "r": 0.045,
+      "color": "#F5C400",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 13,
+      "incButton": 14,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "dial_c",
+      "label": "PHASE",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.5,
+      "cy": 0.72,
+      "r": 0.042,
+      "color": "#F5C400",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 15,
+      "incButton": 16,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "dial_r",
+      "label": "ENG",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.72,
+      "cy": 0.69,
+      "r": 0.045,
+      "color": "#F5C400",
+      "positions": 12,
+      "knobSlot": 2,
+      "decButton": 17,
+      "incButton": 18,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    }
+  ]
+}

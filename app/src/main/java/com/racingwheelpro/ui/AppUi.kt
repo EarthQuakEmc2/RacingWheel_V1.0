@@ -217,11 +217,12 @@ private fun DriveScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
     BoxWithConstraints(Modifier.fillMaxSize().background(Carbon)) {
         val pedals = session.profile.pedals
-        val zone = (maxWidth * pedals.zoneFraction).coerceIn(72.dp, 190.dp)
+        val zone = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp)
         val brakeGap = maxWidth * PedalInsets.clamp(pedals.brakeInset)
         val throttleGap = maxWidth * PedalInsets.clamp(pedals.throttleInset)
-        Column(Modifier.fillMaxSize()) {
-            Row(Modifier.weight(1f).fillMaxWidth()) {
+        Box(Modifier.fillMaxSize()) {
+            WheelFace(session, editor = false, modifier = Modifier.fillMaxSize())
+            Row(Modifier.fillMaxSize()) {
                 if (brakeGap > 0.5.dp) Spacer(Modifier.width(brakeGap).fillMaxHeight())
                 PedalColumn(
                     title = "BRAKE",
@@ -229,20 +230,14 @@ private fun DriveScreen(session: RaceSession) {
                     color = SignalRed,
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "brake", y, h) }
-                Column(Modifier.weight(1f).fillMaxHeight()) {
-                    WheelFace(
-                        session = session,
-                        editor = false,
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                    )
-                    if (pedals.clutchEnabled) {
-                        PedalColumn(
-                            title = "CLUTCH",
-                            value = session.clutchOut,
-                            color = SignalBlue,
-                            modifier = Modifier.fillMaxWidth().height(54.dp),
-                        ) { id, phase, y, h -> session.pedalPointer(id, phase, "clutch", y, h) }
-                    }
+                Spacer(Modifier.weight(1f))
+                if (pedals.clutchEnabled) {
+                    PedalColumn(
+                        title = "CLUTCH",
+                        value = session.clutchOut,
+                        color = SignalBlue,
+                        modifier = Modifier.width(72.dp).fillMaxHeight(),
+                    ) { id, phase, y, h -> session.pedalPointer(id, phase, "clutch", y, h) }
                 }
                 PedalColumn(
                     title = "THROTTLE",
@@ -253,7 +248,7 @@ private fun DriveScreen(session: RaceSession) {
                 if (throttleGap > 0.5.dp) Spacer(Modifier.width(throttleGap).fillMaxHeight())
             }
             Row(
-                Modifier.fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -426,7 +421,18 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
             return@Box
         }
         Canvas(Modifier.fillMaxSize()) {
-            val rect = Geometry.fitCenter(size.width, size.height, bitmap.width, bitmap.height)
+            val pedal = 64f * density
+            val panel = if (size.width / density >= 900f) 300f * density else minOf(260f * density, size.width * 0.32f)
+            val rect = Geometry.presentWheel(
+                screenW = size.width,
+                screenH = size.height,
+                imgW = bitmap.width,
+                imgH = bitmap.height,
+                contentW = wheel.bounds.width,
+                contentH = wheel.bounds.height,
+                reserveLeft = pedal,
+                reserveRight = maxOf(panel, pedal),
+            )
             session.imageRect = rect
             drawLine(
                 Color.White.copy(alpha = 0.7f),
@@ -1118,9 +1124,12 @@ private fun ShifterSliders(
 @Composable
 private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
-    Row(Modifier.fillMaxSize()) {
-        WheelFace(session, editor = true, modifier = Modifier.weight(1f).fillMaxHeight())
-        Column(Modifier.width(300.dp).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val panel = if (maxWidth >= 900.dp) 300.dp else minOf(260.dp, maxWidth * 0.32f)
+        WheelFace(session, editor = true, modifier = Modifier.fillMaxSize())
+        Column(
+            Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),
+        ) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
             Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))

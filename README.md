@@ -307,7 +307,7 @@ The layout editor resizes each paddle on its own. Drag the inner edge for width,
 
 Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
 
-The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy, gear up is button 1 and gear down is button 2, including when the device has only the usual 8 buttons. Wheel buttons are numbered from 3 so they do not share those two. `--no-keyboard` skips the Page Up and Page Down keys. When the wheel output is the Xbox pad, the receiver also opens vJoy and puts only buttons 1 and 2 on it. The receiver runs without a console window. It writes its log to `%APPDATA%\RacingWheelPro\logs\receiver.log` and shows a tray icon. Right-click the icon and choose Exit.
+The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy, gear up is button 1 and gear down is button 2, including when the device has only the usual 8 buttons. Wheel buttons are numbered from 3 so they do not share those two. `--no-keyboard` skips the Page Up and Page Down keys. When the wheel output is the Xbox pad, the receiver also opens vJoy and puts only buttons 1 and 2 on it. The receiver opens a command window with a fixed status block (version, address, phone, and the output device). Detail goes to `%APPDATA%\RacingWheelPro\logs\receiver.log`. Close the window or press Ctrl+C to exit.
 
 The public Telegram channel is https://t.me/racingwheelpro, the `telegram` field in `community.json` at the repo root. The phone, the receiver, and the website all read that one value. On the phone it is Setup → Profile → Join our Telegram. The receiver prints it at startup and links it from the local page.
 
@@ -383,7 +383,7 @@ Dash telemetry (`RWPT`, 40 bytes) travels the same way, about 25 times a second,
 | 38 | u8 | TC working now, 0..255 |
 | 39 | u8 | ABS working now, 0..255 |
 
-To try it with Assetto Corsa: start `RacingWheelPro-PC.exe`, start the game, and connect the phone on the same Wi-Fi (or use `adb reverse` for USB). Open a track. The wheel screen fills in. The receiver has no console window; its notes are in `%APPDATA%\RacingWheelPro\logs\receiver.log`. In the game's controls, bind each knob's increase and decrease buttons, and bind gear up to vJoy button 1 and gear down to vJoy button 2. Choose RPM under Setup → Pedals if the shift lights should follow the engine instead of the throttle pedal.
+To try it with Assetto Corsa: start `RacingWheelPro-PC.exe`, start the game, and connect the phone on the same Wi-Fi (or use `adb reverse` for USB). Open a track. The wheel screen fills in. The receiver's command window shows a fixed status block. Notes are in `%APPDATA%\RacingWheelPro\logs\receiver.log`. In the game's controls, bind each knob's increase and decrease buttons, and bind gear up to vJoy button 1 and gear down to vJoy button 2. Choose RPM under Setup → Pedals if the shift lights should follow the engine instead of the throttle pedal.
 
 ## Build from source
 
