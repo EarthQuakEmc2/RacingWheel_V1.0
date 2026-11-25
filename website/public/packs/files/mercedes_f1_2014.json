@@ -1,0 +1,119 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "mercedes_f1_2014",
+  "name": "Mercedes F1 2014-style",
+  "maker": "Mercedes",
+  "manufacturer": "Mercedes",
+  "style": "formula",
+  "image": "mercedes_f1_2014.png",
+  "imageWidth": 652,
+  "imageHeight": 472,
+  "blurb": "2014-style plate. Boost, neutral, limiter, and the face rotaries.",
+  "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0000, "top": 0.0975, "right": 0.9985, "bottom": 0.9979},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.548},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.547}
+  },
+  "outputButtons": 10,
+  "controls": [
+    {
+      "id": "boost",
+      "label": "BOOST",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.11963,
+      "cy": 0.22669,
+      "r": 0.03374,
+      "color": "#E10600",
+      "defaultButton": 1
+    },
+    {
+      "id": "neutral",
+      "label": "NEUTRAL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.23466,
+      "cy": 0.19915,
+      "r": 0.02761,
+      "color": "#3DDC57",
+      "defaultButton": 2
+    },
+    {
+      "id": "eb",
+      "label": "EB",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.29294,
+      "cy": 0.47881,
+      "r": 0.02147,
+      "color": "#E10600",
+      "defaultButton": 3
+    },
+    {
+      "id": "bpf",
+      "label": "BPF",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.26687,
+      "cy": 0.61441,
+      "r": 0.02454,
+      "color": "#F5C400",
+      "defaultButton": 4
+    },
+    {
+      "id": "limiter",
+      "label": "LIMITER",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.86503,
+      "cy": 0.22246,
+      "r": 0.02761,
+      "color": "#F5C400",
+      "defaultButton": 5
+    },
+    {
+      "id": "reset",
+      "label": "RESET",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.78681,
+      "cy": 0.79449,
+      "r": 0.02147,
+      "color": "#F5C400",
+      "defaultButton": 6
+    },
+    {
+      "id": "mix",
+      "label": "MIX",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.38037,
+      "cy": 0.64407,
+      "r": 0.04294,
+      "color": "#F5C400",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 7,
+      "incButton": 8,
+      "startAngle": -90.0,
+      "clockwise": true
+    },
+    {
+      "id": "torque",
+      "label": "TORQUE",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.59969,
+      "cy": 0.64407,
+      "r": 0.04294,
+      "color": "#E10600",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 9,
+      "incButton": 10,
+      "startAngle": -90.0,
+      "clockwise": true
+    }
+  ]
+}

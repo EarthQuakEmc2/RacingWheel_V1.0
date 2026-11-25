@@ -16,6 +16,10 @@ const ITEMS = [
     a: 'Yes. With USB debugging on, reverse ports 41512, 41511, and 41510, then tap USB / ADB. The app talks to 127.0.0.1 and adb forwards those ports to the PC.',
   },
   {
+    q: 'What is a Steering Package?',
+    a: 'A one-time pack for one Assetto Corsa manufacturer, $3.99, or a bundle of any 3 ($9.99), any 6 ($14.99), any 9 ($24.99), or every manufacturer ($34.99). The phone downloads the templates after the server signs a licence. The four free wheels stay free. Class packs are listed until their prices are set. This branch checks out in sandbox mode and does not take a card.',
+  },
+  {
     q: 'What does the $3.99 unlock?',
     a: 'Racing Wheel Premium is a one-time purchase. It opens every wheel template and draws the dial pointer on every rotary. The free app already steers, brakes, throttles, edits layouts, and talks to the PC, and it keeps the pointer demo on one wheel.',
   },

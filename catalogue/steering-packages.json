@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "currency": "USD",
+  "manufacturerPriceCents": 399,
+  "notes": "One file for Steering Package prices and contents. Manufacturer packs are $3.99. Edit priceCents on a package to change it. A class pack stays unsellable while priceStatus is TODO. templates are the wheel ids a purchase unlocks. includedFree lists wheels that stay free without a purchase. Drop new template ids in here, then run node worker/scripts/hash-packs.mjs.",
+  "bundles": [
+    {
+      "id": "pick-3",
+      "kind": "pick",
+      "name": "Any 3 manufacturers",
+      "count": 3,
+      "priceCents": 999,
+      "summary": "Choose any three manufacturer packages."
+    },
+    {
+      "id": "pick-6",
+      "kind": "pick",
+      "name": "Any 6 manufacturers",
+      "count": 6,
+      "priceCents": 1499,
+      "summary": "Choose any six manufacturer packages."
+    },
+    {
+      "id": "pick-9",
+      "kind": "pick",
+      "name": "Any 9 manufacturers",
+      "count": 9,
+      "priceCents": 2499,
+      "summary": "Choose any nine manufacturer packages."
+    },
+    {
+      "id": "everything",
+      "kind": "all",
+      "name": "Every manufacturer",
+      "priceCents": 3499,
+      "summary": "Every manufacturer package in this catalogue. Class packs are separate."
+    }
+  ],
+  "manufacturers": [
+    {
+      "id": "porsche",
+      "name": "Porsche",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Porsche"],
+      "summary": "Wheel templates for Porsche cars in Assetto Corsa.",
+      "templates": [
+        "porsche_911_rsr",
+        "porsche_fanatec_gt3r",
+        "porsche_gt3_cup",
+        "porsche_gt3r",
+        "porsche_gt3r_color",
+        "porsche_gt3r_grid",
+        "porsche_gt3r_screen",
+        "porsche_gt_dash",
+        "porsche_rsr_f"
+      ],
+      "includedFree": []
+    },
+    {
+      "id": "ferrari",
+      "name": "Ferrari",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Ferrari"],
+      "summary": "Wheel templates for Ferrari cars in Assetto Corsa.",
+      "templates": [
+        "ferrari_458_black",
+        "ferrari_488_gt3",
+        "ferrari_f1_2012",
+        "ferrari_road_blue",
+        "ferrari_road_red",
+        "ferrari_sf_f1"
+      ],
+      "includedFree": ["ferrari_sf1000"]
+    },
+    {
+      "id": "lamborghini",
+      "name": "Lamborghini",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Lamborghini"],
+      "summary": "Wheel templates for Lamborghini cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "bmw",
+      "name": "BMW",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["BMW"],
+      "summary": "Wheel templates for BMW cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "audi",
+      "name": "Audi",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Audi"],
+      "summary": "Wheel templates for Audi cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "alfa-romeo",
+      "name": "Alfa Romeo",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Alfa Romeo"],
+      "summary": "Wheel templates for Alfa Romeo cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "mercedes",
+      "name": "Mercedes-Benz",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Mercedes", "Mercedes-Benz", "Mercedes-AMG"],
+      "summary": "Wheel templates for Mercedes-Benz cars in Assetto Corsa.",
+      "templates": [
+        "mercedes_cube_gt3",
+        "mercedes_f1_2014",
+        "mercedes_gt_diy",
+        "mercedes_road_carbon",
+        "mercedes_road_led"
+      ],
+      "includedFree": ["mercedes_amg_f1"]
+    },
+    {
+      "id": "mclaren",
+      "name": "McLaren",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["McLaren"],
+      "summary": "Wheel templates for McLaren cars in Assetto Corsa.",
+      "templates": [
+        "mclaren_artura",
+        "mclaren_f1_mcl",
+        "mclaren_f1_mcl_2",
+        "mclaren_fanatec_gt3",
+        "mclaren_gt3_diy",
+        "mclaren_gt3_okx",
+        "mclaren_gtr_lm"
+      ],
+      "includedFree": ["mclaren_ascher_dark"]
+    },
+    {
+      "id": "abarth",
+      "name": "Abarth",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Abarth"],
+      "summary": "Wheel templates for Abarth cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "chevrolet",
+      "name": "Chevrolet",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Chevrolet"],
+      "summary": "Wheel templates for Chevrolet cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "ford",
+      "name": "Ford",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Ford"],
+      "summary": "Wheel templates for Ford cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "ktm",
+      "name": "KTM",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["KTM"],
+      "summary": "Wheel templates for KTM cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "lotus",
+      "name": "Lotus",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Lotus", "Classic Team Lotus"],
+      "summary": "Wheel templates for Lotus and Classic Team Lotus cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "maserati",
+      "name": "Maserati",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Maserati"],
+      "summary": "Wheel templates for Maserati cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "mazda",
+      "name": "Mazda",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Mazda"],
+      "summary": "Wheel templates for Mazda cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "nissan",
+      "name": "Nissan",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Nissan"],
+      "summary": "Wheel templates for Nissan cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "pagani",
+      "name": "Pagani",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Pagani"],
+      "summary": "Wheel templates for Pagani cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "praga",
+      "name": "Praga",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Praga"],
+      "summary": "Wheel templates for Praga cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "ruf",
+      "name": "RUF",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["RUF"],
+      "summary": "Wheel templates for RUF cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "scuderia-glickenhaus",
+      "name": "Scuderia Glickenhaus",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Scuderia Glickenhaus"],
+      "summary": "Wheel templates for Scuderia Glickenhaus cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "shelby",
+      "name": "Shelby",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Shelby"],
+      "summary": "Wheel templates for Shelby cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "tatuus",
+      "name": "Tatuus",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Tatuus"],
+      "summary": "Wheel templates for Tatuus cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "toyota",
+      "name": "Toyota",
+      "priceCents": 399,
+      "priceStatus": "set",
+      "aliases": ["Toyota"],
+      "summary": "Wheel templates for Toyota cars in Assetto Corsa. No plates are in this build yet.",
+      "templates": [],
+      "includedFree": []
+    }
+  ],
+  "classes": [
+    {
+      "id": "formula-1",
+      "name": "Formula 1",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "seeded",
+      "summary": "Formula 1 wheel templates. Price is TODO until you set priceCents and priceStatus to set.",
+      "templates": [
+        "ferrari_f1_2012",
+        "ferrari_sf_f1",
+        "mclaren_f1_mcl",
+        "mclaren_f1_mcl_2",
+        "mercedes_f1_2014"
+      ],
+      "includedFree": ["ferrari_sf1000", "mercedes_amg_f1"]
+    },
+    {
+      "id": "gt1",
+      "name": "GT1",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "GT1 wheel templates. Add template ids and a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "gt2",
+      "name": "GT2",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "GT2 wheel templates. Add template ids and a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "gt3",
+      "name": "GT3",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "seeded",
+      "summary": "GT3 wheel templates already in the app. Price is TODO until you set priceCents and priceStatus to set.",
+      "templates": [
+        "ferrari_488_gt3",
+        "mclaren_fanatec_gt3",
+        "mclaren_gt3_diy",
+        "mclaren_gt3_okx",
+        "mercedes_cube_gt3",
+        "porsche_fanatec_gt3r",
+        "porsche_gt3r",
+        "porsche_gt3r_color",
+        "porsche_gt3r_grid",
+        "porsche_gt3r_screen"
+      ],
+      "includedFree": []
+    },
+    {
+      "id": "gt4",
+      "name": "GT4",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "GT4 wheel templates. Add template ids and a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "gt5",
+      "name": "GT5",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "GT5 wheel templates. Add template ids and a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "m1",
+      "name": "M1",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "Placeholder class pack. Assetto Corsa has no official M1 category. Assign templates and set a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "m2",
+      "name": "M2",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "Placeholder class pack. Assetto Corsa has no official M2 category. Assign templates and set a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "m3",
+      "name": "M3",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "Placeholder class pack. Assetto Corsa has no official M3 category. Assign templates and set a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    },
+    {
+      "id": "m4",
+      "name": "M4",
+      "priceCents": null,
+      "priceStatus": "TODO",
+      "contentStatus": "TODO",
+      "summary": "Placeholder class pack. Assetto Corsa has no official M4 category. Assign templates and set a price before this pack can be sold.",
+      "templates": [],
+      "includedFree": []
+    }
+  ]
+}

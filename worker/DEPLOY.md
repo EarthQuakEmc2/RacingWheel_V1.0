@@ -4,6 +4,8 @@ The site at `myracingwheel.site` is the Worker `racingwheel-pro`: this module fo
 
 Nothing in this repository deploys for you. The commands below are the ones to run on your machine after `npx wrangler login`.
 
+Do not deploy the Steering Packages branch to the `racingwheel-pro` worker or to `myracingwheel.site`. That branch is a draft. Its sandbox checkout and dev licence key must stay off production. See [docs/STEERING_PACKAGES.md](../docs/STEERING_PACKAGES.md).
+
 ## 1. Build the site
 
 ```bash

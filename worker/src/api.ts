@@ -21,6 +21,7 @@ import {
   decimate,
   detectCorners,
 } from './metrics';
+import { handlePackageRequest } from './packages';
 import { parseUpload } from './srt';
 import { TRACKS, catalogLength, trackLabel } from './tracks';
 
@@ -48,6 +49,16 @@ export interface Env {
   DB: D1Like;
   ASSETS?: { fetch(request: Request): Promise<Response> };
   AI?: AiBinding;
+  /** sandbox (default) or stripe. Stripe accepts sk_test_ keys only. */
+  PAYMENT_PROVIDER?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  /** PKCS#8 Ed25519 private key, standard base64. A secret. Never a card credential. */
+  LICENCE_PRIVATE_KEY_PKCS8?: string;
+  /** Set to "dev" only on a non-production worker to allow the committed dev key. */
+  LICENCE_MODE?: string;
+  PUBLIC_ORIGIN?: string;
+  PACK_FILES?: Record<string, Uint8Array>;
 }
 
 type Auth = { userId: string; premium: number; deviceId: string | null };
@@ -118,6 +129,9 @@ async function route(request: Request, env: Env, url: URL): Promise<Response> {
   if (sessionMatch && method === 'DELETE') return deleteSession(request, env, sessionMatch[1]);
 
   if (method === 'GET' && path === '/api/leaderboard') return leaderboard(url, db);
+
+  const packaged = await handlePackageRequest(request, env, path, method);
+  if (packaged) return packaged;
 
   return json({ error: 'Not found' }, 404);
 }

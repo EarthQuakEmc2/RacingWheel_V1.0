@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.racingwheelpro.BuildConfig
 import com.racingwheelpro.billing.createPremiumGate
+import com.racingwheelpro.packs.SteeringStore
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.data.ProfileStore
 import com.racingwheelpro.data.WheelLibrary
@@ -96,11 +97,21 @@ class RaceSession(private val context: Context) {
     var paywall by mutableStateOf(false)
     var premiumUnlocked by mutableStateOf(false)
     var premiumDetail by mutableStateOf("")
+    var packageDetail by mutableStateOf("")
+    var packageBusy by mutableStateOf(false)
+    var packRevision by mutableIntStateOf(0)
     var knobRevision by mutableIntStateOf(0)
 
     val inputLog = InputLog(File(context.filesDir, "input-logs"))
     val genericNames: Boolean = BuildConfig.GENERIC_NAMES
     val gate = createPremiumGate(context)
+    val steering = SteeringStore(context)
+
+    fun wheelUnlocked(id: String): Boolean = steering.allows(id, gate.unlocked)
+
+    fun knobOverlay(id: String): Boolean = gate.knobOverlay(id) || steering.covers(id)
+
+    fun openWheelImage(image: String) = library.openWheelPng(image, steering.expectedHash(image))
 
     var imageRect: ImgRect = ImgRect.EMPTY
 
@@ -214,7 +225,9 @@ class RaceSession(private val context: Context) {
         if (running) return
         running = true
         gate.addListener { main.post { applyEntitlement() } }
-        val loaded = library.load()
+        steering.load()
+        packageDetail = steering.detail
+        val loaded = library.load(steering.installedTemplateIds())
         templates = loaded
         if (loaded.isEmpty()) {
             status = "No wheel templates in the app assets."
@@ -222,9 +235,9 @@ class RaceSession(private val context: Context) {
         }
         profiles = profilesStore.loadAll().toMutableList()
         val active = profilesStore.activeId()?.let { id -> profiles.find { it.id == id } }
-            ?.takeIf { gate.wheelUnlocked(it.wheelId) }
+            ?.takeIf { wheelUnlocked(it.wheelId) }
         val initialWheel = loaded.find { it.id == active?.wheelId }
-            ?: loaded.firstOrNull { gate.wheelUnlocked(it.id) }
+            ?: loaded.firstOrNull { wheelUnlocked(it.id) }
             ?: loaded.first()
         wheel = initialWheel
         profile = active ?: defaultProfile(initialWheel).also {
@@ -290,7 +303,7 @@ class RaceSession(private val context: Context) {
 
     fun selectWheel(id: String) {
         val next = templates.find { it.id == id } ?: return
-        if (!gate.wheelUnlocked(id)) {
+        if (!wheelUnlocked(id)) {
             paywall = true
             screen = Screen.Garage
             return
@@ -301,7 +314,7 @@ class RaceSession(private val context: Context) {
 
     fun selectProfile(id: String) {
         val next = profiles.find { it.id == id } ?: return
-        if (!gate.wheelUnlocked(next.wheelId)) {
+        if (!wheelUnlocked(next.wheelId)) {
             paywall = true
             return
         }
@@ -316,6 +329,27 @@ class RaceSession(private val context: Context) {
     fun purchasePremium(activity: Activity) {
         paywall = true
         gate.purchase(activity)
+    }
+
+    fun refreshSteering(email: String, password: String) {
+        if (packageBusy) return
+        packageBusy = true
+        packageDetail = "Checking the account and downloading packs…"
+        Thread {
+            try {
+                steering.refresh(email, password)
+                main.post {
+                    packageBusy = false
+                    packageDetail = steering.detail
+                    reloadTemplates()
+                }
+            } catch (error: Exception) {
+                main.post {
+                    packageBusy = false
+                    packageDetail = error.message ?: "Could not refresh the licence"
+                }
+            }
+        }.start()
     }
 
     fun restorePremium() {
@@ -731,7 +765,7 @@ class RaceSession(private val context: Context) {
     }
 
     private fun knobNudgeAt(x: Float, y: Float, rotation: Float): Pair<Control, Int>? {
-        if (!gate.knobOverlay(wheel.id) || imageRect.width <= 1f) return null
+        if (!knobOverlay(wheel.id) || imageRect.width <= 1f) return null
         val (lx, ly) = Geometry.screenToLocal(x, y, imageRect.cx, imageRect.cy, rotation)
         val nx = (lx - imageRect.left) / imageRect.width
         val ny = (ly - imageRect.top) / imageRect.height
@@ -770,9 +804,16 @@ class RaceSession(private val context: Context) {
     private fun applyEntitlement() {
         premiumUnlocked = gate.unlocked
         premiumDetail = gate.detail
-        if (templates.isEmpty() || gate.wheelUnlocked(wheel.id)) return
-        val fallback = templates.firstOrNull { gate.wheelUnlocked(it.id) } ?: return
+        if (templates.isEmpty() || wheelUnlocked(wheel.id)) return
+        val fallback = templates.firstOrNull { wheelUnlocked(it.id) } ?: return
         assignWheel(fallback)
+    }
+
+    private fun reloadTemplates() {
+        val loaded = library.load(steering.installedTemplateIds())
+        if (loaded.isNotEmpty()) templates = loaded
+        packRevision++
+        applyEntitlement()
     }
 
     private fun knobAngle(control: Control, x: Float, y: Float, rotation: Float): Float {

@@ -1,6 +1,7 @@
 package com.racingwheelpro.data
 
 import android.content.Context
+import com.racingwheelpro.catalog.LicenceVerifier
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.PedalSetup
@@ -12,12 +13,14 @@ import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelTemplate
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 
 class WheelLibrary(private val context: Context) {
     private val assetTemplates = LinkedHashMap<String, WheelTemplate>()
 
-    fun load(): List<WheelTemplate> {
+    fun load(installed: Set<String> = emptySet()): List<WheelTemplate> {
         assetTemplates.clear()
         val names = context.assets.list("wheels")?.filter { it.endsWith(".json") }?.sorted().orEmpty()
         for (name in names) {
@@ -27,6 +30,13 @@ class WheelLibrary(private val context: Context) {
         }
         val merged = LinkedHashMap<String, WheelTemplate>()
         merged.putAll(assetTemplates)
+        val packs = File(context.filesDir, "steering-packs/files")
+        if (packs.isDirectory) {
+            packs.listFiles { file -> file.extension == "json" }?.forEach { file ->
+                val parsed = runCatching { parseTemplate(file.readText()) }.getOrNull() ?: return@forEach
+                if (parsed.id in installed) merged[parsed.id] = parsed
+            }
+        }
         val dir = File(context.filesDir, "wheels")
         if (dir.isDirectory) {
             dir.listFiles { f -> f.extension == "json" }?.forEach { file ->
@@ -45,6 +55,23 @@ class WheelLibrary(private val context: Context) {
 
     fun deleteOverride(id: String) {
         File(context.filesDir, "wheels/$id.json").delete()
+    }
+
+    /**
+     * Installed pack bytes are used only when they match the signed hash.
+     * Otherwise the bundled asset is shown, which keeps a locked preview
+     * visible and ignores a file someone edited after install.
+     */
+    fun openWheelPng(image: String, expectedSha: String?): InputStream? {
+        if (!image.matches(Regex("^[A-Za-z0-9_.-]{1,80}$"))) return null
+        if (expectedSha != null) {
+            val installed = File(context.filesDir, "steering-packs/files/$image")
+            if (installed.isFile) {
+                val bytes = installed.readBytes()
+                if (LicenceVerifier.sha256Hex(bytes) == expectedSha) return ByteArrayInputStream(bytes)
+            }
+        }
+        return runCatching { context.assets.open("wheels/$image") }.getOrNull()
     }
 
     companion object {

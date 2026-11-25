@@ -1,0 +1,8 @@
+# DEV ONLY. Copy to .dev.vars for `npx wrangler dev --local`.
+# The private key matches catalogue/dev-licence-public.b64 and is refused
+# unless LICENCE_MODE=dev. Generate a new key before any real launch.
+# Do not put a live Stripe key here. This file has no card data.
+
+LICENCE_MODE=dev
+PAYMENT_PROVIDER=sandbox
+LICENCE_PRIVATE_KEY_PKCS8=MC4CAQAwBQYDK2VwBCIEIOiioc1DXsdxvEjkZX6zrg24F+CvkvD7U7u8hxnhIkbH

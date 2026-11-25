@@ -2,11 +2,11 @@
 
 Racing Wheel Pro is an Android app and a Windows program that turn a phone into a steering controller for a PC you choose. This policy covers the Android app, the Windows receiver, and the website at https://myracingwheel.site/.
 
-Last updated: 17 November 2026.
+Last updated: 25 November 2026.
 
 ## Who we are
 
-The project is published by its contributors at https://github.com/EarthQuakEmc2/RacingWheel_V1.0. There is no account system and no developer server that stores player data.
+The project is published by its contributors at https://github.com/EarthQuakEmc2/RacingWheel_V1.0. The phone app does not require an account. The website has an optional account for the coach and for Steering Packages.
 
 ## What the app does with data
 
@@ -22,9 +22,15 @@ The Play build of Racing Wheel Premium can offer a one-time in-app purchase, pro
 
 The free build distributed from the project site has no billing client and does not contact Play.
 
+## Steering Packages
+
+A Steering Package is bought on the website with the same email account as the coach. The order we store is the account id, the package ids, the amount, the currency, and the payment provider's reference. We do not collect or store a card number, expiry date, or security code.
+
+The sandbox build does not contact a payment company. If a provider is turned on later, the card is entered on that provider's page. The phone then downloads a signed licence and the template files. Those stay on the phone so the wheels keep working offline. Uninstalling the app deletes them.
+
 ## What we do not do
 
-- We do not create an account.
+- The driving app does not require an account. The website account is optional, for the coach and for Steering Packages.
 - We do not show ads.
 - We do not use analytics, crash-reporting SDKs, or advertising identifiers.
 - We do not sell or share personal data.

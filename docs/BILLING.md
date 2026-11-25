@@ -44,6 +44,8 @@ That client sells one non-consumable product:
 
 The open `premium` flavor on `main` does not use that cache. It unlocks every wheel in code, with no network call to Google.
 
+Steering Packages are a separate draft. They are manufacturer packs signed with Ed25519, checked out on the website in sandbox mode, and they are not this Play product. See [STEERING_PACKAGES.md](STEERING_PACKAGES.md). Do not merge that branch in place of this one.
+
 ## Store names
 
 Play's intellectual-property rules are a separate problem from billing. `-Pracingwheel.genericNames=true` (or `RWP_GENERIC_NAMES=true`) builds the same flavors with manufacturer names removed from the UI. The photographs stay in the APK. Read `play-store/PUBLISHING.md` before uploading anything.

@@ -7,6 +7,7 @@ const LINKS = [
   { href: '/#wheels', id: 'wheels', label: 'Wheels' },
   { href: '/#makers', id: 'makers', label: 'Makers' },
   { href: '/#pricing', id: 'pricing', label: 'Pricing' },
+  { href: '/packages', id: 'packages', label: 'Packages' },
   { href: '/#download', id: 'download', label: 'Download' },
   { href: '/#install', id: 'install', label: 'Install' },
   { href: '/leaderboard', id: 'leaderboard', label: 'Leaderboard' },
@@ -24,7 +25,9 @@ export default function Header() {
         ? 'leaderboard'
         : location.pathname === '/privacy'
           ? 'privacy'
-          : ''
+          : location.pathname.startsWith('/packages') || location.pathname === '/cart' || location.pathname === '/checkout'
+            ? 'packages'
+            : ''
 
   useEffect(() => {
     const ids = ['top', ...LINKS.map((l) => l.id), 'notes']

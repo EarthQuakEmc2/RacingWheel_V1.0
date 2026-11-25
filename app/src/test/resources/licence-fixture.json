@@ -1,0 +1,11 @@
+{
+  "publicKey": "4MEGt8uKGOuj9H1x/cfVN2Kvcc4VP8QNsCXZhwaqd2k=",
+  "licence": {
+    "payload": "eyJhbGciOiJFZDI1NTE5IiwiZmlsZXMiOlt7ImJ5dGVzIjozLCJuYW1lIjoicG9yc2NoZV9ndDNyLmpzb24iLCJzaGEyNTYiOiJhYmMifV0sImlhdCI6IjIwMjYtMDEtMDFUMDA6MDA6MDAuMDAwWiIsImlzcyI6InJhY2luZ3doZWVsLXBybyIsInBhY2thZ2VzIjpbInBvcnNjaGUiXSwic3ViIjoidXNlci0xIiwidGVtcGxhdGVzIjpbInBvcnNjaGVfZ3QzciJdLCJ2IjoxfQ",
+    "signature": "3cAVbFFSaC8exvCUZYQNf0C7WK4Z9PBdcckzQ1dJWQR1PSKxhh_ow-PXw_ARuMMslU06IIw9Tnl_RUJaug6IBg"
+  },
+  "tampered": {
+    "payload": "eyJhbGciOiJFZDI1NTE5IiwiZmlsZXMiOlt7ImJ5dGVzIjozLCJuYW1lIjoicG9yc2NoZV9ndDNyLmpzb24iLCJzaGEyNTYiOiJhYmMifV0sImlhdCI6IjIwMjYtMDEtMDFUMDA6MDA6MDAuMDAwWiIsImlzcyI6InJhY2luZ3doZWVsLXBybyIsInBhY2thZ2VzIjpbInBvcnNjaGUiXSwic3ViIjoidXNlci0xIiwidGVtcGxhdGVzIjpbInBvcnNjaGVfZ3QzciJdLCJ2Ijoxaa",
+    "signature": "3cAVbFFSaC8exvCUZYQNf0C7WK4Z9PBdcckzQ1dJWQR1PSKxhh_ow-PXw_ARuMMslU06IIw9Tnl_RUJaug6IBg"
+  }
+}
