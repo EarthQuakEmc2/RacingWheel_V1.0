@@ -1,0 +1,185 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "mclaren_mp4_30",
+  "name": "MP4-30",
+  "maker": "McLaren",
+  "manufacturer": "McLaren",
+  "style": "formula",
+  "image": "mclaren_mp4_30.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "2015-style formula wheel with a dash, +10, N, OT, X, D and PLS, and three dials.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.27439,
+    "right": 0.82183,
+    "bottom": 0.73111
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": [
+    {
+      "id": "plus10",
+      "label": "+10",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25306,
+      "cy": 0.36823,
+      "r": 0.02654,
+      "color": "#F5C400",
+      "defaultButton": 15
+    },
+    {
+      "id": "n",
+      "label": "N",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25306,
+      "cy": 0.44331,
+      "r": 0.02654,
+      "color": "#3DDC57",
+      "defaultButton": 16
+    },
+    {
+      "id": "ot",
+      "label": "OT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25306,
+      "cy": 0.51839,
+      "r": 0.02654,
+      "color": "#FF8A00",
+      "defaultButton": 3
+    },
+    {
+      "id": "x",
+      "label": "X",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.32889,
+      "cy": 0.51839,
+      "r": 0.02654,
+      "color": "#E8E8EC",
+      "defaultButton": 4
+    },
+    {
+      "id": "pls",
+      "label": "PLS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.74599,
+      "cy": 0.36823,
+      "r": 0.02654,
+      "color": "#3EC6FF",
+      "defaultButton": 5
+    },
+    {
+      "id": "d",
+      "label": "D",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.74599,
+      "cy": 0.44331,
+      "r": 0.02654,
+      "color": "#FF4D4D",
+      "defaultButton": 6
+    },
+    {
+      "id": "radio",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.74599,
+      "cy": 0.51839,
+      "r": 0.02654,
+      "color": "#C8CDD4",
+      "defaultButton": 7
+    },
+    {
+      "id": "box",
+      "label": "BOX",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.67016,
+      "cy": 0.51839,
+      "r": 0.02654,
+      "color": "#F5C400",
+      "defaultButton": 8
+    },
+    {
+      "id": "eng",
+      "label": "ENG",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.38577,
+      "cy": 0.64352,
+      "r": 0.0455,
+      "color": "#FF8A00",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 9,
+      "incButton": 10,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "mix",
+      "label": "MIX",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.49953,
+      "cy": 0.65603,
+      "r": 0.0455,
+      "color": "#3EC6FF",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 11,
+      "incButton": 12,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    },
+    {
+      "id": "diff",
+      "label": "DIF",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.61328,
+      "cy": 0.64352,
+      "r": 0.0455,
+      "color": "#E8E8EC",
+      "positions": 12,
+      "knobSlot": 2,
+      "decButton": 13,
+      "incButton": 14,
+      "startAngle": -60.0,
+      "clockwise": true,
+      "gesture": "dial"
+    }
+  ],
+  "display": {
+    "left": 0.33837,
+    "top": 0.33069,
+    "right": 0.66068,
+    "bottom": 0.46834
+  },
+  "revLights": {
+    "count": 14,
+    "left": 0.32889,
+    "top": 0.2869,
+    "right": 0.67016,
+    "bottom": 0.31818
+  }
+}

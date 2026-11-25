@@ -1,0 +1,32 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "alfa_classic",
+  "name": "Alfa Classic",
+  "maker": "Alfa Romeo",
+  "manufacturer": "Alfa Romeo",
+  "style": "road",
+  "image": "alfa_classic.png",
+  "imageWidth": 1100,
+  "imageHeight": 1100,
+  "blurb": "Three-spoke deep-dish rim with a red marker at the top.",
+  "hitSlop": 0.008,
+  "wheelBounds": {
+    "left": 0.17722,
+    "top": 0.23675,
+    "right": 0.82183,
+    "bottom": 0.76856
+  },
+  "shifters": {
+    "up": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    },
+    "down": {
+      "width": 0.18,
+      "height": 0.34,
+      "centerY": 0.52
+    }
+  },
+  "controls": []
+}

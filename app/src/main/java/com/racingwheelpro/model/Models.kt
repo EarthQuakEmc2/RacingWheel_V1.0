@@ -141,6 +141,7 @@ object WheelMakers {
         "Ferrari",
         "Mercedes",
         "Alfa Romeo",
+        "Fanatec",
         "KTM",
     )
     const val MOZA = "MOZA"
