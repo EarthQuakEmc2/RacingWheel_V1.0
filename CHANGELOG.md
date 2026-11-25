@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-11-25
+
+Stable release. Same features as 0.6.0, with the white Master Wheel icon.
+
+### Changed
+
+- Android `versionCode` is 16, `versionName` is 0.6.2.
+- The site download and `/api/health` point at 0.6.2.
+
 ## [0.6.2-preview] - 2026-11-25
 
 Prerelease. The website is not deployed. v0.6.0 stays the stable download.
@@ -204,7 +213,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2-preview...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2-preview...v0.6.2
 [0.6.2-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...v0.6.2-preview
 [0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0
 [0.6.0-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...v0.6.0-preview

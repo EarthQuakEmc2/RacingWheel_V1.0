@@ -35,8 +35,8 @@ android {
         applicationId = "site.myracingwheel.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 15
-        versionName = "0.6.2-preview"
+        versionCode = 16
+        versionName = "0.6.2"
         buildConfigField("String", "BUILD_DATE", "\"2026-11-25\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())

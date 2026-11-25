@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="wrap footer-grid">
         <div>
           <p className="footer-brand">Racing Wheel Pro</p>
-          <p>An Android wheel, a Windows receiver, and an Assetto Corsa coach. Version 0.6.0. Every wheel template is included.</p>
+          <p>An Android wheel, a Windows receiver, and an Assetto Corsa coach. Version 0.6.2. Every wheel template is included.</p>
         </div>
         <div>
           <p className="footer-label">License</p>
@@ -33,7 +33,7 @@ export default function Footer() {
             </a>
           </p>
           <p>
-            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.6.0">Release v0.6.0</a>
+            <a href="https://github.com/EarthQuakEmc2/RacingWheel_V1.0/releases/tag/v0.6.2">Release v0.6.2</a>
           </p>
           <p>
             <a href={telegramUrl} target="_blank" rel="noreferrer">

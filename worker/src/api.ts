@@ -73,7 +73,7 @@ async function route(request: Request, env: Env, url: URL): Promise<Response> {
   const method = request.method.toUpperCase();
   const db = env.DB;
 
-  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.6.0' });
+  if (method === 'GET' && path === '/api/health') return json({ ok: true, version: '0.6.2' });
   if (method === 'GET' && path === '/api/tracks') return json({ tracks: TRACKS });
   if (method === 'GET' && path === '/api/cars') return json({ cars: CARS });
 
