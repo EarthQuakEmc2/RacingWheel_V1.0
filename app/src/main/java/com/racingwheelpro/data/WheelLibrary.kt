@@ -4,6 +4,7 @@ import android.content.Context
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.NormRect
+import com.racingwheelpro.model.keepPaddlesOnButtonsOneAndTwo
 import com.racingwheelpro.model.PedalSetup
 import com.racingwheelpro.model.Profile
 import com.racingwheelpro.model.RevLightSpec
@@ -301,7 +302,7 @@ class ProfileStore(private val context: Context) {
                 ),
             )
         }
-        return Profile(
+        val profile = Profile(
             id = o.getString("id"),
             name = o.optString("name", "Profile"),
             game = o.optString("game", "Any game"),
@@ -319,6 +320,8 @@ class ProfileStore(private val context: Context) {
             shiftDownTune = tuneOf(o.optJSONObject("shiftDown")),
             revLights = o.optString("revLights", "throttle").let { if (it == "rpm") "rpm" else "throttle" },
         )
+        keepPaddlesOnButtonsOneAndTwo(profile)
+        return profile
     }
 
     private fun toJson(profile: Profile): String {

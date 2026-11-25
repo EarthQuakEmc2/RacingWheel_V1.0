@@ -15,6 +15,8 @@ import com.racingwheelpro.input.RevLights
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Control
+import com.racingwheelpro.model.defaultProfile
+import com.racingwheelpro.model.keepPaddlesOnButtonsOneAndTwo
 import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelMakers
@@ -182,13 +184,26 @@ class CoreTest {
         assertEquals(Proto.GEAR_DOWN, GearChannel.bits(shiftUp = false, shiftDown = true))
         assertEquals(0, GearChannel.bits(shiftUp = false, shiftDown = false))
         val untouched = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 0, downButton = 0)
-        assertEquals(1L shl 30, untouched)
+        assertEquals(1L, untouched)
         val mapped = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 5, downButton = 0)
-        assertEquals((1L shl 4) or (1L shl 30), mapped)
-        val withFace = GearChannel.merge(1L, shiftUp = false, shiftDown = true, upButton = 0, downButton = 0)
-        assertEquals(1L or (1L shl 31), withFace)
+        assertEquals(1L or (1L shl 4), mapped)
+        val withFace = GearChannel.merge(1L shl 3, shiftUp = false, shiftDown = true, upButton = 0, downButton = 0)
+        assertEquals((1L shl 1) or (1L shl 3), withFace)
         assertEquals(0L, GearChannel.buttonBit(0))
         assertEquals(0L, GearChannel.buttonBit(33))
+        val templates = loadAssetTemplates()
+        templates.forEach { wheel ->
+            wheel.controls.forEach { control ->
+                val numbers = if (control.isRotary) listOf(control.decButton, control.incButton) else listOf(control.defaultButton)
+                numbers.forEach { n ->
+                    if (n != 0) assertTrue("${wheel.id} ${control.id} uses $n", n !in 1..2)
+                }
+            }
+        }
+        val moved = defaultProfile(templates.first())
+        moved.bindings.first().button = 1
+        keepPaddlesOnButtonsOneAndTwo(moved)
+        assertTrue(moved.bindings.first().button !in 1..2)
     }
 
     @Test
@@ -246,12 +261,12 @@ class CoreTest {
         val templates = loadAssetTemplates().associateBy { it.id }
         val ks = templates.getValue("moza_ks")
         val cup = templates.getValue("porsche_gt3_cup")
-        val fsr = templates.getValue("moza_fsr")
         assertEquals(0.20f, ks.shiftUp.width, 0.001f)
         assertEquals(0.32f, ks.shiftUp.height, 0.001f)
         assertEquals(0.20f, ks.shiftDown.width, 0.001f)
-        assertTrue(ks.bounds.left > 0.05f)
-        assertTrue(fsr.bounds.left > ks.bounds.left)
+        templates.values.forEach { wheel ->
+            assertTrue(wheel.id, wheel.bounds.width in 0.85f..0.95f)
+        }
         assertTrue(cup.shiftUp.centerY < ks.shiftUp.centerY - 0.04f)
     }
 

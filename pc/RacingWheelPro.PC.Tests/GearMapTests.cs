@@ -6,53 +6,52 @@ namespace RacingWheelPro.PC.Tests;
 public class GearMapTests
 {
     [Fact]
-    public void ThirtyTwoButtonsUseThirtyOneAndThirtyTwo()
+    public void PaddlesAreVjoyButtonsOneAndTwo()
     {
         var map = GearMap.Resolve(32);
         Assert.True(map.Preferred);
-        Assert.Equal(31, map.Up);
-        Assert.Equal(32, map.Down);
+        Assert.Equal(1, map.Up);
+        Assert.Equal(2, map.Down);
 
         var up = GearMap.Compose(0, Proto.GearUp, map);
         Assert.Equal(32, up.Length);
         Assert.Single(Indices(up));
-        Assert.True(up[30]);
-        Assert.False(up[31]);
+        Assert.True(up[0]);
+        Assert.False(up[1]);
 
         var down = GearMap.Compose(0, Proto.GearDown, map);
         Assert.Single(Indices(down));
-        Assert.True(down[31]);
-        Assert.False(down[30]);
+        Assert.True(down[1]);
+        Assert.False(down[0]);
     }
 
     [Fact]
     public void GearReleaseClearsThePaddleAndLeavesTheWheelButton()
     {
         var map = GearMap.Resolve(32);
-        var held = GearMap.Compose(1u, Proto.GearUp, map);
-        Assert.Equal(new[] { 0, 30 }, Indices(held));
+        var held = GearMap.Compose(1u << 2, Proto.GearUp, map);
+        Assert.Equal(new[] { 0, 2 }, Indices(held));
 
-        var released = GearMap.Compose(1u, 0, map);
-        Assert.Equal(new[] { 0 }, Indices(released));
+        var released = GearMap.Compose(1u << 2, 0, map);
+        Assert.Equal(new[] { 2 }, Indices(released));
     }
 
     [Fact]
-    public void ShortDeviceUsesTheLastTwoButtonsAndNoHigherIndex()
+    public void EightButtonDeviceStillUsesButtonsOneAndTwo()
     {
         var map = GearMap.Resolve(8);
-        Assert.False(map.Preferred);
-        Assert.Equal(7, map.Up);
-        Assert.Equal(8, map.Down);
+        Assert.True(map.Preferred);
+        Assert.Equal(1, map.Up);
+        Assert.Equal(2, map.Down);
 
         var up = GearMap.Compose(0, Proto.GearUp, map);
         Assert.Equal(8, up.Length);
         Assert.Single(Indices(up));
-        Assert.True(up[6]);
+        Assert.True(up[0]);
 
         var message = GearMap.AcquireMessage(1, map, sharesWheelButtons: true);
-        Assert.Contains("button 7", message);
-        Assert.Contains("button 8", message);
-        Assert.Contains("32", message);
+        Assert.Contains("button 1", message);
+        Assert.Contains("button 2", message);
     }
 
     [Fact]

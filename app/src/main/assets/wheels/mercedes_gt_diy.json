@@ -6,21 +6,34 @@
   "manufacturer": "Mercedes",
   "style": "gt",
   "image": "mercedes_gt_diy.png",
-  "imageWidth": 705,
-  "imageHeight": 396,
+  "imageWidth": 1100,
+  "imageHeight": 1100,
   "blurb": "DIY GT. Radio, neutral, chrono, flash, start, and the page dials.",
   "hitSlop": 0.008,
-  "wheelBounds": {"left": 0.0511, "top": 0.1061, "right": 0.9404, "bottom": 0.9773},
+  "wheelBounds": {
+    "left": 0.04694,
+    "top": 0.24926,
+    "right": 0.95307,
+    "bottom": 0.74788
+  },
   "shifters": {
-    "up": {"width": 0.20, "height": 0.32, "centerY": 0.516},
-    "down": {"width": 0.20, "height": 0.32, "centerY": 0.516}
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.516
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.516
+    }
   },
   "outputButtons": 10,
   "display": {
-    "left": 0.3357,
-    "top": 0.2978,
-    "right": 0.6558,
-    "bottom": 0.5069
+    "left": 0.33693,
+    "top": 0.35898,
+    "right": 0.66309,
+    "bottom": 0.47866
   },
   "controls": [
     {
@@ -28,31 +41,31 @@
       "label": "RADIO",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.18014,
-      "cy": 0.16919,
-      "r": 0.02837,
+      "cx": 0.17842,
+      "cy": 0.28537,
+      "r": 0.02891,
       "color": "#F5C400",
-      "defaultButton": 1
+      "defaultButton": 11
     },
     {
       "id": "neutral",
       "label": "NEUTRAL",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.24823,
-      "cy": 0.31566,
-      "r": 0.0227,
+      "cx": 0.2478,
+      "cy": 0.3692,
+      "r": 0.02313,
       "color": "#1A1A1A",
-      "defaultButton": 2
+      "defaultButton": 12
     },
     {
       "id": "chrono",
       "label": "CHRONO",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.29645,
-      "cy": 0.67677,
-      "r": 0.02553,
+      "cx": 0.29693,
+      "cy": 0.57588,
+      "r": 0.02601,
       "color": "#E8E6E3",
       "defaultButton": 3
     },
@@ -61,9 +74,9 @@
       "label": "FLASH",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.82837,
-      "cy": 0.17677,
-      "r": 0.02837,
+      "cx": 0.83892,
+      "cy": 0.28971,
+      "r": 0.02891,
       "color": "#2F80ED",
       "defaultButton": 4
     },
@@ -72,9 +85,9 @@
       "label": "BLK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.7234,
-      "cy": 0.55556,
-      "r": 0.01986,
+      "cx": 0.73197,
+      "cy": 0.50651,
+      "r": 0.02024,
       "color": "#1A1A1A",
       "defaultButton": 5
     },
@@ -83,9 +96,9 @@
       "label": "START",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.6922,
-      "cy": 0.68434,
-      "r": 0.02553,
+      "cx": 0.70017,
+      "cy": 0.58021,
+      "r": 0.02601,
       "color": "#E10600",
       "defaultButton": 6
     },
@@ -95,9 +108,9 @@
       "kind": "rotary",
       "gesture": "thumb",
       "shape": "circle",
-      "cx": 0.25532,
-      "cy": 0.44192,
-      "r": 0.02553,
+      "cx": 0.25502,
+      "cy": 0.44147,
+      "r": 0.02601,
       "color": "#1A1A1A",
       "positions": 12,
       "knobSlot": 0,
@@ -112,9 +125,9 @@
       "kind": "rotary",
       "gesture": "thumb",
       "shape": "circle",
-      "cx": 0.73759,
-      "cy": 0.41667,
-      "r": 0.02553,
+      "cx": 0.74642,
+      "cy": 0.42701,
+      "r": 0.02601,
       "color": "#1A1A1A",
       "positions": 12,
       "knobSlot": 1,

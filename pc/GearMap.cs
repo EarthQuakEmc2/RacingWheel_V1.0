@@ -2,23 +2,20 @@ namespace RacingWheelPro.Pc;
 
 /// <summary>
 /// Where a paddle press lands on a vJoy device.
-/// Buttons 31 and 32 are used when the device actually has them. A device
-/// configured with fewer buttons cannot see 31 and 32, so the last two that
-/// exist are used instead and the receiver says so at startup.
+/// Gear up is button 1 and gear down is button 2. Assetto Corsa does not
+/// notice buttons 31 and 32, and a device with only eight buttons still has 1 and 2.
 /// </summary>
 public static class GearMap
 {
-    public const int PreferredUp = 31;
-    public const int PreferredDown = 32;
+    public const int PreferredUp = 1;
+    public const int PreferredDown = 2;
 
     public readonly record struct Assignment(int Up, int Down, int ButtonCount, bool Preferred);
 
     public static Assignment Resolve(int buttonCount)
     {
-        if (buttonCount >= PreferredDown)
-            return new Assignment(PreferredUp, PreferredDown, buttonCount, true);
         if (buttonCount >= 2)
-            return new Assignment(buttonCount - 1, buttonCount, buttonCount, false);
+            return new Assignment(PreferredUp, PreferredDown, buttonCount, true);
         return new Assignment(0, 0, Math.Max(0, buttonCount), false);
     }
 
@@ -43,20 +40,13 @@ public static class GearMap
         if (map.Up == 0)
         {
             return "vJoy device " + id + " reports " + map.ButtonCount
-                + " buttons. Gear needs two. In vJoyConf set Buttons to 32, apply, and restart the receiver.";
+                + " buttons. Gear needs two. In vJoyConf set Buttons to at least 2, apply, and restart the receiver.";
         }
-        if (map.Preferred)
-        {
-            return "vJoy device " + id + " has " + map.ButtonCount
-                + " buttons. Gear up is button 31 and gear down is button 32.";
-        }
-        var overlap = sharesWheelButtons
-            ? " Those numbers are also wheel buttons until the device has 32."
-            : " This device carries only the paddles, so those two buttons are the shifters.";
+        var where = sharesWheelButtons
+            ? " Wheel buttons use 3 and up, so 1 and 2 stay the paddles."
+            : " This device carries only the paddles.";
         return "vJoy device " + id + " has " + map.ButtonCount
-            + " buttons, so gear up is button " + map.Up + " and gear down is button " + map.Down + "."
-            + overlap
-            + " In vJoyConf set Buttons to 32, apply, and restart the receiver to use buttons 31 and 32.";
+            + " buttons. Gear up is button 1 and gear down is button 2." + where;
     }
 
     private static bool Held(int button, int count, int gear, int bit) =>

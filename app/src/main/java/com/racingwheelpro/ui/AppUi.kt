@@ -378,6 +378,14 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     }
     val angle = if (editor) 0f else session.steerVisualDeg
     val pressed = session.pressedControls
+    var lightOn by remember(pressed.isNotEmpty()) { mutableStateOf(true) }
+    LaunchedEffect(pressed.isNotEmpty()) {
+        if (pressed.isEmpty()) return@LaunchedEffect
+        while (true) {
+            kotlinx.coroutines.delay(90)
+            lightOn = !lightOn
+        }
+    }
     val show = editor || session.showHotspots
     val selected = session.selectedControl
     val overlay = session.gate.knobOverlay(wheel.id)
@@ -456,7 +464,10 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     val py = rect.top + control.cy * rect.height
                     val rad = control.r * rect.width
                     val tint = hexColor(control.color)
-                    if (control.id in pressed) {
+                    if (control.id in pressed && !control.isRotary) {
+                        drawCircle(tint.copy(alpha = if (lightOn) 0.95f else 0.22f), rad * 0.72f, Offset(px, py))
+                        drawCircle(Color.White.copy(alpha = if (lightOn) 1f else 0.08f), rad * 0.34f, Offset(px, py))
+                    } else if (control.id in pressed) {
                         drawCircle(tint.copy(alpha = 0.45f), rad, Offset(px, py))
                     }
                     if (show) {
@@ -907,7 +918,7 @@ private fun SetupScreen(session: RaceSession) {
                         bump()
                     }
                     Text(
-                        "The receiver holds vJoy buttons 31 and 32, and on the Xbox pad it holds D-pad up and D-pad down, so Assetto Corsa can see the paddles. Page Up and Page Down still type. A number here adds another button. 0 does not turn the paddles off.",
+                        "Gear up is vJoy button 1 and gear down is vJoy button 2. Page Up and Page Down still type. Wheel buttons start at 3 so they do not share the paddles. A number here adds another button. 0 does not turn the paddles off.",
                         color = Muted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(bottom = 10.dp),

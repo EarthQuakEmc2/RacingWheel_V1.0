@@ -6,21 +6,34 @@
   "manufacturer": "Ferrari",
   "style": "road",
   "image": "ferrari_road_red.png",
-  "imageWidth": 612,
-  "imageHeight": 547,
+  "imageWidth": 1100,
+  "imageHeight": 1100,
   "blurb": "Red road wheel. Indicators, lights, engine start, wipers, manettino.",
   "hitSlop": 0.008,
-  "wheelBounds": {"left": 0.0490, "top": 0.0183, "right": 0.9984, "bottom": 0.9890},
+  "wheelBounds": {
+    "left": 0.047,
+    "top": 0.08601,
+    "right": 0.95302,
+    "bottom": 0.91398
+  },
   "shifters": {
-    "up": {"width": 0.20, "height": 0.32, "centerY": 0.518},
-    "down": {"width": 0.20, "height": 0.32, "centerY": 0.520}
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.518
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.52
+    }
   },
   "outputButtons": 9,
   "display": {
-    "left": 0.3718,
-    "top": 0.3289,
-    "right": 0.6756,
-    "bottom": 0.5231
+    "left": 0.35505,
+    "top": 0.35094,
+    "right": 0.64497,
+    "bottom": 0.51658
   },
   "controls": [
     {
@@ -28,31 +41,31 @@
       "label": "BACK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.25327,
-      "cy": 0.48446,
-      "r": 0.02288,
+      "cx": 0.24193,
+      "cy": 0.48363,
+      "r": 0.02183,
       "color": "#1A1A1A",
-      "defaultButton": 1
+      "defaultButton": 10
     },
     {
       "id": "light",
       "label": "LIGHTS",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.25327,
-      "cy": 0.63071,
-      "r": 0.02288,
+      "cx": 0.24193,
+      "cy": 0.60837,
+      "r": 0.02183,
       "color": "#1A1A1A",
-      "defaultButton": 2
+      "defaultButton": 11
     },
     {
       "id": "ok",
       "label": "OK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.34314,
-      "cy": 0.64899,
-      "r": 0.02124,
+      "cx": 0.3277,
+      "cy": 0.62396,
+      "r": 0.02027,
       "color": "#2F80ED",
       "defaultButton": 3
     },
@@ -61,9 +74,9 @@
       "label": "ENGINE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.39052,
-      "cy": 0.7075,
-      "r": 0.02614,
+      "cx": 0.37291,
+      "cy": 0.67387,
+      "r": 0.02495,
       "color": "#E10600",
       "defaultButton": 4
     },
@@ -72,9 +85,9 @@
       "label": "WIPER",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.4902,
-      "cy": 0.73126,
-      "r": 0.02288,
+      "cx": 0.46804,
+      "cy": 0.69414,
+      "r": 0.02183,
       "color": "#1A1A1A",
       "defaultButton": 5
     },
@@ -83,9 +96,9 @@
       "label": "PHONE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.56373,
-      "cy": 0.73126,
-      "r": 0.01961,
+      "cx": 0.53821,
+      "cy": 0.69414,
+      "r": 0.01871,
       "color": "#1A1A1A",
       "defaultButton": 6
     },
@@ -94,9 +107,9 @@
       "label": "LIGHTS",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.76797,
-      "cy": 0.62157,
-      "r": 0.02288,
+      "cx": 0.73312,
+      "cy": 0.60058,
+      "r": 0.02183,
       "color": "#1A1A1A",
       "defaultButton": 7
     },
@@ -105,9 +118,9 @@
       "label": "MANETTINO",
       "kind": "rotary",
       "shape": "circle",
-      "cx": 0.68627,
-      "cy": 0.70384,
-      "r": 0.03595,
+      "cx": 0.65515,
+      "cy": 0.67075,
+      "r": 0.03431,
       "color": "#E10600",
       "positions": 12,
       "knobSlot": 0,
