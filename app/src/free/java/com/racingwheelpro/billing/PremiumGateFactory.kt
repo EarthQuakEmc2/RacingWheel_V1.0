@@ -13,18 +13,16 @@ fun createPremiumGate(context: Context): PremiumGate = FreePremiumGate()
  */
 class FreePremiumGate : PremiumGate() {
     private var message =
-        "Four wheels are included. The others are Racing Wheel Premium, a one-time unlock."
+        "Every wheel in this build is included. The paid Play build is not in this release."
 
-    override val unlocked = false
+    override val unlocked = true
     override val priceLabel = WheelCatalog.PRICE_LABEL
     override val detail: String get() = message
 
     override fun start() = Unit
 
     override fun purchase(activity: Activity) {
-        message = "This build has no Play Billing client. Steering, throttle, brake, buttons, " +
-            "the layout editor, and the PC receiver stay fully usable. " +
-            "Racing Wheel Premium (${WheelCatalog.PRICE_LABEL}) unlocks the other wheels in the Play build."
+        message = "This build has no Play Billing client. Every wheel is already included."
         notifyListeners()
     }
 

@@ -535,8 +535,8 @@ private fun DrawScope.drawShifterZone(
     }
     val drawn = Path()
     val path = if (anyHole && drawn.op(zonePath, holes, PathOperation.Difference)) drawn else zonePath
-    drawPath(path, color.copy(alpha = if (held) 0.34f else 0.16f))
-    drawPath(path, color.copy(alpha = if (held) 0.95f else 0.55f), style = Stroke(width = if (held) 3.5f else 1.8f))
+    drawPath(path, color.copy(alpha = if (held) 0.72f else 0.16f))
+    drawPath(path, if (held) Color.White else color.copy(alpha = 0.55f), style = Stroke(width = if (held) 5f else 1.8f))
     labelPaint.color = android.graphics.Color.WHITE
     labelPaint.textSize = 13f * density
     labelPaint.textAlign = Paint.Align.CENTER
@@ -794,7 +794,7 @@ private fun SetupScreen(session: RaceSession) {
     val revision = tick
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(150.dp).fillMaxHeight().background(Panel).padding(8.dp)) {
-            listOf("steer" to "STEERING", "pedals" to "PEDALS", "buttons" to "BUTTONS", "profile" to "PROFILE").forEach { (id, label) ->
+            listOf("steer" to "STEERING", "pedals" to "PEDALS", "buttons" to "BUTTONS", "profile" to "PROFILE", "about" to "ABOUT").forEach { (id, label) ->
                 Text(
                     label,
                     color = if (session.setupPage == id) SignalYellow else Muted,
@@ -907,7 +907,7 @@ private fun SetupScreen(session: RaceSession) {
                         bump()
                     }
                     Text(
-                        "The receiver types Page Up and Page Down. vJoy button 31 is shift up and button 32 is shift down when the device has 32 buttons. With fewer, the console names the last two. Set a button number here if the game should also see that pad button. 0 leaves the paddle on the gear channel only.",
+                        "The receiver holds vJoy buttons 31 and 32, and on the Xbox pad it holds D-pad up and D-pad down, so Assetto Corsa can see the paddles. Page Up and Page Down still type. A number here adds another button. 0 does not turn the paddles off.",
                         color = Muted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(bottom = 10.dp),
@@ -928,6 +928,42 @@ private fun SetupScreen(session: RaceSession) {
                     Text("Volume keys", color = Muted, fontSize = 12.sp)
                     Stepper("Volume up → button", session.profile.volumeUpButton, 0..32) { session.profile.volumeUpButton = it; bump() }
                     Stepper("Volume down → button", session.profile.volumeDownButton, 0..32) { session.profile.volumeDownButton = it; bump() }
+                }
+                "about" -> {
+                    SectionTitle("About")
+                    Text("Racing Wheel Pro", color = Ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Version ${BuildConfig.VERSION_NAME}", color = Ink, fontSize = 14.sp)
+                    Text("Build ${BuildConfig.VERSION_CODE}", color = Muted, fontSize = 14.sp)
+                    Text("Built ${BuildConfig.BUILD_DATE}", color = Muted, fontSize = 14.sp)
+                    Spacer(Modifier.height(10.dp))
+                    val aboutContext = LocalContext.current
+                    Text(
+                        "myracingwheel.site",
+                        color = SignalYellow,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            runCatching {
+                                aboutContext.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://myracingwheel.site")))
+                            }
+                        }.padding(vertical = 4.dp),
+                    )
+                    Text(
+                        "t.me/racingwheelpro",
+                        color = SignalYellow,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            runCatching {
+                                aboutContext.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.TELEGRAM_URL)))
+                            }
+                        }.padding(vertical = 4.dp),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text("GPL-3.0", color = Ink, fontSize = 14.sp)
+                    Text(
+                        "Based on Touch Racer by Vasiliy Shirkin (thelv).",
+                        color = Muted,
+                        fontSize = 13.sp,
+                    )
                 }
                 else -> {
                     SectionTitle("Profile")

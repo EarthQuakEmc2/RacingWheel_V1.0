@@ -66,10 +66,12 @@ object ShifterZones {
         val cy = bounds.top + fitted.centerY * bounds.height
         val top = cy - zoneH / 2f
         val bottom = cy + zoneH / 2f
+        // The outer edge runs to the picture edge. Flippers often sit outside the
+        // opaque plate, and the right one was missing the zone so it never lit.
         return if (side == Side.UP) {
-            Zone(side, bounds.left, top, bounds.left + zoneW, bottom)
+            Zone(side, 0f, top, bounds.left + zoneW, bottom)
         } else {
-            Zone(side, bounds.right - zoneW, top, bounds.right, bottom)
+            Zone(side, bounds.right - zoneW, top, 1f, bottom)
         }
     }
 

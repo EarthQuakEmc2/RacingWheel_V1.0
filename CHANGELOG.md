@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.6.0] - 2026-11-25
+
+Stable release. Every wheel is included. The paid Play build stays unmerged.
+
+### Fixed
+
+- Gear up and gear down now show up in Assetto Corsa while you bind controls. The phone sends them as joystick buttons 31 and 32, and the Windows receiver holds those buttons on vJoy. The Xbox pad that carries the other buttons has no button 31, so the same press also holds D-pad up for gear up and D-pad down for gear down. Page Up and Page Down still type.
+- The right paddle lights when you hold gear down. Its zone now reaches the outer edge of the picture, where that flipper sits, and the held zone is drawn bright white.
+
+### Added
+
+- About, under Setup. It shows Racing Wheel Pro, the version name, the build number, the build date, myracingwheel.site, the Telegram channel, GPL-3.0, and credit to Touch Racer by thelv.
+
+### Changed
+
+- Android `versionCode` is 12, `versionName` is 0.6.0. No wheel is locked.
+- The site download points at this release. `/api/health` reports 0.6.0.
+
 ## [0.6.0-preview] - 2026-11-22
 
 Prerelease for testing. v0.5.0 stays the stable download on the website and at `releases/latest`. This build is not merged.
@@ -171,7 +189,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0
 [0.6.0-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...v0.6.0-preview
 [0.5.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...v0.5.1

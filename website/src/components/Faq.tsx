@@ -17,11 +17,11 @@ const ITEMS = [
   },
   {
     q: 'What does the $3.99 unlock?',
-    a: 'Racing Wheel Premium is a one-time purchase. It opens every wheel template and draws the dial pointer on every rotary. The free app already steers, brakes, throttles, edits layouts, and talks to the PC, and it keeps the pointer demo on one wheel.',
+    a: 'Version 0.6.0 includes every wheel template. Nothing in the garage is locked. A separate paid Play build is not part of this release.',
   },
   {
     q: 'Windows SmartScreen blocks the exe.',
-    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.5.0 release, choose More info, then Run anyway.',
+    a: 'The receiver is an unsigned build from this repository. If you trust the file from the v0.6.0 release, choose More info, then Run anyway.',
   },
   {
     q: 'How do the paddle shifters reach the game?',

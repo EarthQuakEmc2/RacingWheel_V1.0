@@ -23,8 +23,16 @@ object GearChannel {
         downButton: Int,
     ): Long {
         var mask = buttons
-        if (shiftUp) mask = mask or buttonBit(upButton)
-        if (shiftDown) mask = mask or buttonBit(downButton)
+        // 31 and 32 are the shifter buttons Assetto Corsa binds. The optional
+        // profile numbers are extra copies, not a replacement.
+        if (shiftUp) {
+            mask = mask or buttonBit(31)
+            mask = mask or buttonBit(upButton)
+        }
+        if (shiftDown) {
+            mask = mask or buttonBit(32)
+            mask = mask or buttonBit(downButton)
+        }
         return mask
     }
 
