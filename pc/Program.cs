@@ -12,6 +12,7 @@ internal static class Program
     {
         var opt = Options.Parse(args);
         if (opt.SelfTest) return SelfTest();
+        FileLog.Open();
         using var receiver = new Receiver(opt);
         return receiver.Run();
     }
@@ -47,7 +48,7 @@ internal static class Program
         }
         var gearUp = GearMap.Compose(0, Proto.GearUp, GearMap.Resolve(32));
         var gearDown = GearMap.Compose(0, Proto.GearDown, GearMap.Resolve(8));
-        if (gearUp.Count(b => b) != 1 || !gearUp[30] || gearDown.Length != 8 || gearDown.Count(b => b) != 1 || !gearDown[7])
+        if (gearUp.Count(b => b) != 1 || !gearUp[0] || gearDown.Length != 8 || gearDown.Count(b => b) != 1 || !gearDown[1])
         {
             Console.Error.WriteLine("self-test: gear buttons");
             return 1;
@@ -271,7 +272,7 @@ internal sealed class Receiver : IDisposable
     public Receiver(Options opt)
     {
         _opt = opt;
-        _output = OutputFactory.Create(opt.Output, opt.Keyboard, opt.VjoyId, m => Console.Error.WriteLine(m));
+        _output = OutputFactory.Create(opt.Output, opt.Keyboard, opt.VjoyId, FileLog.Info);
         _discovery = new UdpClient(opt.Discovery);
         _telemetry = new UdpClient(opt.Udp);
         _tcp = new TcpListener(IPAddress.Any, opt.Tcp);
@@ -295,13 +296,14 @@ internal sealed class Receiver : IDisposable
 
     public int Run()
     {
-        Console.Error.WriteLine("Racing Wheel Pro receiver");
-        Console.Error.WriteLine($"  discovery UDP {_opt.Discovery}   telemetry UDP {_opt.Udp}   TCP {_opt.Tcp}");
-        Console.Error.WriteLine($"  output: {_output.Name}");
-        Console.Error.WriteLine("  Waiting for the phone. Ctrl+C stops.");
-        Console.Error.WriteLine("  Community  " + Community.Telegram);
+        FileLog.Info("Racing Wheel Pro receiver");
+        FileLog.Info($"discovery UDP {_opt.Discovery}   telemetry UDP {_opt.Udp}   TCP {_opt.Tcp}");
+        FileLog.Info("output: " + _output.Name);
+        FileLog.Info("log: " + FileLog.DirectoryPath);
+        FileLog.Info("Waiting for the phone.");
         if (!_opt.NoUi) _uiUrl = StartUi();
-        if (_uiUrl.Length > 0) Console.Error.WriteLine("  Logs UI  " + _uiUrl);
+        if (_uiUrl.Length > 0) FileLog.Info("Logs UI  " + _uiUrl);
+        TrayIcon.Start(() => _run = false);
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; _run = false; };
         var beacon = Packets.HostBeacon(_opt.Tcp, _opt.Udp, _output.Caps, Environment.MachineName);
         Task.Run(AcceptLoop);
@@ -324,7 +326,7 @@ internal sealed class Receiver : IDisposable
                 nextBeacon = now.AddMilliseconds(500);
             }
             Drain(_discovery, replyFind: true, beacon);
-            if (!_opt.Json && (DateTime.UtcNow - _lastPrint).TotalMilliseconds > 250)
+            if ((DateTime.UtcNow - _lastPrint).TotalSeconds > 30)
             {
                 PrintDash();
                 _lastPrint = DateTime.UtcNow;
@@ -393,7 +395,7 @@ internal sealed class Receiver : IDisposable
                 shiftDown = (state.Gear & Proto.GearDown) != 0,
                 from = from?.Address.ToString() ?? "sim",
             });
-            Console.WriteLine(line);
+            FileLog.Info(line);
         }
     }
 
@@ -412,7 +414,7 @@ internal sealed class Receiver : IDisposable
                 client = _tcp.AcceptTcpClient();
                 client.NoDelay = true;
                 _peer = client.Client.RemoteEndPoint?.ToString() ?? "";
-                Console.Error.WriteLine("TCP " + _peer);
+                FileLog.Info("TCP " + _peer);
                 using var stream = client.GetStream();
                 stream.ReadTimeout = 200;
                 var buffer = new List<byte>(256);
@@ -431,7 +433,7 @@ internal sealed class Receiver : IDisposable
                         if (type == Proto.TcpHello)
                         {
                             var hello = Packets.ParseHello(payload);
-                            Console.Error.WriteLine($"Hello {hello.Name} / {hello.Wheel} / {hello.Profile}");
+                            FileLog.Info($"Hello {hello.Name} / {hello.Wheel} / {hello.Profile}");
                         }
                         else if (type == Proto.TcpState)
                         {
@@ -449,7 +451,7 @@ internal sealed class Receiver : IDisposable
             }
             catch (Exception ex)
             {
-                if (_run) Console.Error.WriteLine("TCP ended: " + ex.Message);
+                if (_run) FileLog.Error("TCP ended: " + ex.Message);
             }
             finally
             {
@@ -504,19 +506,10 @@ internal sealed class Receiver : IDisposable
             outputHz = _outputHz;
         }
         var age = _lastRx == DateTime.MinValue ? -1 : (int)(DateTime.UtcNow - _lastRx).TotalMilliseconds;
-        var buttons = string.Join(",", s.PressedButtons());
-        if (buttons.Length == 0) buttons = "-";
-        var gear = (s.Gear & (Proto.GearUp | Proto.GearDown)) switch
-        {
-            Proto.GearUp | Proto.GearDown => "BOTH",
-            Proto.GearUp => "UP",
-            Proto.GearDown => "DN",
-            _ => "-",
-        };
         var code = string.IsNullOrEmpty(_account.Code) ? "----" : _account.Code;
         var dash = _dashHz;
-        Console.Write(
-            $"\r{peer,-16} steer {s.Steer,6:0.00}  thr {s.Throttle,4:0.00}  brk {s.Brake,4:0.00}  clt {s.Clutch,4:0.00}  gear {gear,-4}  btn {buttons,-12} in {inputHz,3} Hz  out {outputHz,3} Hz  dash {dash,2} Hz  {(ac ? "AC" : "noAC"),4}  {code}  age {(age < 0 ? "  -" : age + "ms"),5}   ");
+        FileLog.Info(
+            $"{peer} in {inputHz} Hz  out {outputHz} Hz  dash {dash} Hz  {(ac ? "AC" : "noAC")}  {code}  age {(age < 0 ? "-" : age + "ms")}");
     }
 
     /// <summary>About 25 Hz. The phone drops the screen if packets stop for a moment.</summary>

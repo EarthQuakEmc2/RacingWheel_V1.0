@@ -17,8 +17,10 @@ Stable release. Every wheel is included. The paid Play build stays unmerged.
 
 ### Fixed
 
-- Gear up and gear down now show up in Assetto Corsa while you bind controls. The phone sends them as joystick buttons 31 and 32, and the Windows receiver holds those buttons on vJoy. The Xbox pad that carries the other buttons has no button 31, so the same press also holds D-pad up for gear up and D-pad down for gear down. Page Up and Page Down still type.
+- Gear up and gear down now show up in Assetto Corsa while you bind controls. They are vJoy button 1 and vJoy button 2. Buttons that used to be 1 and 2 on a wheel moved to the next free numbers, so a face button is not the paddle. Page Up and Page Down still type.
 - The right paddle lights when you hold gear down. Its zone now reaches the outer edge of the picture, where that flipper sits, and the held zone is drawn bright white.
+- A button with a light in the middle flashes while you hold it.
+- Every wheel picture is the same overall size.
 
 ### Added
 
@@ -26,7 +28,8 @@ Stable release. Every wheel is included. The paid Play build stays unmerged.
 
 ### Changed
 
-- Android `versionCode` is 12, `versionName` is 0.6.0. No wheel is locked.
+- Android `versionCode` is 13, `versionName` is 0.6.0. No wheel is locked.
+- The Windows receiver has no console window. It writes `%APPDATA%\RacingWheelPro\logs\receiver.log` (older copies are kept when the file grows) and sits in the tray. Right-click that icon to exit. It does not print a line for each button.
 - The site download points at this release. `/api/health` reports 0.6.0.
 
 ## [0.6.0-preview] - 2026-11-22

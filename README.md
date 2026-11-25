@@ -12,7 +12,7 @@ The promotional site lives in [`website/`](website/). Its canonical address is <
 
 ## Free and Premium
 
-Version 0.6.0 includes every wheel template. Nothing in the garage is locked, and the paid Play build is not part of this release. Opening the app runs a short splash: it calls `https://myracingwheel.site/api/health` over HTTPS, reads the health JSON, looks for a saved account on the phone, compares versions, and listens briefly for the PC. The website does the same kind of check once per tab. A failed check says what failed and still lets you continue. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down). Gear up and gear down are vJoy buttons 31 and 32, and on the Xbox pad they are D-pad up and D-pad down. Each pedal can sit in from the screen edge. Shift lights, the wheel screen, and the turning knobs ship in this release.
+Version 0.6.0 includes every wheel template. Nothing in the garage is locked, and the paid Play build is not part of this release. Opening the app runs a short splash: it calls `https://myracingwheel.site/api/health` over HTTPS, reads the health JSON, looks for a saved account on the phone, compares versions, and listens briefly for the PC. The website does the same kind of check once per tab. A failed check says what failed and still lets you continue. The driving coach is a separate website account. Every wheel has paddle zones (left is shift up, right is shift down). Gear up is vJoy button 1 and gear down is vJoy button 2. Wheel buttons start at 3. Each pedal can sit in from the screen edge. Shift lights, the wheel screen, and the turning knobs ship in this release.
 
 Gradle flavors are `free` and `premium`. The free flavor compiles with no Play Billing library. The premium flavor on this branch unlocks every wheel and every dial pointer, again with no billing library, which is what keeps the published source fully usable under [LICENSE_EXCEPTIONS](LICENSE_EXCEPTIONS). The Play Billing client for the one-time product `racing_wheel_premium` lives only on the `paid-version` branch and is not merged. The split is written out in [docs/BILLING.md](docs/BILLING.md).
 
@@ -116,8 +116,8 @@ The receiver also opens a page at <http://127.0.0.1:41513/>. That page lists sav
 | Knob slots 0–3 | Right stick X/Y for the first two | Ry, Rz, Slider, Dial |
 | Buttons 1–14 | A B X Y LB RB Back Start LS RS, d-pad | Buttons 1–14 |
 | Buttons 15–32 | Keyboard: F1–F12, then 1–0, then A… | Buttons 15–32 |
-| Shift up (left paddle) | Keyboard Page Up, plus a virtual button if the profile sets one | Button 31, and Page Up |
-| Shift down (right paddle) | Keyboard Page Down, plus a virtual button if the profile sets one | Button 32, and Page Down |
+| Shift up (left paddle) | Keyboard Page Up, plus a virtual button if the profile sets one | Button 1, and Page Up |
+| Shift down (right paddle) | Keyboard Page Down, plus a virtual button if the profile sets one | Button 2, and Page Down |
 
 Button 1 is bit 0 of the button mask.
 
@@ -298,7 +298,7 @@ The layout editor resizes each paddle on its own. Drag the inner edge for width,
 
 Show shifter zones draws a faint overlay. Hiding it does not turn the paddles off. Shift up and shift down can each be given a virtual button. Leave the number at 0 and the paddle uses only the gear channel.
 
-The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy it holds button 31 for shift up and button 32 for shift down when the device has at least 32 buttons. Open vJoyConf, set device 1 to 8 axes and 32 buttons, apply, and restart the receiver. With fewer buttons the console names the last two it can use, and those can overlap wheel buttons until the count is 32. `--no-keyboard` skips the Page Up and Page Down keys. The vJoy buttons and any virtual button you assigned still go out. An Xbox pad from ViGEm has no button 31, so when that pad is the wheel the receiver also opens vJoy and puts only the two paddle buttons on it. Assetto Corsa then sees two different joystick buttons.
+The receiver reads that channel from byte 32 of the state packet. Bit 0 is shift up and bit 1 is shift down. It types Page Up and Page Down. On vJoy, gear up is button 1 and gear down is button 2, including when the device has only the usual 8 buttons. Wheel buttons are numbered from 3 so they do not share those two. `--no-keyboard` skips the Page Up and Page Down keys. When the wheel output is the Xbox pad, the receiver also opens vJoy and puts only buttons 1 and 2 on it. The receiver runs without a console window. It writes its log to `%APPDATA%\RacingWheelPro\logs\receiver.log` and shows a tray icon. Right-click the icon and choose Exit.
 
 The public Telegram channel is https://t.me/racingwheelpro, the `telegram` field in `community.json` at the repo root. The phone, the receiver, and the website all read that one value. On the phone it is Setup → Profile → Join our Telegram. The receiver prints it at startup and links it from the local page.
 
@@ -374,7 +374,7 @@ Dash telemetry (`RWPT`, 40 bytes) travels the same way, about 25 times a second,
 | 38 | u8 | TC working now, 0..255 |
 | 39 | u8 | ABS working now, 0..255 |
 
-To try it with Assetto Corsa: start `RacingWheelPro-PC.exe`, start the game, and connect the phone on the same Wi-Fi (or use `adb reverse` for USB). Open a track. The wheel screen fills in, and the console prints `dash` in Hz next to the input rate. In the game's controls, bind each knob's increase and decrease buttons, and bind gear up and gear down to the vJoy paddle buttons (31 and 32 when the device has 32 buttons). Choose RPM under Setup → Pedals if the shift lights should follow the engine instead of the throttle pedal.
+To try it with Assetto Corsa: start `RacingWheelPro-PC.exe`, start the game, and connect the phone on the same Wi-Fi (or use `adb reverse` for USB). Open a track. The wheel screen fills in. The receiver has no console window; its notes are in `%APPDATA%\RacingWheelPro\logs\receiver.log`. In the game's controls, bind each knob's increase and decrease buttons, and bind gear up to vJoy button 1 and gear down to vJoy button 2. Choose RPM under Setup → Pedals if the shift lights should follow the engine instead of the throttle pedal.
 
 ## Build from source
 

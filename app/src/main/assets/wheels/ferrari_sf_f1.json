@@ -6,28 +6,41 @@
   "manufacturer": "Ferrari",
   "style": "formula",
   "image": "ferrari_sf_f1.png",
-  "imageWidth": 656,
-  "imageHeight": 376,
+  "imageWidth": 1100,
+  "imageHeight": 1100,
   "blurb": "Carbon SF wheel. N, P, BS, BB, and the center dial.",
   "hitSlop": 0.008,
-  "wheelBounds": {"left": 0.0320, "top": 0.0186, "right": 0.9588, "bottom": 0.9973},
+  "wheelBounds": {
+    "left": 0.04693,
+    "top": 0.22622,
+    "right": 0.95153,
+    "bottom": 0.77375
+  },
   "shifters": {
-    "up": {"width": 0.20, "height": 0.32, "centerY": 0.547},
-    "down": {"width": 0.20, "height": 0.32, "centerY": 0.553}
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.547
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.553
+    }
   },
   "outputButtons": 13,
   "display": {
-    "left": 0.2915,
-    "top": 0.1556,
-    "right": 0.6993,
-    "bottom": 0.4101
+    "left": 0.30021,
+    "top": 0.30287,
+    "right": 0.69825,
+    "bottom": 0.44524
   },
   "revLights": {
     "count": 12,
-    "left": 0.2359,
-    "top": 0.0382,
-    "right": 0.7549,
-    "bottom": 0.1263
+    "left": 0.24595,
+    "top": 0.23719,
+    "right": 0.75251,
+    "bottom": 0.28647
   },
   "controls": [
     {
@@ -35,31 +48,31 @@
       "label": "C",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.26067,
-      "cy": 0.1117,
-      "r": 0.01829,
+      "cx": 0.27012,
+      "cy": 0.27831,
+      "r": 0.01785,
       "color": "#E10600",
-      "defaultButton": 1
+      "defaultButton": 14
     },
     {
       "id": "n",
       "label": "N",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.13872,
-      "cy": 0.16489,
-      "r": 0.01829,
+      "cx": 0.15109,
+      "cy": 0.30806,
+      "r": 0.01785,
       "color": "#00E5E5",
-      "defaultButton": 2
+      "defaultButton": 15
     },
     {
       "id": "p",
       "label": "P",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.85518,
-      "cy": 0.17021,
-      "r": 0.01829,
+      "cx": 0.85039,
+      "cy": 0.31104,
+      "r": 0.01785,
       "color": "#E10600",
       "defaultButton": 3
     },
@@ -68,9 +81,9 @@
       "label": "BS",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.2439,
-      "cy": 0.6117,
-      "r": 0.02134,
+      "cx": 0.25375,
+      "cy": 0.55803,
+      "r": 0.02083,
       "color": "#E8E6E3",
       "defaultButton": 4
     },
@@ -79,9 +92,9 @@
       "label": "BB",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.7622,
-      "cy": 0.6117,
-      "r": 0.02134,
+      "cx": 0.75964,
+      "cy": 0.55803,
+      "r": 0.02083,
       "color": "#E8E6E3",
       "defaultButton": 5
     },
@@ -90,9 +103,9 @@
       "label": "R",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.21341,
-      "cy": 0.79787,
-      "r": 0.02134,
+      "cx": 0.22399,
+      "cy": 0.66218,
+      "r": 0.02083,
       "color": "#E10600",
       "defaultButton": 6
     },
@@ -101,9 +114,9 @@
       "label": "OIL",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.80793,
-      "cy": 0.79787,
-      "r": 0.02134,
+      "cx": 0.80427,
+      "cy": 0.66218,
+      "r": 0.02083,
       "color": "#F5C400",
       "defaultButton": 7
     },
@@ -112,9 +125,9 @@
       "label": "MANETTINO",
       "kind": "rotary",
       "shape": "circle",
-      "cx": 0.50152,
-      "cy": 0.59043,
-      "r": 0.03963,
+      "cx": 0.5052,
+      "cy": 0.54613,
+      "r": 0.03868,
       "color": "#F5C400",
       "positions": 12,
       "knobSlot": 0,
@@ -129,9 +142,9 @@
       "kind": "rotary",
       "gesture": "thumb",
       "shape": "circle",
-      "cx": 0.35061,
-      "cy": 0.71809,
-      "r": 0.02744,
+      "cx": 0.35791,
+      "cy": 0.61754,
+      "r": 0.02678,
       "color": "#C8CDD4",
       "positions": 12,
       "knobSlot": 1,
@@ -146,9 +159,9 @@
       "kind": "rotary",
       "gesture": "thumb",
       "shape": "circle",
-      "cx": 0.65549,
-      "cy": 0.71809,
-      "r": 0.02744,
+      "cx": 0.65548,
+      "cy": 0.61754,
+      "r": 0.02678,
       "color": "#C8CDD4",
       "positions": 12,
       "knobSlot": 2,

@@ -267,5 +267,39 @@ fun defaultProfile(template: WheelTemplate, game: String = "Any game"): Profile 
         game = game,
         wheelId = template.id,
         bindings = bindings,
-    )
+    ).also { keepPaddlesOnButtonsOneAndTwo(it) }
+}
+
+/** Buttons 1 and 2 are the paddles. A saved face button on either number moves. */
+fun keepPaddlesOnButtonsOneAndTwo(profile: Profile) {
+    val used = HashSet<Int>()
+    fun note(n: Int) {
+        if (n >= 3) used.add(n)
+    }
+    for (binding in profile.bindings) {
+        note(binding.button)
+        note(binding.longButton)
+        note(binding.incButton)
+        note(binding.decButton)
+    }
+    note(profile.volumeUpButton)
+    note(profile.volumeDownButton)
+    fun take(): Int {
+        var n = 3
+        while (n <= 30 && n in used) n++
+        if (n > 30) n = 3
+        used.add(n)
+        return n
+    }
+    fun move(n: Int): Int = if (n == 1 || n == 2) take() else n
+    for (binding in profile.bindings) {
+        binding.button = move(binding.button)
+        binding.longButton = move(binding.longButton)
+        binding.incButton = move(binding.incButton)
+        binding.decButton = move(binding.decButton)
+    }
+    profile.volumeUpButton = move(profile.volumeUpButton)
+    profile.volumeDownButton = move(profile.volumeDownButton)
+    if (profile.gearUpButton == 1 || profile.gearUpButton == 2) profile.gearUpButton = 0
+    if (profile.gearDownButton == 1 || profile.gearDownButton == 2) profile.gearDownButton = 0
 }

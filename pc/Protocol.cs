@@ -29,8 +29,8 @@ public static class Proto
     /// <summary>Bit 1 of the gear byte. Right paddle, shift down.</summary>
     public const int GearDown = 2;
 
-    public const uint VjoyGearUp = 31;
-    public const uint VjoyGearDown = 32;
+    public const uint VjoyGearUp = 1;
+    public const uint VjoyGearDown = 2;
 
     /// <summary>VK_PRIOR, Page Up.</summary>
     public const int GearUpKey = 0x21;

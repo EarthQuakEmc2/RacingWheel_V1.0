@@ -6,21 +6,34 @@
   "manufacturer": "Mercedes",
   "style": "road",
   "image": "mercedes_road_carbon.png",
-  "imageWidth": 437,
-  "imageHeight": 437,
+  "imageWidth": 1100,
+  "imageHeight": 1100,
   "blurb": "Carbon road wheel. Left and right spoke switches: pads, volume, voice, cruise.",
   "hitSlop": 0.008,
-  "wheelBounds": {"left": 0.0481, "top": 0.0892, "right": 0.9703, "bottom": 0.9863},
+  "wheelBounds": {
+    "left": 0.0455,
+    "top": 0.05779,
+    "right": 0.95234,
+    "bottom": 0.93995
+  },
   "shifters": {
-    "up": {"width": 0.20, "height": 0.32, "centerY": 0.525},
-    "down": {"width": 0.20, "height": 0.32, "centerY": 0.524}
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.525
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.524
+    }
   },
   "outputButtons": 7,
   "display": {
-    "left": 0.3801,
-    "top": 0.3942,
-    "right": 0.6383,
-    "bottom": 0.5736
+    "left": 0.37197,
+    "top": 0.35771,
+    "right": 0.62587,
+    "bottom": 0.53412
   },
   "controls": [
     {
@@ -28,31 +41,31 @@
       "label": "PAD",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.28604,
-      "cy": 0.53776,
-      "r": 0.03204,
+      "cx": 0.27948,
+      "cy": 0.49888,
+      "r": 0.03151,
       "color": "#1A1A1A",
-      "defaultButton": 1
+      "defaultButton": 8
     },
     {
       "id": "ok_l",
       "label": "OK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.33181,
-      "cy": 0.58352,
-      "r": 0.02746,
+      "cx": 0.32448,
+      "cy": 0.54388,
+      "r": 0.027,
       "color": "#1A1A1A",
-      "defaultButton": 2
+      "defaultButton": 9
     },
     {
       "id": "vol",
       "label": "VOL",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.25172,
-      "cy": 0.62929,
-      "r": 0.02746,
+      "cx": 0.24573,
+      "cy": 0.58888,
+      "r": 0.027,
       "color": "#1A1A1A",
       "defaultButton": 3
     },
@@ -61,9 +74,9 @@
       "label": "VOICE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.36613,
-      "cy": 0.61785,
-      "r": 0.02746,
+      "cx": 0.35823,
+      "cy": 0.57763,
+      "r": 0.027,
       "color": "#1A1A1A",
       "defaultButton": 4
     },
@@ -72,9 +85,9 @@
       "label": "PAD",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.6865,
-      "cy": 0.53776,
-      "r": 0.03204,
+      "cx": 0.67327,
+      "cy": 0.49888,
+      "r": 0.03151,
       "color": "#1A1A1A",
       "defaultButton": 5
     },
@@ -83,9 +96,9 @@
       "label": "CRUISE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.74371,
-      "cy": 0.59039,
-      "r": 0.02746,
+      "cx": 0.72953,
+      "cy": 0.55063,
+      "r": 0.027,
       "color": "#1A1A1A",
       "defaultButton": 6
     },
@@ -94,9 +107,9 @@
       "label": "PHONE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.65217,
-      "cy": 0.62929,
-      "r": 0.02746,
+      "cx": 0.63951,
+      "cy": 0.58888,
+      "r": 0.027,
       "color": "#1A1A1A",
       "defaultButton": 7
     }

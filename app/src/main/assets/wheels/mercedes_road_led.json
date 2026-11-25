@@ -6,28 +6,41 @@
   "manufacturer": "Mercedes",
   "style": "road",
   "image": "mercedes_road_led.png",
-  "imageWidth": 565,
-  "imageHeight": 433,
+  "imageWidth": 1100,
+  "imageHeight": 1100,
   "blurb": "LED road wheel. Spoke touch pads, volume, voice, and cruise.",
   "hitSlop": 0.008,
-  "wheelBounds": {"left": 0.1327, "top": 0.0670, "right": 0.8566, "bottom": 0.9769},
+  "wheelBounds": {
+    "left": 0.0454,
+    "top": 0.06211,
+    "right": 0.95228,
+    "bottom": 0.93569
+  },
   "shifters": {
-    "up": {"width": 0.20, "height": 0.32, "centerY": 0.513},
-    "down": {"width": 0.20, "height": 0.32, "centerY": 0.516}
+    "up": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.513
+    },
+    "down": {
+      "width": 0.2,
+      "height": 0.32,
+      "centerY": 0.516
+    }
   },
   "outputButtons": 7,
   "display": {
-    "left": 0.3788,
-    "top": 0.4128,
-    "right": 0.6105,
-    "bottom": 0.6129
+    "left": 0.35371,
+    "top": 0.39411,
+    "right": 0.64397,
+    "bottom": 0.58622
   },
   "revLights": {
     "count": 15,
-    "left": 0.1906,
-    "top": 0.0852,
-    "right": 0.7987,
-    "bottom": 0.1762
+    "left": 0.11794,
+    "top": 0.07958,
+    "right": 0.87975,
+    "bottom": 0.16695
   },
   "controls": [
     {
@@ -35,31 +48,31 @@
       "label": "BACK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.23009,
-      "cy": 0.46189,
-      "r": 0.02124,
+      "cx": 0.16741,
+      "cy": 0.44124,
+      "r": 0.02661,
       "color": "#1A1A1A",
-      "defaultButton": 1
+      "defaultButton": 8
     },
     {
       "id": "ok",
       "label": "OK",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.27434,
-      "cy": 0.50808,
-      "r": 0.02124,
+      "cx": 0.22284,
+      "cy": 0.48558,
+      "r": 0.02661,
       "color": "#1A1A1A",
-      "defaultButton": 2
+      "defaultButton": 9
     },
     {
       "id": "vol",
       "label": "VOL",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.22124,
-      "cy": 0.56582,
-      "r": 0.02124,
+      "cx": 0.15632,
+      "cy": 0.54102,
+      "r": 0.02661,
       "color": "#1A1A1A",
       "defaultButton": 3
     },
@@ -68,9 +81,9 @@
       "label": "VOICE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.30088,
-      "cy": 0.55427,
-      "r": 0.02124,
+      "cx": 0.25609,
+      "cy": 0.52993,
+      "r": 0.02661,
       "color": "#1A1A1A",
       "defaultButton": 4
     },
@@ -79,9 +92,9 @@
       "label": "MENU",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.72566,
-      "cy": 0.47344,
-      "r": 0.02124,
+      "cx": 0.78824,
+      "cy": 0.45233,
+      "r": 0.02661,
       "color": "#1A1A1A",
       "defaultButton": 5
     },
@@ -90,9 +103,9 @@
       "label": "CRUISE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.76991,
-      "cy": 0.53118,
-      "r": 0.02124,
+      "cx": 0.84368,
+      "cy": 0.50776,
+      "r": 0.02661,
       "color": "#1A1A1A",
       "defaultButton": 6
     },
@@ -101,9 +114,9 @@
       "label": "PHONE",
       "kind": "button",
       "shape": "circle",
-      "cx": 0.69912,
-      "cy": 0.56582,
-      "r": 0.02124,
+      "cx": 0.755,
+      "cy": 0.54102,
+      "r": 0.02661,
       "color": "#1A1A1A",
       "defaultButton": 7
     }

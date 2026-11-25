@@ -38,8 +38,8 @@ public static class OutputFactory
         {
             result = new KeyboardOverlay(chosen, pad != null && mode != "vjoy");
         }
-        // ViGEm has no button 31. When the wheel is the Xbox pad, a second vJoy
-        // device carries only the two paddle buttons so the game can bind them.
+        // The Xbox pad is what the other buttons use. A second vJoy device
+        // carries paddle buttons 1 and 2 so Assetto Corsa can bind them.
         if (pad != null && joy == null)
         {
             var gear = VjoyGearDevice.TryCreate(vjoyId, log);
@@ -110,15 +110,10 @@ public sealed class VigemOutput : IOutput
         for (var i = 0; i < Buttons.Length; i++)
         {
             var down = (state.Buttons & (1u << i)) != 0;
+            if (i == 0 && (state.Gear & Proto.GearUp) != 0) down = true;
+            if (i == 1 && (state.Gear & Proto.GearDown) != 0) down = true;
             _pad.SetButtonState(Buttons[i], down);
         }
-        // The Xbox pad has no button 31. D-pad up and down are the two controls
-        // Assetto Corsa sees on this same pad while the face buttons stay 1–10
-        // and 13–14. vJoy still gets buttons 31 and 32 from the button mask.
-        if ((state.Gear & Proto.GearUp) != 0 || (state.Buttons & (1u << 30)) != 0)
-            _pad.SetButtonState(Xbox360Button.Up, true);
-        if ((state.Gear & Proto.GearDown) != 0 || (state.Buttons & (1u << 31)) != 0)
-            _pad.SetButtonState(Xbox360Button.Down, true);
         _submit?.Invoke();
     }
 
@@ -224,7 +219,7 @@ internal static class VjoySession
             {
                 log(sharesWheelButtons
                     ? "vJoy is installed but the driver is disabled."
-                    : "vJoy is not enabled, so the paddles stay on Page Up and Page Down. Enable vJoy and set device 1 to 32 buttons for joystick buttons.");
+                    : "vJoy is not enabled, so the paddles stay on Page Up and Page Down. Enable vJoy so Assetto Corsa can bind buttons 1 and 2.");
                 return null;
             }
             var rId = (uint)Math.Clamp(id, 1, 16);
@@ -254,7 +249,7 @@ internal static class VjoySession
         {
             log(sharesWheelButtons
                 ? "vJoyInterface.dll was not found. Install vJoy, or leave output on ViGEm."
-                : "vJoyInterface.dll was not found. Page Up and Page Down still shift. Install vJoy and set 32 buttons so Assetto Corsa can bind joystick buttons.");
+                : "vJoyInterface.dll was not found. Page Up and Page Down still shift. Install vJoy so Assetto Corsa can bind buttons 1 and 2.");
             return null;
         }
         catch (Exception ex)
