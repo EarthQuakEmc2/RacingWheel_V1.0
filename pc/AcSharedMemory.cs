@@ -1,5 +1,4 @@
 using System.IO.MemoryMappedFiles;
-using System.Text;
 
 namespace RacingWheelPro.Pc;
 
@@ -32,9 +31,9 @@ public sealed class AcSharedMemory : IDisposable
             Dispose();
             return false;
         }
-        _physicsView = _physics.CreateViewAccessor(0, 64, MemoryMappedFileAccess.Read);
-        _graphicsView = _graphics.CreateViewAccessor(0, 288, MemoryMappedFileAccess.Read);
-        _staticView = _static.CreateViewAccessor(0, 620, MemoryMappedFileAccess.Read);
+        _physicsView = OpenView(_physics, AcFields.PhysicsBytes, 64);
+        _graphicsView = OpenView(_graphics, AcFields.GraphicsBytes, AcFields.GraphicsFallbackBytes);
+        _staticView = OpenView(_static, AcFields.StaticBytes, AcFields.StaticBytes);
         return true;
     }
 
@@ -44,31 +43,7 @@ public sealed class AcSharedMemory : IDisposable
         if (!IsOpen || _physicsView == null || _graphicsView == null || _staticView == null) return false;
         try
         {
-            var physics = _physicsView;
-            var graphics = _graphicsView;
-            var page = _staticView;
-            snapshot = new AcSnapshot
-            {
-                Gas = physics.ReadSingle(4),
-                Brake = physics.ReadSingle(8),
-                Gear = physics.ReadInt32(16),
-                Rpm = physics.ReadInt32(20),
-                SteerAngle = physics.ReadSingle(24),
-                SpeedKmh = physics.ReadSingle(28),
-                Status = graphics.ReadInt32(4),
-                CompletedLaps = graphics.ReadInt32(132),
-                CurrentTimeMs = graphics.ReadInt32(140),
-                LastTimeMs = graphics.ReadInt32(144),
-                BestTimeMs = graphics.ReadInt32(148),
-                IsInPit = graphics.ReadInt32(160) != 0,
-                NormalizedPosition = graphics.ReadSingle(248),
-                CarModel = ReadWide(page, 68, 33),
-                Track = ReadWide(page, 134, 33),
-                PlayerName = ReadWide(page, 200, 33),
-                MaxRpm = page.ReadInt32(412),
-                TrackLengthM = page.ReadSingle(520),
-                TrackConfiguration = ReadWide(page, 524, 33),
-            };
+            snapshot = AcFields.Decode(ReadAll(_physicsView), ReadAll(_graphicsView), ReadAll(_staticView));
             return true;
         }
         catch (Exception)
@@ -111,14 +86,30 @@ public sealed class AcSharedMemory : IDisposable
         return null;
     }
 
-    private static string ReadWide(MemoryMappedViewAccessor view, long offset, int chars)
+    private static MemoryMappedViewAccessor OpenView(MemoryMappedFile file, int want, int fallback)
     {
-        var bytes = new byte[chars * 2];
-        view.ReadArray(offset, bytes, 0, bytes.Length);
-        var text = Encoding.Unicode.GetString(bytes);
-        var end = text.IndexOf('\0');
-        if (end >= 0) text = text[..end];
-        return text.Trim();
+#pragma warning disable CA1416
+        try
+        {
+            return file.CreateViewAccessor(0, want, MemoryMappedFileAccess.Read);
+        }
+        catch (ArgumentException)
+        {
+            return file.CreateViewAccessor(0, fallback, MemoryMappedFileAccess.Read);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return file.CreateViewAccessor(0, fallback, MemoryMappedFileAccess.Read);
+        }
+#pragma warning restore CA1416
+    }
+
+    private static byte[] ReadAll(MemoryMappedViewAccessor view)
+    {
+        var length = (int)Math.Min(view.Capacity, 8192);
+        var bytes = new byte[length];
+        view.ReadArray(0, bytes, 0, length);
+        return bytes;
     }
 }
 
@@ -143,4 +134,14 @@ public struct AcSnapshot
     public int MaxRpm;
     public float TrackLengthM;
     public string TrackConfiguration;
+    public float Fuel;
+    public float MaxFuel;
+    public float Tc;
+    public float Abs;
+    public float PerformanceMeter;
+    public int Position;
+    /// <summary>Driver TC setting, or 255 when the graphics page did not include it.</summary>
+    public int TcLevel;
+    /// <summary>Driver ABS setting, or 255 when it was not reported.</summary>
+    public int AbsLevel;
 }

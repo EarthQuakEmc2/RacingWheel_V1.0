@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.wifi.WifiManager
 import android.os.Handler
 import com.racingwheelpro.model.DiscoveredHost
+import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.proto.FrameBuffer
 import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
@@ -35,6 +36,7 @@ class LinkClient(
     private val onLatency: (Int) -> Unit,
     private val onLink: (Boolean, String) -> Unit,
     private val onRumble: (Int, Int) -> Unit,
+    private val onTelemetry: (DashTelemetry) -> Unit,
 ) {
     private val appContext = context.applicationContext
     private var multicast: WifiManager.MulticastLock? = null
@@ -215,6 +217,11 @@ class LinkClient(
             val large = bytes[4].toInt() and 0xFF
             val small = bytes[5].toInt() and 0xFF
             main.post { onRumble(large, small) }
+            return
+        }
+        val dash = Packets.parseTelemetry(bytes)
+        if (dash != null) {
+            main.post { onTelemetry(dash) }
             return
         }
         val host = Packets.parseHost(bytes) ?: return

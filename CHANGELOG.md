@@ -11,6 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [0.6.0] - 2026-11-25
+
+Stable release. Every wheel is included. The paid Play build stays unmerged.
+
+### Fixed
+
+- Gear up and gear down now show up in Assetto Corsa while you bind controls. The phone sends them as joystick buttons 31 and 32, and the Windows receiver holds those buttons on vJoy. The Xbox pad that carries the other buttons has no button 31, so the same press also holds D-pad up for gear up and D-pad down for gear down. Page Up and Page Down still type.
+- The right paddle lights when you hold gear down. Its zone now reaches the outer edge of the picture, where that flipper sits, and the held zone is drawn bright white.
+
+### Added
+
+- About, under Setup. It shows Racing Wheel Pro, the version name, the build number, the build date, myracingwheel.site, the Telegram channel, GPL-3.0, and credit to Touch Racer by thelv.
+
+### Changed
+
+- Android `versionCode` is 12, `versionName` is 0.6.0. No wheel is locked.
+- The site download points at this release. `/api/health` reports 0.6.0.
+
+## [0.6.0-preview] - 2026-11-22
+
+Prerelease for testing. v0.5.0 stays the stable download on the website and at `releases/latest`. This build is not merged.
+
+The wheel on the phone now behaves more like the wheel in your hands. Shift lights follow the pedal or the engine, the screen shows the car, and the knobs turn.
+
+### Added
+
+- Rev lights on the wheels that have a shift-light row. The lamps fill from the left as you press the throttle. The colors run green, then yellow, then red, then blue and purple, the same order as a real rim. The thin strip along the top of the app does the same thing.
+- An RPM mode. Setup, then Pedals, then Rev lights. Choose throttle or RPM. RPM stays dark until the engine is at 75% of its maximum and is fully lit at the redline. If Assetto Corsa is not sending data, RPM mode uses the throttle so the lights still move.
+- A screen on every wheel template. The rectangle sits on the wheel's own display, or on the open part of the face when the picture has no screen. It shows gear (R, N, then 1 and up), speed, RPM, the current lap, the gap to your best lap, race position, fuel percent, and the TC and ABS settings. "NO SIGNAL" means the PC has not sent a fresh packet.
+- Live telemetry from Assetto Corsa. The Windows receiver already reads `acpmf_physics`, `acpmf_graphics`, and `acpmf_static`. It now sends a 40-byte `RWPT` packet back to the phone on the same UDP link, about 25 times a second. The packet carries rpm, maximum rpm, speed, gear, throttle, brake, TC and ABS settings, how hard TC and ABS are working, fuel percent, race position, the current, last, and best lap, the live delta, and the completed lap count. The phone forgets the screen if packets stop for about a second. An older phone build ignores the packet. An older receiver simply never sends it, and the lights stay on the throttle.
+- Knobs that turn. Drag around a dial, or tap + and −, and the cap rotates to the next detent. The pointer lands on the number printed around the knob. Position 1 is the mark the artwork was drawn on. A 12-position knob steps 30 degrees each time.
+- Thumb wheels and scroll wheels. The small encoders on the grips (the FSR pair, the SF1000 side encoders, the RSR pair, and the Mercedes page wheels) spin when you drag up or down. Up, toward the top of the wheel picture, is the next position. Down is the previous one. The cap rotates so you can see it move.
+- Each step is one button press, which is what Assetto Corsa can bind. The + side (or a drag to the next mark, or a thumb drag upward) pulses the knob's increase button once. The − side pulses the decrease button once. The press lasts long enough for the game to see it. The absolute position is still in that knob's slot on the wire. vJoy puts slots 0, 1, 2, and 3 on axes Ry, Rz, Slider, and Dial. On a 12-position knob, 0 is the low end of the axis and 11 is the high end. In Assetto Corsa, bind the increase and decrease buttons (for example MOZA KS turbo is buttons 13 and 12). Use the axis only if you want the position itself.
+- Unit tests for the light colors, the RPM window, the lap-time and delta text, the telemetry packet, the knob rotation, and the shared-memory field positions. GitHub Actions builds the Android app and the Windows receiver on every push and pull request.
+- A startup splash on the phone and on the website. The bar moves only when a real check finishes. On the phone those checks are: an HTTPS request to `https://myracingwheel.site/api/health` (Android accepts the certificate with its normal trust store, or the splash says the certificate was rejected or the server could not be reached), the health JSON (`ok` and the version the server reports), a look in this app's preferences and cookie jar for a saved website sign-in (there is no sign-in stored unless one was saved; the browser's cookies are not visible), a comparison of this app's version with the version in that health response, and a short wait for a PC receiver that answers discovery. On the website the checks are: the browser's secure-context flag, `GET /api/health`, and `GET /api/auth/me` with the existing session cookie. A missing sign-in is a finished check, not a failure. If a check fails, the splash stops on that line and a button opens the wheel or the page anyway. The phone keeps the splash up for about 2.5 seconds when every check passes, so the lines can be read, and no longer than the timeouts on the requests. The website shows the splash once per browser tab session, skips the extra wait when the system asks for reduced motion, and leaves the page in the document underneath. The live site was not deployed. This branch's health response says `0.6.0-preview`; production still answers `0.5.0` until someone deploys it.
+
+### Changed
+
+- Android `versionCode` is 11, `versionName` is 0.6.0-preview. The v0.5.2 paddle notches, the separate gear buttons, and the editor arrows are unchanged. Width, height, and the move arrows in the edit tab work the same way as before.
+- The rotating knob is drawn on every wheel you can drive, not only the MOZA KS demo. Locked wheels stay locked.
+
 ## [0.5.2] - 2026-11-22
 
 Test release. v0.5.0 stays the stable download on the website and at `releases/latest`. This build is a GitHub prerelease for testing.
@@ -148,7 +189,9 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0
+[0.6.0-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.2...v0.6.0-preview
 [0.5.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.4.0...v0.5.0

@@ -32,5 +32,6 @@ abstract class PremiumGate {
 
     fun wheelUnlocked(id: String): Boolean = unlocked || WheelCatalog.isFree(id)
 
-    fun knobOverlay(wheelId: String): Boolean = unlocked || wheelId == WheelCatalog.DEMO_KNOB_WHEEL
+    /** Every wheel you can drive draws the rotating knob, not only the KS demo. */
+    fun knobOverlay(wheelId: String): Boolean = wheelUnlocked(wheelId)
 }

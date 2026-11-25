@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.467}
   },
   "outputButtons": 18,
+  "display": {
+    "left": 0.288,
+    "top": 0.1806,
+    "right": 0.6787,
+    "bottom": 0.3947
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2347,
+    "top": 0.0444,
+    "right": 0.732,
+    "bottom": 0.132
+  },
   "controls": [
     {
       "id": "grn_l",

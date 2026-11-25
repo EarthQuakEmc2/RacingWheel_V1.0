@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.517}
   },
   "outputButtons": 15,
+  "display": {
+    "left": 0.3081,
+    "top": 0.1893,
+    "right": 0.708,
+    "bottom": 0.424
+  },
+  "revLights": {
+    "count": 15,
+    "left": 0.199,
+    "top": 0.0629,
+    "right": 0.8171,
+    "bottom": 0.1532
+  },
   "controls": [
     {
       "id": "grn",
@@ -142,6 +155,7 @@
       "id": "enc_l",
       "label": "ENC-",
       "kind": "rotary",
+      "gesture": "thumb",
       "shape": "circle",
       "cx": 0.44643,
       "cy": 0.72857,
@@ -158,6 +172,7 @@
       "id": "enc_r",
       "label": "ENC+",
       "kind": "rotary",
+      "gesture": "thumb",
       "shape": "circle",
       "cx": 0.61607,
       "cy": 0.72857,

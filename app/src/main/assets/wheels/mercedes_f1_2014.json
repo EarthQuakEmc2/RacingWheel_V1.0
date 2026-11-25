@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.547}
   },
   "outputButtons": 10,
+  "display": {
+    "left": 0.2796,
+    "top": 0.2236,
+    "right": 0.7189,
+    "bottom": 0.4577
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2197,
+    "top": 0.1155,
+    "right": 0.7788,
+    "bottom": 0.1965
+  },
   "controls": [
     {
       "id": "boost",

@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.563}
   },
   "outputButtons": 18,
+  "display": {
+    "left": 0.2998,
+    "top": 0.1301,
+    "right": 0.7084,
+    "bottom": 0.4199
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2841,
+    "top": 0.0335,
+    "right": 0.7241,
+    "bottom": 0.1204
+  },
   "controls": [
     {
       "id": "br_m",

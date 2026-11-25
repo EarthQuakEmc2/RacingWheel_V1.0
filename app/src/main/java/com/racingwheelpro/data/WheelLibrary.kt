@@ -3,8 +3,10 @@ package com.racingwheelpro.data
 import android.content.Context
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
+import com.racingwheelpro.model.NormRect
 import com.racingwheelpro.model.PedalSetup
 import com.racingwheelpro.model.Profile
+import com.racingwheelpro.model.RevLightSpec
 import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.ShifterTune
 import com.racingwheelpro.model.SteeringSetup
@@ -80,6 +82,7 @@ class WheelLibrary(private val context: Context) {
                         incButton = c.optInt("incButton", 0),
                         startAngle = c.optDouble("startAngle", -90.0).toFloat(),
                         clockwise = c.optBoolean("clockwise", true),
+                        gesture = c.optString("gesture", "dial").ifBlank { "dial" },
                     ),
                 )
             }
@@ -99,7 +102,29 @@ class WheelLibrary(private val context: Context) {
                 bounds = boundsOf(o.optJSONObject("wheelBounds")),
                 shiftUp = specOf(shifters?.optJSONObject("up")),
                 shiftDown = specOf(shifters?.optJSONObject("down")),
+                display = rectOf(o.optJSONObject("display")),
+                revLights = lightsOf(o.optJSONObject("revLights")),
             )
+        }
+
+        fun rectOf(o: JSONObject?): NormRect? {
+            if (o == null) return null
+            val rect = NormRect(
+                left = o.optDouble("left", 0.0).toFloat(),
+                top = o.optDouble("top", 0.0).toFloat(),
+                right = o.optDouble("right", 0.0).toFloat(),
+                bottom = o.optDouble("bottom", 0.0).toFloat(),
+            )
+            if (rect.width <= 0.02f || rect.height <= 0.02f) return null
+            return rect
+        }
+
+        fun lightsOf(o: JSONObject?): RevLightSpec {
+            if (o == null) return RevLightSpec()
+            val count = o.optInt("count", 0)
+            val rect = rectOf(o)
+            if (count <= 0 || rect == null) return RevLightSpec()
+            return RevLightSpec(count = count.coerceIn(1, 24), rect = rect)
         }
 
         fun boundsOf(o: JSONObject?): WheelBounds {
@@ -139,6 +164,7 @@ class WheelLibrary(private val context: Context) {
                     o.put("knobSlot", if (c.knobSlot >= 0) c.knobSlot else slot)
                     o.put("startAngle", c.startAngle.toDouble())
                     o.put("clockwise", c.clockwise)
+                    if (c.gesture != "dial") o.put("gesture", c.gesture)
                     if (c.decButton > 0) o.put("decButton", c.decButton)
                     if (c.incButton > 0) o.put("incButton", c.incButton)
                     slot++
@@ -159,7 +185,12 @@ class WheelLibrary(private val context: Context) {
             val shifters = JSONObject()
                 .put("up", spec(t.shiftUp))
                 .put("down", spec(t.shiftDown))
-            return JSONObject()
+            fun rect(r: com.racingwheelpro.model.NormRect) = JSONObject()
+                .put("left", r.left.toDouble())
+                .put("top", r.top.toDouble())
+                .put("right", r.right.toDouble())
+                .put("bottom", r.bottom.toDouble())
+            val root = JSONObject()
                 .put("schema", "racing-wheel-pro.template/v1")
                 .put("id", t.id)
                 .put("name", t.name)
@@ -174,7 +205,12 @@ class WheelLibrary(private val context: Context) {
                 .put("wheelBounds", bounds)
                 .put("shifters", shifters)
                 .put("controls", controls)
-                .toString(2)
+            t.display?.let { root.put("display", rect(it)) }
+            val lights = t.revLights
+            if (lights.count > 0 && lights.rect != null) {
+                root.put("revLights", rect(lights.rect).put("count", lights.count))
+            }
+            return root.toString(2)
         }
     }
 }
@@ -281,6 +317,7 @@ class ProfileStore(private val context: Context) {
             gearDownButton = o.optInt("gearDownButton", 0),
             shiftUpTune = tuneOf(o.optJSONObject("shiftUp")),
             shiftDownTune = tuneOf(o.optJSONObject("shiftDown")),
+            revLights = o.optString("revLights", "throttle").let { if (it == "rpm") "rpm" else "throttle" },
         )
     }
 
@@ -347,6 +384,7 @@ class ProfileStore(private val context: Context) {
             .put("showShifterZones", profile.showShifterZones)
             .put("gearUpButton", profile.gearUpButton)
             .put("gearDownButton", profile.gearDownButton)
+            .put("revLights", profile.revLights)
             .put("steering", steering)
             .put("pedals", pedals)
             .put("bindings", bindings)

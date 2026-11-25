@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.552}
   },
   "outputButtons": 17,
+  "display": {
+    "left": 0.3847,
+    "top": 0.1814,
+    "right": 0.6412,
+    "bottom": 0.4264
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.3134,
+    "top": 0.0494,
+    "right": 0.7125,
+    "bottom": 0.1343
+  },
   "controls": [
     {
       "id": "wiper",

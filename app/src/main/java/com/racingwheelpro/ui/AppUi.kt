@@ -53,6 +53,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
@@ -66,8 +68,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.racingwheelpro.BuildConfig
 import com.racingwheelpro.catalog.WheelCatalog
+import com.racingwheelpro.input.DashFormat
 import com.racingwheelpro.input.Geometry
+import com.racingwheelpro.input.ImgRect
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.KnobSpin
+import com.racingwheelpro.input.RevLights
+import com.racingwheelpro.model.NormRect
+import com.racingwheelpro.model.RevLightSpec
+import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Binding
@@ -89,8 +98,10 @@ fun AppRoot(session: RaceSession) {
             session.notice = ""
         }
     }
+    var showSplash by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    Box(Modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize().background(Carbon)) {
-        LedStrip(session.throttleOut)
+        LedStrip(session.revLevel())
         TopBar(session)
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (session.screen) {
@@ -106,17 +117,20 @@ fun AppRoot(session: RaceSession) {
             }
         }
     }
+        if (showSplash) {
+            StartupSplash(session) { showSplash = false }
+        }
+    }
 }
 
 @Composable
 private fun LedStrip(level: Float) {
-    val colors = listOf(
-        SignalGreen, SignalGreen, SignalGreen, SignalGreen, SignalGreen,
-        SignalYellow, SignalYellow, SignalYellow,
-        SignalRed, SignalRed, SignalRed,
-        SignalMagenta, SignalMagenta, SignalBlue, SignalCyan,
-    )
-    val lit = (level.coerceIn(0f, 1f) * colors.size).roundToInt()
+    val count = 15
+    val lit = RevLights.litCount(level, count)
+    val colors = List(count) { index ->
+        val c = RevLights.colorAt(index, count)
+        Color(c.r / 255f, c.g / 255f, c.b / 255f)
+    }
     Row(
         Modifier.fillMaxWidth().height(12.dp).padding(horizontal = 10.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(3.dp),
@@ -267,6 +281,11 @@ private fun DriveScreen(session: RaceSession) {
 
 private fun gearReadout(session: RaceSession, layoutTick: Int): String {
     val parts = ArrayList<String>()
+    if (session.dashLive) {
+        val t = session.telemetry
+        parts.add("G${DashFormat.gearLabel(t.gear)}")
+        parts.add("${DashFormat.speed(t.speedKmh)} km/h")
+    }
     if (session.shiftUp) parts.add("UP")
     if (session.shiftDown) parts.add("DN")
     val gear = if (parts.isEmpty()) "" else parts.joinToString(" ") + "  "
@@ -370,6 +389,9 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val upSpec = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
     val downSpec = session.resolvedShifter(ShifterZones.Side.DOWN)
     val selectedShifter = session.selectedShifter
+    val revLevel = session.revLevel()
+    val dash = session.telemetry
+    val dashOn = session.dashLive
     Box(
         modifier.pointerInput(editor) {
             awaitPointerEventScope {
@@ -421,6 +443,14 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                     dstSize = IntSize(rect.width.roundToInt().coerceAtLeast(1), rect.height.roundToInt().coerceAtLeast(1)),
                     filterQuality = FilterQuality.Medium,
                 )
+                val lights = wheel.revLights
+                if (lights.count > 0 && lights.rect != null) {
+                    drawRevStrip(rect, lights, revLevel)
+                }
+                val screen = wheel.display
+                if (screen != null) {
+                    drawDash(rect, screen, dash, dashOn, labelPaint)
+                }
                 for (control in wheel.controls) {
                     val px = rect.left + control.cx * rect.width
                     val py = rect.top + control.cy * rect.height
@@ -438,7 +468,9 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
                         }
                     }
                     if (overlay && control.isRotary && knobRevision >= 0) {
-                        drawKnobPointer(control, session.knobPosition(control.id), px, py, rad, density, labelPaint)
+                        val index = session.knobPosition(control.id)
+                        drawSpinningKnob(bitmap, rect, control, index)
+                        drawKnobPointer(control, index, px, py, rad, density, labelPaint)
                     }
                 }
                 drawLine(
@@ -503,8 +535,8 @@ private fun DrawScope.drawShifterZone(
     }
     val drawn = Path()
     val path = if (anyHole && drawn.op(zonePath, holes, PathOperation.Difference)) drawn else zonePath
-    drawPath(path, color.copy(alpha = if (held) 0.34f else 0.16f))
-    drawPath(path, color.copy(alpha = if (held) 0.95f else 0.55f), style = Stroke(width = if (held) 3.5f else 1.8f))
+    drawPath(path, color.copy(alpha = if (held) 0.72f else 0.16f))
+    drawPath(path, if (held) Color.White else color.copy(alpha = 0.55f), style = Stroke(width = if (held) 5f else 1.8f))
     labelPaint.color = android.graphics.Color.WHITE
     labelPaint.textSize = 13f * density
     labelPaint.textAlign = Paint.Align.CENTER
@@ -535,24 +567,159 @@ private fun DrawScope.drawKnobPointer(
     val deg = KnobMath.detentDegrees(control.startAngle, index, control.positions, control.clockwise)
     val theta = Math.toRadians(deg.toDouble())
     val tip = Offset(px + cos(theta).toFloat() * rad * 0.92f, py + sin(theta).toFloat() * rad * 0.92f)
-    drawCircle(Color.Black.copy(alpha = 0.55f), rad * 0.28f, Offset(px, py))
-    drawLine(Color.White, Offset(px, py), tip, strokeWidth = 3.5f)
-    drawCircle(SignalYellow, rad * 0.16f, Offset(px, py))
+    drawLine(Color.White, Offset(px, py), tip, strokeWidth = 3.2f)
+    drawCircle(Color.Black.copy(alpha = 0.72f), rad * 0.18f, Offset(px, py))
+    drawCircle(SignalYellow, rad * 0.18f, Offset(px, py), style = Stroke(1.4f))
     drawCircle(SignalYellow, 4.5f, tip)
     val shown = index + 1
-    labelPaint.textSize = 12f * density
+    labelPaint.textSize = (rad * 0.38f).coerceIn(9f, 16f * density)
     labelPaint.color = android.graphics.Color.BLACK
-    drawContext.canvas.nativeCanvas.drawText(shown.toString(), px, py + 4f * density, labelPaint)
+    drawContext.canvas.nativeCanvas.drawText(shown.toString(), px, py + labelPaint.textSize * 0.35f, labelPaint)
     labelPaint.color = android.graphics.Color.WHITE
-    val chip = (rad * 0.24f).coerceIn(7f, 14f)
+    val chip = (rad * 0.22f).coerceIn(6f, 13f)
     val gap = rad * 0.62f
-    for ((dx, glyph) in listOf(-gap to "−", gap to "+")) {
-        val c = Offset(px + dx, py)
+    val chips = if (control.isThumb) {
+        listOf(Offset(px, py - gap) to "+", Offset(px, py + gap) to "−")
+    } else {
+        listOf(Offset(px - gap, py) to "−", Offset(px + gap, py) to "+")
+    }
+    for ((c, glyph) in chips) {
         drawCircle(Color.Black.copy(alpha = 0.78f), chip, c)
         drawCircle(SignalYellow, chip, c, style = Stroke(1.6f))
-        labelPaint.textSize = 16f * density
+        labelPaint.textSize = 15f * density
         drawContext.canvas.nativeCanvas.drawText(glyph, c.x, c.y + 5f * density, labelPaint)
     }
+}
+
+private fun DrawScope.drawSpinningKnob(
+    bitmap: ImageBitmap,
+    rect: ImgRect,
+    control: Control,
+    index: Int,
+) {
+    val px = rect.left + control.cx * rect.width
+    val py = rect.top + control.cy * rect.height
+    val rad = control.r * rect.width
+    val inner = rad * if (control.isThumb) 0.90f else 0.62f
+    if (inner < 3f) return
+    val spin = KnobSpin.discDegrees(control.startAngle, index, control.positions, control.clockwise)
+    if (spin == 0f) return
+    val clip = Path().apply {
+        addOval(androidx.compose.ui.geometry.Rect(px - inner, py - inner, px + inner, py + inner))
+    }
+    clipPath(clip) {
+        rotate(spin, Offset(px, py)) {
+            drawImage(
+                bitmap,
+                dstOffset = IntOffset(rect.left.roundToInt(), rect.top.roundToInt()),
+                dstSize = IntSize(
+                    rect.width.roundToInt().coerceAtLeast(1),
+                    rect.height.roundToInt().coerceAtLeast(1),
+                ),
+                filterQuality = FilterQuality.Medium,
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawRevStrip(rect: ImgRect, spec: RevLightSpec, level: Float) {
+    val box = spec.rect ?: return
+    val count = spec.count
+    if (count <= 0) return
+    val x = rect.left + box.left * rect.width
+    val y = rect.top + box.top * rect.height
+    val w = box.width * rect.width
+    val h = box.height * rect.height
+    if (w < 8f || h < 3f) return
+    drawRoundRect(
+        color = Color(0x10, 0x10, 0x12, 0xE0),
+        topLeft = Offset(x, y),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(h / 2f, h / 2f),
+    )
+    val lit = RevLights.litCount(level, count)
+    val gap = (w * 0.06f) / count
+    val cell = ((w - gap * (count + 1)) / count).coerceAtLeast(1f)
+    val pad = (h * 0.16f).coerceAtMost(h / 2f)
+    for (i in 0 until count) {
+        val rgb = RevLights.colorAt(i, count)
+        val color = Color(rgb.r / 255f, rgb.g / 255f, rgb.b / 255f)
+        val left = x + gap + i * (cell + gap)
+        drawRoundRect(
+            color = if (i < lit) color else color.copy(alpha = 0.16f),
+            topLeft = Offset(left, y + pad),
+            size = androidx.compose.ui.geometry.Size(cell, (h - pad * 2f).coerceAtLeast(1f)),
+            cornerRadius = androidx.compose.ui.geometry.CornerRadius(cell / 2f, cell / 2f),
+        )
+    }
+}
+
+private fun DrawScope.drawDash(
+    rect: ImgRect,
+    box: NormRect,
+    telemetry: DashTelemetry,
+    live: Boolean,
+    paint: Paint,
+) {
+    val x = rect.left + box.left * rect.width
+    val y = rect.top + box.top * rect.height
+    val w = box.width * rect.width
+    val h = box.height * rect.height
+    if (w < 16f || h < 16f) return
+    drawRoundRect(
+        color = Color(0x10, 0x14, 0x18, 0xF0),
+        topLeft = Offset(x, y),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f, 6f),
+    )
+    drawRoundRect(
+        color = Color(0x3A, 0x45, 0x50),
+        topLeft = Offset(x, y),
+        size = androidx.compose.ui.geometry.Size(w, h),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f, 6f),
+        style = Stroke(1.4f),
+    )
+    val gear = if (live) DashFormat.gearLabel(telemetry.gear) else "–"
+    val speed = if (live) DashFormat.speed(telemetry.speedKmh) else "—"
+    val rpmText = if (live) DashFormat.rpm(telemetry.rpm) else "—"
+    val lap = if (live) DashFormat.lapTime(telemetry.currentLapMs) else "--:--.---"
+    val delta = if (live) DashFormat.delta(telemetry.deltaMs) else "0.00"
+    val pos = if (live && telemetry.position > 0) "P${telemetry.position}" else "P–"
+    val fuel = if (live && telemetry.fuelPct in 0..100) "${telemetry.fuelPct}%" else "—"
+    val tc = if (live && telemetry.tc in 0..20) telemetry.tc.toString() else "–"
+    val absLevel = if (live && telemetry.abs in 0..20) telemetry.abs.toString() else "–"
+    val canvas = drawContext.canvas.nativeCanvas
+    paint.textAlign = Paint.Align.CENTER
+    paint.isFakeBoldText = true
+    paint.color = android.graphics.Color.WHITE
+    paint.textSize = (h * 0.46f).coerceIn(12f, 72f)
+    canvas.drawText(gear, x + w * 0.32f, y + h * 0.58f, paint)
+    paint.isFakeBoldText = false
+    paint.color = android.graphics.Color.rgb(170, 214, 255)
+    paint.textSize = (h * 0.16f).coerceIn(8f, 22f)
+    canvas.drawText("${speed} km/h", x + w * 0.32f, y + h * 0.82f, paint)
+    paint.textSize = (h * 0.15f).coerceIn(8f, 20f)
+    paint.color = android.graphics.Color.rgb(220, 220, 220)
+    canvas.drawText(lap, x + w * 0.74f, y + h * 0.28f, paint)
+    paint.color = if (!live || telemetry.deltaMs <= 0) {
+        android.graphics.Color.rgb(80, 220, 120)
+    } else {
+        android.graphics.Color.rgb(255, 90, 80)
+    }
+    canvas.drawText(delta, x + w * 0.74f, y + h * 0.50f, paint)
+    paint.color = android.graphics.Color.rgb(255, 196, 64)
+    canvas.drawText("$rpmText rpm", x + w * 0.74f, y + h * 0.72f, paint)
+    paint.color = android.graphics.Color.rgb(160, 210, 255)
+    paint.textSize = (h * 0.13f).coerceIn(7f, 16f)
+    canvas.drawText("$pos   F $fuel", x + w * 0.74f, y + h * 0.92f, paint)
+    canvas.drawText("TC $tc   ABS $absLevel", x + w * 0.32f, y + h * 0.18f, paint)
+    if (!live) {
+        paint.color = android.graphics.Color.rgb(150, 156, 164)
+        paint.textSize = (h * 0.12f).coerceIn(7f, 14f)
+        canvas.drawText("NO SIGNAL", x + w * 0.32f, y + h * 0.34f, paint)
+    }
+    paint.color = android.graphics.Color.WHITE
+    paint.textAlign = Paint.Align.CENTER
 }
 
 @Composable
@@ -627,7 +794,7 @@ private fun SetupScreen(session: RaceSession) {
     val revision = tick
     Row(Modifier.fillMaxSize()) {
         Column(Modifier.width(150.dp).fillMaxHeight().background(Panel).padding(8.dp)) {
-            listOf("steer" to "STEERING", "pedals" to "PEDALS", "buttons" to "BUTTONS", "profile" to "PROFILE").forEach { (id, label) ->
+            listOf("steer" to "STEERING", "pedals" to "PEDALS", "buttons" to "BUTTONS", "profile" to "PROFILE", "about" to "ABOUT").forEach { (id, label) ->
                 Text(
                     label,
                     color = if (session.setupPage == id) SignalYellow else Muted,
@@ -703,6 +870,14 @@ private fun SetupScreen(session: RaceSession) {
                     ToggleLine("Invert brake output", pedals.invertBrake) { pedals.invertBrake = it; bump() }
                     ToggleLine("Clutch zone", pedals.clutchEnabled) { pedals.clutchEnabled = it; bump() }
                     ToggleLine("Exclusive axes (larger pedal wins)", pedals.exclusive) { pedals.exclusive = it; bump() }
+                    Spacer(Modifier.height(10.dp))
+                    SectionTitle("Rev lights")
+                    Text(
+                        "Throttle fills the strip from how far the pedal is pressed. RPM uses Assetto Corsa and stays dark until 75% of maximum revs. If the game is not sending telemetry, RPM mode uses the throttle.",
+                        color = Muted,
+                        fontSize = 12.sp,
+                    )
+                    ChipRow(listOf("throttle", "rpm"), session.revLightMode) { session.chooseRevLights(it); bump() }
                     Text(
                         "Position mode maps finger height in the zone. Relative mode accumulates millimetres of drag, the way Touch Racer scaled a swipe. " +
                             "Each edge slider moves that pedal inward, as a percent of the screen width. 0% sits flush with the bezel. Reset puts both back.",
@@ -732,13 +907,19 @@ private fun SetupScreen(session: RaceSession) {
                         bump()
                     }
                     Text(
-                        "The receiver types Page Up and Page Down. vJoy button 31 is shift up and button 32 is shift down when the device has 32 buttons. With fewer, the console names the last two. Set a button number here if the game should also see that pad button. 0 leaves the paddle on the gear channel only.",
+                        "The receiver holds vJoy buttons 31 and 32, and on the Xbox pad it holds D-pad up and D-pad down, so Assetto Corsa can see the paddles. Page Up and Page Down still type. A number here adds another button. 0 does not turn the paddles off.",
                         color = Muted,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(bottom = 10.dp),
                     )
                     SectionTitle("Button map")
-                    Text("Outputs are virtual pad buttons 1–32. Rotaries pulse a pair and also send a position.", color = Muted, fontSize = 12.sp)
+                    Text(
+                        "Outputs are virtual pad buttons 1–32. A rotary turns to the next printed mark and pulses its − or + button once per step. " +
+                            "Assetto Corsa binds those two buttons as decrease and increase. The knob position is also sent on its slot, and vJoy maps slots 0–3 to axes Ry, Rz, Slider, and Dial (0 is the first mark, 11 is the last of a 12-step knob). " +
+                            "A thumb wheel does the same with an up or down drag.",
+                        color = Muted,
+                        fontSize = 12.sp,
+                    )
                     session.wheel.controls.forEach { control ->
                         val binding = session.bindingFor(control.id) ?: return@forEach
                         BindingRow(control.label, control.isRotary, binding, bump)
@@ -747,6 +928,42 @@ private fun SetupScreen(session: RaceSession) {
                     Text("Volume keys", color = Muted, fontSize = 12.sp)
                     Stepper("Volume up → button", session.profile.volumeUpButton, 0..32) { session.profile.volumeUpButton = it; bump() }
                     Stepper("Volume down → button", session.profile.volumeDownButton, 0..32) { session.profile.volumeDownButton = it; bump() }
+                }
+                "about" -> {
+                    SectionTitle("About")
+                    Text("Racing Wheel Pro", color = Ink, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Version ${BuildConfig.VERSION_NAME}", color = Ink, fontSize = 14.sp)
+                    Text("Build ${BuildConfig.VERSION_CODE}", color = Muted, fontSize = 14.sp)
+                    Text("Built ${BuildConfig.BUILD_DATE}", color = Muted, fontSize = 14.sp)
+                    Spacer(Modifier.height(10.dp))
+                    val aboutContext = LocalContext.current
+                    Text(
+                        "myracingwheel.site",
+                        color = SignalYellow,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            runCatching {
+                                aboutContext.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://myracingwheel.site")))
+                            }
+                        }.padding(vertical = 4.dp),
+                    )
+                    Text(
+                        "t.me/racingwheelpro",
+                        color = SignalYellow,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.clickable {
+                            runCatching {
+                                aboutContext.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.TELEGRAM_URL)))
+                            }
+                        }.padding(vertical = 4.dp),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text("GPL-3.0", color = Ink, fontSize = 14.sp)
+                    Text(
+                        "Based on Touch Racer by Vasiliy Shirkin (thelv).",
+                        color = Muted,
+                        fontSize = 13.sp,
+                    )
                 }
                 else -> {
                     SectionTitle("Profile")

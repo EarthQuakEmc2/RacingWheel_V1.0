@@ -112,6 +112,13 @@ public sealed class VigemOutput : IOutput
             var down = (state.Buttons & (1u << i)) != 0;
             _pad.SetButtonState(Buttons[i], down);
         }
+        // The Xbox pad has no button 31. D-pad up and down are the two controls
+        // Assetto Corsa sees on this same pad while the face buttons stay 1–10
+        // and 13–14. vJoy still gets buttons 31 and 32 from the button mask.
+        if ((state.Gear & Proto.GearUp) != 0 || (state.Buttons & (1u << 30)) != 0)
+            _pad.SetButtonState(Xbox360Button.Up, true);
+        if ((state.Gear & Proto.GearDown) != 0 || (state.Buttons & (1u << 31)) != 0)
+            _pad.SetButtonState(Xbox360Button.Down, true);
         _submit?.Invoke();
     }
 

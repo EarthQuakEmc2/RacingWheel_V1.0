@@ -16,6 +16,19 @@
     "down": {"width": 0.20, "height": 0.32, "centerY": 0.521}
   },
   "outputButtons": 16,
+  "display": {
+    "left": 0.2905,
+    "top": 0.1863,
+    "right": 0.7203,
+    "bottom": 0.4639
+  },
+  "revLights": {
+    "count": 12,
+    "left": 0.2546,
+    "top": 0.0752,
+    "right": 0.7562,
+    "bottom": 0.1585
+  },
   "controls": [
     {
       "id": "p10",

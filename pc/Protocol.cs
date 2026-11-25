@@ -37,6 +37,9 @@ public static class Proto
 
     /// <summary>VK_NEXT, Page Down.</summary>
     public const int GearDownKey = 0x22;
+
+    public const int TelemetryLen = 40;
+    public const byte TelemetryLive = 1;
 }
 
 public sealed class StatePacket
@@ -61,6 +64,23 @@ public sealed class StatePacket
             if ((Buttons & (1u << i)) != 0) yield return i + 1;
         }
     }
+}
+
+public sealed class DashReading
+{
+    public bool Live { get; init; }
+    public int Seq { get; init; }
+    public int Rpm { get; init; }
+    public int MaxRpm { get; init; }
+    public float SpeedKmh { get; init; }
+    public int Gear { get; init; }
+    public int Tc { get; init; }
+    public int Abs { get; init; }
+    public int FuelPct { get; init; }
+    public int Position { get; init; }
+    public int CurrentLapMs { get; init; }
+    public int DeltaMs { get; init; }
+    public int Laps { get; init; }
 }
 
 public sealed class HostHello
@@ -111,6 +131,85 @@ public static class Packets
         buf[10] = (byte)n;
         raw.AsSpan(0, n).CopyTo(buf.AsSpan(11));
         return buf;
+    }
+
+    /// <summary>
+    /// Compact dash packet, RWPT, 40 bytes. Sent to the phone about 25 times a second.
+    /// Gear is the number on the wheel: −1 reverse, 0 neutral, 1 and up.
+    /// Assetto Corsa stores reverse as 0, so this subtracts one.
+    /// </summary>
+    public static byte[] Telemetry(AcSnapshot snap, int seq)
+    {
+        var buf = new byte[Proto.TelemetryLen];
+        buf[0] = (byte)'R'; buf[1] = (byte)'W'; buf[2] = (byte)'P'; buf[3] = (byte)'T';
+        buf[4] = Proto.Version;
+        var live = snap.Status != 0 || snap.SpeedKmh > 1f || snap.Rpm > 0;
+        buf[5] = live ? Proto.TelemetryLive : (byte)0;
+        BinaryPrimitives.WriteUInt16LittleEndian(buf.AsSpan(6), (ushort)(seq & 0xFFFF));
+        BinaryPrimitives.WriteUInt16LittleEndian(buf.AsSpan(8), (ushort)Math.Clamp(snap.Rpm, 0, 65535));
+        BinaryPrimitives.WriteUInt16LittleEndian(buf.AsSpan(10), (ushort)Math.Clamp(snap.MaxRpm, 0, 65535));
+        var speed10 = (int)Math.Clamp(snap.SpeedKmh * 10f, 0f, 65535f);
+        BinaryPrimitives.WriteUInt16LittleEndian(buf.AsSpan(12), (ushort)speed10);
+        var gear = Math.Clamp(snap.Gear - 1, -1, 12);
+        buf[14] = unchecked((byte)gear);
+        buf[15] = Scale01(snap.Gas);
+        buf[16] = Scale01(snap.Brake);
+        buf[17] = (byte)(snap.TcLevel is >= 0 and <= 20 ? snap.TcLevel : 255);
+        buf[18] = (byte)(snap.AbsLevel is >= 0 and <= 20 ? snap.AbsLevel : 255);
+        buf[19] = FuelPercent(snap);
+        var position = snap.Position is >= 1 and <= 255 ? snap.Position : 0;
+        buf[20] = (byte)position;
+        buf[21] = (byte)Math.Clamp(snap.Status, 0, 255);
+        BinaryPrimitives.WriteInt32LittleEndian(buf.AsSpan(22), snap.CurrentTimeMs);
+        BinaryPrimitives.WriteInt32LittleEndian(buf.AsSpan(26), snap.LastTimeMs);
+        BinaryPrimitives.WriteInt32LittleEndian(buf.AsSpan(30), snap.BestTimeMs);
+        BinaryPrimitives.WriteInt16LittleEndian(buf.AsSpan(34), DeltaMs(snap.PerformanceMeter));
+        BinaryPrimitives.WriteUInt16LittleEndian(buf.AsSpan(36), (ushort)Math.Clamp(snap.CompletedLaps, 0, 65535));
+        buf[38] = Scale01(snap.Tc);
+        buf[39] = Scale01(snap.Abs);
+        return buf;
+    }
+
+    public static DashReading? ParseTelemetry(ReadOnlySpan<byte> bytes)
+    {
+        if (bytes.Length < Proto.TelemetryLen) return null;
+        if (bytes[0] != (byte)'R' || bytes[1] != (byte)'W' || bytes[2] != (byte)'P' || bytes[3] != (byte)'T') return null;
+        if (bytes[4] != Proto.Version) return null;
+        return new DashReading
+        {
+            Live = (bytes[5] & Proto.TelemetryLive) != 0,
+            Seq = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(6, 2)),
+            Rpm = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(8, 2)),
+            MaxRpm = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(10, 2)),
+            SpeedKmh = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(12, 2)) / 10f,
+            Gear = unchecked((sbyte)bytes[14]),
+            Tc = bytes[17],
+            Abs = bytes[18],
+            FuelPct = bytes[19],
+            Position = bytes[20],
+            CurrentLapMs = BinaryPrimitives.ReadInt32LittleEndian(bytes.Slice(22, 4)),
+            DeltaMs = BinaryPrimitives.ReadInt16LittleEndian(bytes.Slice(34, 2)),
+            Laps = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(36, 2)),
+        };
+    }
+
+    private static byte Scale01(float value)
+    {
+        if (float.IsNaN(value) || float.IsInfinity(value)) return 0;
+        return (byte)Math.Clamp((int)Math.Round(value * 255f), 0, 255);
+    }
+
+    private static byte FuelPercent(AcSnapshot snap)
+    {
+        if (snap.MaxFuel <= 0.5f || snap.Fuel < 0f || snap.Fuel > snap.MaxFuel * 1.5f) return 255;
+        return (byte)Math.Clamp((int)Math.Round(snap.Fuel / snap.MaxFuel * 100f), 0, 100);
+    }
+
+    private static short DeltaMs(float seconds)
+    {
+        if (float.IsNaN(seconds) || float.IsInfinity(seconds)) return 0;
+        var ms = (int)Math.Round(seconds * 1000f);
+        return (short)Math.Clamp(ms, short.MinValue, short.MaxValue);
     }
 
     public static byte[] Rumble(byte large, byte small) =>

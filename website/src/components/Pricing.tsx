@@ -1,16 +1,15 @@
 const FREE = [
-  'Four wheels, one from each of the sets people ask for first',
+  'Every wheel template in version 0.6.0',
   'Steering, throttle, brake, and an optional clutch',
-  'Every button mode, and the layout editor',
+  'Every button, rotary, and the layout editor',
   'The Windows receiver, over Wi-Fi or USB',
-  'A live dial pointer on one wheel, so the knob demo is in the free app',
+  'Shift lights, the live dash, and turning knobs',
 ]
 
 const PREMIUM = [
-  'Every wheel template in the app',
-  'The dial pointer on every rotary, snapping to the printed marks',
-  'One purchase. No subscription and no ads',
-  'Restore it on another phone from the same Google account',
+  'Not required for any wheel in this release',
+  'The paid Play build is on standby and is not merged',
+  'No wheel is locked in the app or on this site',
 ]
 
 export default function Pricing() {
@@ -19,15 +18,15 @@ export default function Pricing() {
       <div className="wrap">
         <header className="section-head">
           <p className="kicker">
-            <span>03</span> Free vs Premium
+            <span>03</span> Garage
           </p>
-          <h2>Drive free. Unlock the garage once.</h2>
+          <h2>Every wheel is included.</h2>
         </header>
         <div className="price-grid">
           <article className="price-card">
             <p className="dl-kicker">Free</p>
             <h3>$0</h3>
-            <p>The open build. Core driving stays intact if you never pay.</p>
+            <p>Version 0.6.0. The garage is open.</p>
             <ul>
               {FREE.map((item) => (
                 <li key={item}>{item}</li>
@@ -35,11 +34,9 @@ export default function Pricing() {
             </ul>
           </article>
           <article className="price-card price-card-premium">
-            <p className="dl-kicker">Racing Wheel Premium</p>
-            <h3>
-              $3.99 <span>once</span>
-            </h3>
-            <p>A one-time in-app purchase on Google Play. Product id racing_wheel_premium.</p>
+            <p className="dl-kicker">Paid build</p>
+            <h3>Standby</h3>
+            <p>A Play purchase is not part of 0.6.0. Wheels are not behind it.</p>
             <ul>
               {PREMIUM.map((item) => (
                 <li key={item}>{item}</li>

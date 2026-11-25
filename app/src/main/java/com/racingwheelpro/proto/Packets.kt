@@ -30,6 +30,29 @@ import java.nio.charset.StandardCharsets
  * Discovery find (phone -> 41510), 24 bytes: "RWPF", version, pad, 16-byte name.
  * Discovery host (PC -> phone): "RWPH", version, caps, tcp u16, udp u16, nameLen u8, name.
  * Rumble (PC -> phone UDP source): "RWPR", large u8, small u8.
+ * Dash telemetry (PC -> phone UDP source), 40 bytes, about 25 Hz:
+ *   0  char[4] "RWPT"
+ *   4  u8 version = 1
+ *   5  u8 flags (bit0 = Assetto Corsa is live)
+ *   6  u16 sequence
+ *   8  u16 rpm
+ *  10  u16 max rpm
+ *  12  u16 speed in km/h times 10
+ *  14  i8  gear (−1 reverse, 0 neutral, 1 and up)
+ *  15  u8  gas 0..255
+ *  16  u8  brake 0..255
+ *  17  u8  TC setting, 255 when the game did not report one
+ *  18  u8  ABS setting, 255 when unknown
+ *  19  u8  fuel percent 0..100, 255 when unknown
+ *  20  u8  race position, 0 when unknown
+ *  21  u8  AC status (0 off, 1 replay, 2 live, 3 pause)
+ *  22  i32 current lap milliseconds
+ *  26  i32 last lap milliseconds
+ *  30  i32 best lap milliseconds
+ *  34  i16 delta milliseconds (negative is faster than best)
+ *  36  u16 completed laps
+ *  38  u8  TC currently working, 0..255
+ *  39  u8  ABS currently working, 0..255
  * TCP frames: u8 type, u16 length, payload.
  *   1 HELLO (utf-8 json), 2 STATE (the 36-byte packet), 3 PING (u32 time),
  *   4 PONG (u32 echoed time, u32 server time), 5 BYE.
@@ -44,6 +67,9 @@ object Proto {
     const val HOST = "RWPH"
     const val STATE = "RWPS"
     const val RUMBLE = "RWPR"
+    const val TELEMETRY = "RWPT"
+    const val TELEMETRY_LEN = 40
+    const val TELEMETRY_LIVE = 1
 
     const val TCP_HELLO = 1
     const val TCP_STATE = 2
@@ -75,6 +101,38 @@ class StatePacket(
     /** Bit 0 = shift up (left zone), bit 1 = shift down (right zone). */
     val gear: Int = 0,
 )
+
+data class DashTelemetry(
+    val live: Boolean,
+    val seq: Int,
+    val rpm: Int,
+    val maxRpm: Int,
+    val speedKmh: Float,
+    val gear: Int,
+    val gas: Int,
+    val brake: Int,
+    val tc: Int,
+    val abs: Int,
+    val fuelPct: Int,
+    val position: Int,
+    val status: Int,
+    val currentLapMs: Int,
+    val lastLapMs: Int,
+    val bestLapMs: Int,
+    val deltaMs: Int,
+    val laps: Int,
+    val tcActive: Int,
+    val absActive: Int,
+) {
+    companion object {
+        val EMPTY = DashTelemetry(
+            live = false, seq = 0, rpm = 0, maxRpm = 0, speedKmh = 0f, gear = 0,
+            gas = 0, brake = 0, tc = 255, abs = 255, fuelPct = 255, position = 0,
+            status = 0, currentLapMs = 0, lastLapMs = 0, bestLapMs = 0, deltaMs = 0,
+            laps = 0, tcActive = 0, absActive = 0,
+        )
+    }
+}
 
 class HostBeacon(
     val version: Int,
@@ -175,6 +233,85 @@ object Packets {
         b.putShort((payload.size and 0xFFFF).toShort())
         b.put(payload)
         return b.array()
+    }
+
+    fun telemetry(d: DashTelemetry): ByteArray {
+        val b = ByteBuffer.allocate(Proto.TELEMETRY_LEN).order(ByteOrder.LITTLE_ENDIAN)
+        b.put(ascii(Proto.TELEMETRY))
+        b.put(Proto.VERSION.toByte())
+        b.put((if (d.live) Proto.TELEMETRY_LIVE else 0).toByte())
+        b.putShort((d.seq and 0xFFFF).toShort())
+        b.putShort((d.rpm.coerceIn(0, 65535) and 0xFFFF).toShort())
+        b.putShort((d.maxRpm.coerceIn(0, 65535) and 0xFFFF).toShort())
+        val speed10 = (d.speedKmh.coerceIn(0f, 6553.5f) * 10f).toInt()
+        b.putShort((speed10 and 0xFFFF).toShort())
+        b.put(d.gear.coerceIn(-128, 127).toByte())
+        b.put((d.gas.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.brake.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.tc.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.abs.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.fuelPct.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.position.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.status.coerceIn(0, 255) and 0xFF).toByte())
+        b.putInt(d.currentLapMs)
+        b.putInt(d.lastLapMs)
+        b.putInt(d.bestLapMs)
+        b.putShort(d.deltaMs.coerceIn(-32768, 32767).toShort())
+        b.putShort((d.laps.coerceIn(0, 65535) and 0xFFFF).toShort())
+        b.put((d.tcActive.coerceIn(0, 255) and 0xFF).toByte())
+        b.put((d.absActive.coerceIn(0, 255) and 0xFF).toByte())
+        return b.array()
+    }
+
+    fun parseTelemetry(bytes: ByteArray): DashTelemetry? {
+        if (bytes.size < Proto.TELEMETRY_LEN) return null
+        if (!match(bytes, 0, Proto.TELEMETRY)) return null
+        val b = ByteBuffer.wrap(bytes, 0, Proto.TELEMETRY_LEN).order(ByteOrder.LITTLE_ENDIAN)
+        b.position(4)
+        val version = b.get().toInt() and 0xFF
+        if (version != Proto.VERSION) return null
+        val flags = b.get().toInt() and 0xFF
+        val seq = b.short.toInt() and 0xFFFF
+        val rpm = b.short.toInt() and 0xFFFF
+        val maxRpm = b.short.toInt() and 0xFFFF
+        val speed = (b.short.toInt() and 0xFFFF) / 10f
+        val gear = b.get().toInt()
+        val gas = b.get().toInt() and 0xFF
+        val brake = b.get().toInt() and 0xFF
+        val tc = b.get().toInt() and 0xFF
+        val abs = b.get().toInt() and 0xFF
+        val fuel = b.get().toInt() and 0xFF
+        val position = b.get().toInt() and 0xFF
+        val status = b.get().toInt() and 0xFF
+        val current = b.int
+        val last = b.int
+        val best = b.int
+        val delta = b.short.toInt()
+        val laps = b.short.toInt() and 0xFFFF
+        val tcActive = b.get().toInt() and 0xFF
+        val absActive = b.get().toInt() and 0xFF
+        return DashTelemetry(
+            live = flags and Proto.TELEMETRY_LIVE != 0,
+            seq = seq,
+            rpm = rpm,
+            maxRpm = maxRpm,
+            speedKmh = speed,
+            gear = gear,
+            gas = gas,
+            brake = brake,
+            tc = tc,
+            abs = abs,
+            fuelPct = fuel,
+            position = position,
+            status = status,
+            currentLapMs = current,
+            lastLapMs = last,
+            bestLapMs = best,
+            deltaMs = delta,
+            laps = laps,
+            tcActive = tcActive,
+            absActive = absActive,
+        )
     }
 
     fun rumble(large: Int, small: Int): ByteArray {

@@ -8,7 +8,10 @@ import com.racingwheelpro.input.AngleUnwrapper
 import com.racingwheelpro.input.Curves
 import com.racingwheelpro.input.GearChannel
 import com.racingwheelpro.input.Geometry
+import com.racingwheelpro.input.DashFormat
 import com.racingwheelpro.input.KnobMath
+import com.racingwheelpro.input.KnobSpin
+import com.racingwheelpro.input.RevLights
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Control
@@ -16,6 +19,8 @@ import com.racingwheelpro.model.ShifterSpec
 import com.racingwheelpro.model.WheelBounds
 import com.racingwheelpro.model.WheelMakers
 import com.racingwheelpro.model.WheelTemplate
+import com.racingwheelpro.startup.StartupChecks
+import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.proto.FrameBuffer
 import com.racingwheelpro.proto.Packets
 import com.racingwheelpro.proto.Proto
@@ -177,11 +182,11 @@ class CoreTest {
         assertEquals(Proto.GEAR_DOWN, GearChannel.bits(shiftUp = false, shiftDown = true))
         assertEquals(0, GearChannel.bits(shiftUp = false, shiftDown = false))
         val untouched = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 0, downButton = 0)
-        assertEquals(0L, untouched)
+        assertEquals(1L shl 30, untouched)
         val mapped = GearChannel.merge(0L, shiftUp = true, shiftDown = false, upButton = 5, downButton = 0)
-        assertEquals(1L shl 4, mapped)
+        assertEquals((1L shl 4) or (1L shl 30), mapped)
         val withFace = GearChannel.merge(1L, shiftUp = false, shiftDown = true, upButton = 0, downButton = 0)
-        assertEquals(1L, withFace)
+        assertEquals(1L or (1L shl 31), withFace)
         assertEquals(0L, GearChannel.buttonBit(0))
         assertEquals(0L, GearChannel.buttonBit(33))
     }
@@ -224,9 +229,9 @@ class CoreTest {
         val bounds = WheelBounds(0.10f, 0.20f, 0.90f, 0.80f)
         val up = ShifterZones.place(ShifterZones.Side.UP, ShifterSpec(0.20f, 0.32f, 0.44f), bounds)
         val down = ShifterZones.place(ShifterZones.Side.DOWN, ShifterSpec(0.20f, 0.40f, 0.62f), bounds)
-        assertEquals(0.10f, up.left, 0.001f)
+        assertEquals(0f, up.left, 0.001f)
         assertEquals(0.10f + 0.20f * bounds.width, up.right, 0.001f)
-        assertEquals(0.90f, down.right, 0.001f)
+        assertEquals(1f, down.right, 0.001f)
         assertTrue(down.top > up.top)
         val clamped = ShifterZones.clamp(ShifterSpec(0.9f, 0.05f, 0.01f))
         assertEquals(ShifterZones.MAX_WIDTH, clamped.width, 0.001f)
@@ -414,6 +419,141 @@ class CoreTest {
         // Jump from +3 to -3 is a wrap of about -6 rad, which should add +2π.
         val next = u.feed(-3f, true)
         assertTrue(next > 3f)
+    }
+
+    @Test
+    fun revLightsFillLeftToRightAndRpmWaitsForTheTopOfTheRange() {
+        assertEquals(0, RevLights.litCount(0f, 15))
+        assertEquals(15, RevLights.litCount(1f, 15))
+        assertEquals(8, RevLights.litCount(0.5f, 15))
+        val left = RevLights.colorAt(0, 15)
+        val mid = RevLights.colorAt(9, 15)
+        val right = RevLights.colorAt(14, 15)
+        assertTrue(left.g > left.r)
+        assertTrue(mid.r > mid.b)
+        assertTrue(right.b > right.g)
+        assertEquals(0f, RevLights.rpmLevel(6000, 8000), 0.001f)
+        assertEquals(0.5f, RevLights.rpmLevel(7000, 8000), 0.001f)
+        assertEquals(1f, RevLights.rpmLevel(8000, 8000), 0.001f)
+        assertEquals(0.4f, RevLights.sourceLevel("rpm", 0.4f, 8000, 8000, false), 0.001f)
+        assertEquals(1f, RevLights.sourceLevel("rpm", 0.1f, 8000, 8000, true), 0.001f)
+        assertEquals(0.25f, RevLights.sourceLevel("throttle", 0.25f, 8000, 8000, true), 0.001f)
+    }
+
+    @Test
+    fun dashReadsLikeAWheelAndThePacketRoundTrips() {
+        assertEquals("R", DashFormat.gearLabel(-1))
+        assertEquals("N", DashFormat.gearLabel(0))
+        assertEquals("4", DashFormat.gearLabel(4))
+        assertEquals(4, DashFormat.acGearToDisplay(5))
+        assertEquals("1:23.456", DashFormat.lapTime(83456))
+        assertEquals("--:--.---", DashFormat.lapTime(0))
+        assertEquals("-0.42", DashFormat.delta(-420))
+        assertEquals("+1.20", DashFormat.delta(1200))
+        val dash = DashTelemetry(
+            live = true, seq = 9, rpm = 7400, maxRpm = 8500, speedKmh = 187.4f, gear = 5,
+            gas = 200, brake = 0, tc = 4, abs = 2, fuelPct = 55, position = 3, status = 2,
+            currentLapMs = 86321, lastLapMs = 92000, bestLapMs = 86741, deltaMs = -420,
+            laps = 2, tcActive = 64, absActive = 0,
+        )
+        val back = Packets.parseTelemetry(Packets.telemetry(dash))
+        assertNotNull(back)
+        back!!
+        assertTrue(back.live)
+        assertEquals(5, back.gear)
+        assertEquals(7400, back.rpm)
+        assertEquals(187.4f, back.speedKmh, 0.15f)
+        assertEquals(4, back.tc)
+        assertEquals(55, back.fuelPct)
+        assertEquals(3, back.position)
+        assertEquals(-420, back.deltaMs)
+        assertEquals(Proto.TELEMETRY_LEN, Packets.telemetry(dash).size)
+        assertNull(Packets.parseTelemetry(byteArrayOf(1, 2, 3, 4)))
+    }
+
+    @Test
+    fun knobDiscTurnsOntoTheSelectedMark() {
+        assertEquals(0f, KnobSpin.discDegrees(-60f, 0, 12, true), 0.01f)
+        assertEquals(30f, KnobSpin.discDegrees(-60f, 1, 12, true), 0.01f)
+        val turned = KnobMath.normalizeDeg(-60f + KnobSpin.discDegrees(-60f, 4, 12, true))
+        assertEquals(KnobMath.detentDegrees(-60f, 4, 12, true), turned, 0.01f)
+        assertEquals(-30f, KnobSpin.discDegrees(-90f, 1, 12, false), 0.01f)
+        assertTrue(KnobSpin.thumbStepPx(10f) >= 14f)
+    }
+
+    @Test
+    fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
+        val templates = loadAssetTemplates()
+        assertEquals(34, templates.size)
+        templates.forEach { wheel ->
+            val screen = wheel.display
+            assertNotNull(wheel.id, screen)
+            screen!!
+            assertTrue(wheel.id, screen.right > screen.left + 0.05f)
+            assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            if (wheel.revLights.count > 0) {
+                val row = wheel.revLights.rect
+                assertNotNull(wheel.id, row)
+                assertTrue(wheel.id, row!!.right > row.left)
+                assertTrue(wheel.revLights.count in 4..24)
+            }
+        }
+        val ks = templates.first { it.id == "moza_ks" }
+        assertTrue(ks.revLights.count >= 8)
+        assertEquals("dial", ks.controls.first { it.id == "turbo" }.gesture)
+        val fsr = templates.first { it.id == "moza_fsr" }
+        assertEquals("thumb", fsr.controls.first { it.id == "enc_l" }.gesture)
+        assertEquals("thumb", fsr.controls.first { it.id == "enc_r" }.gesture)
+        val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(fsr))
+        assertEquals(fsr.display!!.left, again.display!!.left, 0.0001f)
+        assertEquals(fsr.revLights.count, again.revLights.count)
+        assertEquals("thumb", again.controls.first { it.id == "enc_l" }.gesture)
+    }
+
+    @Test
+    fun startupSplashUsesOnlyChecksThatRan() {
+        val health = StartupChecks.parseHealth("""{"ok":true,"version":"0.5.0"}""")
+        assertNotNull(health)
+        assertEquals("0.5.0", health!!.version)
+        assertNull(StartupChecks.parseHealth("not json"))
+        val secure = StartupChecks.secureStep(tlsAccepted = true, reached = true)
+        assertTrue(secure.ok)
+        assertEquals("Secure connection verified", secure.detail)
+        val offline = StartupChecks.secureStep(tlsAccepted = false, reached = false)
+        assertFalse(offline.ok)
+        assertTrue(offline.stopped)
+        assertEquals("Can't reach server – offline mode", offline.detail)
+        val bad = StartupChecks.healthStep(500, StartupChecks.HealthBody(false, ""))
+        assertTrue(bad.stopped)
+        val good = StartupChecks.healthStep(200, health)
+        assertTrue(good.ok)
+        assertTrue(good.detail.contains("0.5.0"))
+        val none = StartupChecks.accountStep(null, null, null)
+        assertTrue(none.ok)
+        assertFalse(none.stopped)
+        assertTrue(none.detail.contains("No account"))
+        val rejected = StartupChecks.accountStep("rwp_session=abc", 401, null)
+        assertTrue(rejected.stopped)
+        val signedIn = StartupChecks.accountStep("rwp_session=abc", 200, "ada@example.com")
+        assertTrue(signedIn.detail.contains("ada@example.com"))
+        assertNull(StartupChecks.sessionCookie(null, null))
+        assertNull(StartupChecks.sessionCookie("  ", "other=1"))
+        assertEquals("rwp_session=tok", StartupChecks.sessionCookie("tok", null))
+        assertTrue(StartupChecks.sessionCookie(null, "rwp_session=fromjar")!!.contains("rwp_session="))
+        val newerApp = StartupChecks.versionNote("0.6.0-preview", "0.5.0")
+        assertTrue(newerApp.contains("0.6.0-preview"))
+        assertTrue(newerApp.contains("0.5.0"))
+        assertFalse(newerApp.contains("update"))
+        val olderApp = StartupChecks.versionNote("0.5.0", "0.6.0")
+        assertTrue(olderApp.contains("newer version"))
+        assertEquals(0, StartupChecks.compareVersions("0.6.0-preview", "0.6.0"))
+        assertEquals(1, StartupChecks.compareVersions("0.6.0-preview", "0.5.0"))
+        val quiet = StartupChecks.receiverStep(emptyList())
+        assertTrue(quiet.ok)
+        assertTrue(quiet.detail.contains("No PC receiver"))
+        assertEquals("Found RIG at 10.0.0.8.", StartupChecks.receiverStep(listOf("RIG at 10.0.0.8")).detail)
+        assertEquals(0.4f, StartupChecks.progress(2), 0.001f)
+        assertEquals("ada@example.com", StartupChecks.parseEmail("""{"email":"ada@example.com"}"""))
     }
 
     private fun loadAssetTemplates(): List<WheelTemplate> {

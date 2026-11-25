@@ -1031,4 +1031,81 @@ a { color: var(--yellow); }
   .ticker-track { transform: none; flex-wrap: wrap; width: auto; }
   .ticker { overflow: visible; }
   .ticker-group:last-child { display: none; }
+  .splash-fill { transition: none; }
 }
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(700px 320px at 80% -10%, rgba(225, 6, 0, 0.22), transparent 60%),
+    rgba(11, 13, 16, 0.94);
+}
+.splash-card {
+  width: min(520px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px 28px 22px;
+}
+.splash-brand {
+  margin: 0;
+  font-family: var(--font-d);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 28px;
+}
+.splash-kicker {
+  margin: 6px 0 16px;
+  color: var(--yellow);
+  font-family: var(--font-d);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.splash-track {
+  height: 10px;
+  border-radius: 99px;
+  background: var(--panel-2);
+  overflow: hidden;
+}
+.splash-fill {
+  height: 100%;
+  background: var(--green);
+  width: 0;
+  transition: width 180ms linear;
+}
+.splash-fill.is-stop { background: var(--red); }
+.splash-still .splash-fill { transition: none; }
+.splash-steps {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+.splash-steps li { margin: 0 0 12px; }
+.splash-steps span {
+  font-family: var(--font-d);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+.splash-steps .ok { color: var(--green); }
+.splash-steps .bad { color: var(--red); }
+.splash-steps p { margin: 2px 0 0; color: var(--ink); }
+.splash-running { color: var(--muted); margin: 4px 0 0; }
+.splash-go {
+  margin-top: 14px;
+  border: 0;
+  background: var(--yellow);
+  color: #14120a;
+  font-family: var(--font-d);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border-radius: 6px;
+}
+.splash-note { color: var(--faint); font-size: 13px; margin: 12px 0 0; }
