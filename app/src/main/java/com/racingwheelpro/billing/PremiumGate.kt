@@ -30,6 +30,9 @@ abstract class PremiumGate {
     abstract fun purchase(activity: Activity)
     abstract fun restore()
 
+    /** Drop a billing connection. The free gate has nothing to close. */
+    open fun close() = Unit
+
     fun wheelUnlocked(id: String): Boolean = unlocked || WheelCatalog.isFree(id)
 
     /** Every wheel you can drive draws the rotating knob, not only the KS demo. */
