@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- The Windows receiver shows a command window again. A short status block stays in place: version, address and ports, whether the phone is connected, and vJoy or ViGEm. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. Closing the window or Ctrl+C exits. Android `versionCode` is 17, `versionName` is 0.6.3.
-- The wheel is the same size in Drive and in Edit, and larger on a phone, while the whole plate stays on screen.
+- The Windows receiver shows a command window again. A short status block stays in place: version, address and ports, whether the phone is connected, and vJoy or ViGEm. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. Closing the window or Ctrl+C exits. `versionName` is 0.6.3.
+- The wheel is the same size in Drive and in Edit. It is drawn at twice the first 0.6.3 size. When that no longer fits, the rim runs off the screen and the centre stays visible. Android `versionCode` is 18.
 
 ### Added
 

@@ -34,12 +34,13 @@ object Geometry {
     /** How much larger the wheel is drawn than the 0.6.2 center column, before the screen cap. */
     const val WHEEL_BOOST = 1.85f
 
+    /** Extra scale on top of the v0.6.3 size. The rim may leave the screen; the centre stays put. */
+    const val WHEEL_CROP_SCALE = 2f
+
     /**
-     * One wheel size for Drive and Edit. Starts from the old center-column fit,
-     * grows by [WHEEL_BOOST], then stops so the wheel plate still sits inside the
-     * screen with a small margin. [contentW] and [contentH] are the plate's
-     * fraction of the bitmap, so a short formula rim can grow without the
-     * transparent padding deciding the size.
+     * One wheel size for Drive and Edit. The v0.6.3 size is doubled. If that
+     * no longer fits, the bitmap runs past the screen and is cropped. The centre
+     * of the plate stays in the middle of the usable area.
      */
     fun presentWheel(
         screenW: Float,
@@ -84,7 +85,11 @@ object Geometry {
             w *= s
             h *= s
         }
-        return ImgRect(boxLeft + (maxW - w) / 2f, boxTop + (maxH - h) / 2f, w, h)
+        w *= WHEEL_CROP_SCALE
+        h *= WHEEL_CROP_SCALE
+        val cx = boxLeft + maxW / 2f
+        val cy = boxTop + maxH / 2f
+        return ImgRect(cx - w / 2f, cy - h / 2f, w, h)
     }
 
     /**
