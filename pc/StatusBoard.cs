@@ -13,7 +13,7 @@ static class StatusBoard
 {
     internal static readonly string AppVersion =
         Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? "0.6.3 Beta 1002";
+        ?? "1.0.01";
     const int Rows = 6;
     static bool _opened;
 

@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.01] - 2026-11-26
+
+First full release. Same app as 0.6.3 Beta 1006.
+
+### Added
+
+- Pinch to resize the wheel in Edit, from 0.4 to 3 times the v0.5.0 size. Drive uses the same saved size. Reset size restores the default.
+- Master Wheel F1, a free formula wheel. Inner gaps in the wheel art are transparent.
+- The Windows receiver shows a command window with a fixed status block. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. A second start can close the copy that already holds the log.
+
+### Changed
+
+- The Edit panel is 300dp wide again.
+- Telemetry is drawn only on wheels whose artwork has a screen. Rev lights still animate on LED wheels.
+- Android `versionCode` is 25, `versionName` is 1.0.01. The receiver status line reads 1.0.01.
+- The site download links and `/api/health` in this repository point at 1.0.01. The live site was not deployed with this commit.
+
 ## [0.6.3] - 2026-11-25
 
 ### Changed
@@ -228,7 +245,8 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v1.0.01...HEAD
+[1.0.01]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.3...v1.0.01
 [0.6.3]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2-preview...v0.6.2
 [0.6.2-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...v0.6.2-preview
