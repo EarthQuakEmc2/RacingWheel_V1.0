@@ -31,65 +31,27 @@ object Geometry {
         return ImgRect((viewW - w) / 2f, (viewH - h) / 2f, w, h)
     }
 
-    /** How much larger the wheel is drawn than the 0.6.2 center column, before the screen cap. */
-    const val WHEEL_BOOST = 1.85f
-
-    /** Extra scale on top of the v0.6.3 size. The rim may leave the screen; the centre stays put. */
-    const val WHEEL_CROP_SCALE = 2f
-
     /**
-     * One wheel size for Drive and Edit. The v0.6.3 size is doubled. If that
-     * no longer fits, the bitmap runs past the screen and is cropped. The centre
-     * of the plate stays in the middle of the usable area.
+     * Scale the wheel bitmap into the open rectangle between the pedal columns
+     * and between the top of the drive area and the bottom status row.
+     * Aspect ratio is kept, with [marginFraction] of that rectangle left empty.
+     * The result is centred in the rectangle and does not leave it.
      */
-    fun presentWheel(
-        screenW: Float,
-        screenH: Float,
+    fun fitWheel(
+        freeLeft: Float,
+        freeTop: Float,
+        freeRight: Float,
+        freeBottom: Float,
         imgW: Int,
         imgH: Int,
-        contentW: Float = 1f,
-        contentH: Float = 1f,
-        reserveLeft: Float = 0f,
-        reserveRight: Float = 0f,
+        marginFraction: Float = 0.02f,
     ): ImgRect {
-        if (screenW <= 1f || screenH <= 1f || imgW <= 0 || imgH <= 0) return ImgRect.EMPTY
-        val margin = min(screenW, screenH) * 0.035f
-        val legacyW = (screenW - reserveLeft - reserveRight).coerceAtLeast(1f) * 0.72f
-        val legacyH = (screenH * 0.86f).coerceAtLeast(1f)
-        val base = fitCenter(legacyW, legacyH, imgW, imgH)
-        var w = base.width * WHEEL_BOOST
-        var h = base.height * WHEEL_BOOST
-        val cw = contentW.coerceIn(0.45f, 1f)
-        val ch = contentH.coerceIn(0.45f, 1f)
-        val boxLeft = reserveLeft + margin
-        val boxTop = margin
-        val maxW = (screenW - reserveLeft - reserveRight - margin * 2f).coerceAtLeast(1f)
-        val maxH = (screenH - margin * 2f).coerceAtLeast(1f)
-        if (w * cw > maxW) {
-            val s = maxW / (w * cw)
-            w *= s
-            h *= s
-        }
-        if (h * ch > maxH) {
-            val s = maxH / (h * ch)
-            w *= s
-            h *= s
-        }
-        if (w > maxW) {
-            val s = maxW / w
-            w *= s
-            h *= s
-        }
-        if (h > maxH) {
-            val s = maxH / h
-            w *= s
-            h *= s
-        }
-        w *= WHEEL_CROP_SCALE
-        h *= WHEEL_CROP_SCALE
-        val cx = boxLeft + maxW / 2f
-        val cy = boxTop + maxH / 2f
-        return ImgRect(cx - w / 2f, cy - h / 2f, w, h)
+        val freeW = (freeRight - freeLeft).coerceAtLeast(1f)
+        val freeH = (freeBottom - freeTop).coerceAtLeast(1f)
+        val marginX = freeW * marginFraction
+        val marginY = freeH * marginFraction
+        val fitted = fitCenter(freeW - marginX * 2f, freeH - marginY * 2f, imgW, imgH)
+        return ImgRect(freeLeft + marginX + fitted.left, freeTop + marginY + fitted.top, fitted.width, fitted.height)
     }
 
     /**

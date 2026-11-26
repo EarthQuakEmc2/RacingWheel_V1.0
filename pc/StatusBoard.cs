@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RacingWheelPro.Pc;
@@ -10,6 +11,9 @@ namespace RacingWheelPro.Pc;
 /// </summary>
 static class StatusBoard
 {
+    internal static readonly string AppVersion =
+        Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? "0.6.3 Beta 1001";
     const int Rows = 6;
     static bool _opened;
 

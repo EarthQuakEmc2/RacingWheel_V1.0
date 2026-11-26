@@ -282,15 +282,14 @@ class CoreTest {
     @Test
     fun rotatedHotspotStillHits() {
         val button = Control("box", "BOX", "button", "circle", 0.75f, 0.5f, 0.04f, "#FFFFFF")
-        val phone = Geometry.presentWheel(800f, 360f, 1100, 1100, 0.90f, 0.58f, 64f, 260f)
-        val again = Geometry.presentWheel(800f, 360f, 1100, 1100, 0.90f, 0.58f, 64f, 260f)
+        val phone = Geometry.fitWheel(210f, 0f, 830f, 320f, 1100, 1100)
+        val again = Geometry.fitWheel(210f, 0f, 830f, 320f, 1100, 1100)
         assertEquals(phone.width, again.width, 0.01f)
         assertEquals(phone.height, again.height, 0.01f)
-        assertEquals(phone.width, phone.height, 0.01f)
-        assertTrue(phone.left < 0f)
-        assertTrue(phone.width > 600f)
-        assertTrue(phone.cx > 200f && phone.cx < 600f)
-        assertTrue(phone.cy > 40f && phone.cy < 320f)
+        assertTrue(phone.left >= 210f && phone.right <= 830f)
+        assertTrue(phone.top >= 0f && phone.bottom <= 320f)
+        assertEquals(320f * 0.96f, phone.height, 1f)
+        assertEquals((210f + 830f) / 2f, phone.cx, 1f)
         val rect = Geometry.fitCenter(200f, 100f, 100, 50)
         assertEquals(0f, rect.left, 0.01f)
         // cx 0.75 of a 200-wide fitted image sits at view x = 150.

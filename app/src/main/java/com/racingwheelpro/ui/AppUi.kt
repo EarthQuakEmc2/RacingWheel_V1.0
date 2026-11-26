@@ -421,18 +421,12 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
             return@Box
         }
         Canvas(Modifier.fillMaxSize()) {
-            val pedal = 64f * density
-            val panel = if (size.width / density >= 900f) 300f * density else minOf(260f * density, size.width * 0.32f)
-            val rect = Geometry.presentWheel(
-                screenW = size.width,
-                screenH = size.height,
-                imgW = bitmap.width,
-                imgH = bitmap.height,
-                contentW = wheel.bounds.width,
-                contentH = wheel.bounds.height,
-                reserveLeft = pedal,
-                reserveRight = maxOf(panel, pedal),
-            )
+            val pedals = session.profile.pedals
+            val zone = (size.width * pedals.zoneFraction).coerceIn(56f * density, 120f * density)
+            val left = size.width * PedalInsets.clamp(pedals.brakeInset) + zone
+            val right = size.width - size.width * PedalInsets.clamp(pedals.throttleInset) - zone
+            val bottom = size.height - 28f * density
+            val rect = Geometry.fitWheel(left, 0f, right, bottom, bitmap.width, bitmap.height)
             session.imageRect = rect
             drawLine(
                 Color.White.copy(alpha = 0.7f),
@@ -1125,7 +1119,8 @@ private fun ShifterSliders(
 private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val panel = if (maxWidth >= 900.dp) 300.dp else minOf(260.dp, maxWidth * 0.32f)
+        val pedals = session.profile.pedals
+        val panel = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp) + maxWidth * PedalInsets.clamp(pedals.throttleInset)
         WheelFace(session, editor = true, modifier = Modifier.fillMaxSize())
         Column(
             Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),

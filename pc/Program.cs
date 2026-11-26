@@ -296,7 +296,7 @@ internal sealed class Receiver : IDisposable
 
     public int Run()
     {
-        FileLog.Info("Racing Wheel Pro receiver 0.6.3");
+        FileLog.Info("Racing Wheel Pro receiver " + StatusBoard.AppVersion);
         FileLog.Info($"discovery UDP {_opt.Discovery}   telemetry UDP {_opt.Udp}   TCP {_opt.Tcp}");
         FileLog.Info("output: " + _output.Name);
         FileLog.Info("log: " + FileLog.DirectoryPath);
@@ -501,7 +501,7 @@ internal sealed class Receiver : IDisposable
         }
         var lines = new[]
         {
-            "Racing Wheel Pro  0.6.3",
+            "Racing Wheel Pro  " + StatusBoard.AppVersion,
             "Listening  " + StatusBoard.LanAddress() + "   UDP " + _opt.Udp + "   TCP " + _opt.Tcp,
             phone ? "Phone  connected  " + peer : "Phone  not connected",
             "Output  " + _output.Name,
