@@ -14,6 +14,7 @@ import com.racingwheelpro.input.KnobSpin
 import com.racingwheelpro.input.RevLights
 import com.racingwheelpro.input.PedalInsets
 import com.racingwheelpro.input.ShifterZones
+import com.racingwheelpro.input.WheelPinch
 import com.racingwheelpro.model.Control
 import com.racingwheelpro.model.defaultProfile
 import com.racingwheelpro.model.keepPaddlesOnButtonsOneAndTwo
@@ -280,8 +281,52 @@ class CoreTest {
     }
 
     @Test
+    fun landscapeWheelGrowsPastTheV050Fit() {
+        // Tag v0.5.0 (45cce61): fitCenter of the centre column. Density 1, insets 0,
+        // zoneFraction 0.18, square art. Scale is not capped by the shorter fit-to-area rect.
+        assertLandscapeScale(1000f, 400f, 372f)
+        assertLandscapeScale(2400f, 1080f, 1052f)
+        val drive = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 2f)
+        val edit = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 2f)
+        assertEquals(drive.placed.width, edit.placed.width, 0.01f)
+        assertEquals(drive.placed.height, edit.placed.height, 0.01f)
+        assertFalse(WheelPinch.allows(false, 2))
+        assertFalse(WheelPinch.allows(true, 1))
+        assertTrue(WheelPinch.allows(true, 2))
+        val grown = WheelPinch.nextScale(1f, 1.25f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE)
+        assertEquals(1.25f, grown, 0.0001f)
+        assertTrue(grown > 1f)
+        assertEquals(3f, WheelPinch.nextScale(3f, 1.5f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE), 0.0001f)
+        assertEquals(0.4f, WheelPinch.nextScale(0.4f, 0.5f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE), 0.0001f)
+    }
+
+    private fun assertLandscapeScale(screenW: Float, screenH: Float, legacy: Float) {
+        val base = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, 1f)
+        assertEquals(legacy, base.legacy.width, 0.1f)
+        assertEquals(legacy, base.legacy.height, 0.1f)
+        assertTrue(base.legacy.height > base.maxFit.height)
+        for (scale in floatArrayOf(1f, 2f, 3f)) {
+            val sized = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, scale)
+            assertEquals(legacy * scale, sized.placed.width, 0.1f)
+            assertEquals(legacy * scale, sized.placed.height, 0.1f)
+            assertEquals(sized.maxFit.cx, sized.placed.cx, 0.1f)
+            assertEquals(sized.maxFit.cy, sized.placed.cy, 0.1f)
+        }
+        val capped = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, 9f)
+        assertEquals(legacy * 3f, capped.placed.width, 0.1f)
+    }
+
+    @Test
     fun rotatedHotspotStillHits() {
         val button = Control("box", "BOX", "button", "circle", 0.75f, 0.5f, 0.04f, "#FFFFFF")
+        val phone = Geometry.fitWheel(210f, 0f, 830f, 320f, 1100, 1100)
+        val again = Geometry.fitWheel(210f, 0f, 830f, 320f, 1100, 1100)
+        assertEquals(phone.width, again.width, 0.01f)
+        assertEquals(phone.height, again.height, 0.01f)
+        assertTrue(phone.left >= 210f && phone.right <= 830f)
+        assertTrue(phone.top >= 0f && phone.bottom <= 320f)
+        assertEquals(320f * 0.96f, phone.height, 1f)
+        assertEquals((210f + 830f) / 2f, phone.cx, 1f)
         val rect = Geometry.fitCenter(200f, 100f, 100, 50)
         assertEquals(0f, rect.left, 0.01f)
         // cx 0.75 of a 200-wide fitted image sits at view x = 150.
@@ -358,7 +403,7 @@ class CoreTest {
         assertEquals("moza_ks", WheelCatalog.DEMO_KNOB_WHEEL)
         assertTrue(WheelCatalog.freeWheelIds.contains(WheelCatalog.DEMO_KNOB_WHEEL))
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(35, templates.size)
         val generic = templates.map { WheelCatalog.displayName(it, templates, true) }
         assertTrue(generic.any { it == "GT3 Wheel A" || it.startsWith("GT3 Wheel") })
         assertTrue(generic.any { it.startsWith("F1 Wheel") })
@@ -497,32 +542,68 @@ class CoreTest {
     }
 
     @Test
-    fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
+    fun screensMatchTheArtworkAndRevLightsStayValid() {
         val templates = loadAssetTemplates()
-        assertEquals(34, templates.size)
+        assertEquals(35, templates.size)
+        val noScreen = setOf(
+            "ferrari_458_black",
+            "ferrari_488_gt3",
+            "ferrari_f1_2012",
+            "ferrari_road_blue",
+            "ferrari_road_red",
+            "mclaren_ascher_dark",
+            "mclaren_fanatec_gt3",
+            "mclaren_gt3_diy",
+            "mclaren_gt3_okx",
+            "mclaren_gtr_lm",
+            "mercedes_cube_gt3",
+            "mercedes_f1_2014",
+            "mercedes_gt_diy",
+            "mercedes_road_carbon",
+            "mercedes_road_led",
+            "moza_gs",
+            "moza_ks",
+            "porsche_gt3_cup",
+            "porsche_gt3r",
+            "porsche_rsr_f",
+        )
         templates.forEach { wheel ->
             val screen = wheel.display
-            assertNotNull(wheel.id, screen)
-            screen!!
-            assertTrue(wheel.id, screen.right > screen.left + 0.05f)
-            assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            if (wheel.id in noScreen) {
+                assertNull(wheel.id, screen)
+            } else {
+                assertNotNull(wheel.id, screen)
+                screen!!
+                assertTrue(wheel.id, screen.right > screen.left + 0.05f)
+                assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            }
             if (wheel.revLights.count > 0) {
                 val row = wheel.revLights.rect
                 assertNotNull(wheel.id, row)
                 assertTrue(wheel.id, row!!.right > row.left)
+                assertTrue(wheel.id, row.bottom > row.top)
                 assertTrue(wheel.revLights.count in 4..24)
             }
         }
+        assertNull(templates.first { it.id == "ferrari_458_black" }.display)
+        assertNull(templates.first { it.id == "ferrari_488_gt3" }.display)
+        assertNull(templates.first { it.id == "mercedes_f1_2014" }.display)
+        assertTrue(templates.first { it.id == "ferrari_488_gt3" }.revLights.count > 0)
+        assertTrue(templates.first { it.id == "mercedes_f1_2014" }.revLights.count > 0)
         val ks = templates.first { it.id == "moza_ks" }
+        assertNull(ks.display)
         assertTrue(ks.revLights.count >= 8)
         assertEquals("dial", ks.controls.first { it.id == "turbo" }.gesture)
         val fsr = templates.first { it.id == "moza_fsr" }
+        assertNotNull(fsr.display)
         assertEquals("thumb", fsr.controls.first { it.id == "enc_l" }.gesture)
         assertEquals("thumb", fsr.controls.first { it.id == "enc_r" }.gesture)
         val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(fsr))
         assertEquals(fsr.display!!.left, again.display!!.left, 0.0001f)
         assertEquals(fsr.revLights.count, again.revLights.count)
         assertEquals("thumb", again.controls.first { it.id == "enc_l" }.gesture)
+        val plain = templates.first { it.id == "ferrari_458_black" }
+        assertNull(WheelLibrary.parseTemplate(WheelLibrary.toJson(plain)).display)
     }
 
     @Test

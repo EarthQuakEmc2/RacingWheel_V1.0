@@ -29,19 +29,6 @@
     }
   },
   "outputButtons": 16,
-  "display": {
-    "left": 0.31877,
-    "top": 0.33956,
-    "right": 0.6813,
-    "bottom": 0.45283
-  },
-  "revLights": {
-    "count": 12,
-    "left": 0.24624,
-    "top": 0.27347,
-    "right": 0.75382,
-    "bottom": 0.31596
-  },
   "controls": [
     {
       "id": "r",

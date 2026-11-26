@@ -5,6 +5,38 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.01] - 2026-11-26
+
+First full release. Same app as 0.6.3 Beta 1006.
+
+### Added
+
+- Pinch to resize the wheel in Edit, from 0.4 to 3 times the v0.5.0 size. Drive uses the same saved size. Reset size restores the default.
+- Master Wheel F1, a free formula wheel. Inner gaps in the wheel art are transparent.
+- The Windows receiver shows a command window with a fixed status block. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. A second start can close the copy that already holds the log.
+
+### Changed
+
+- The Edit panel is 300dp wide again.
+- Telemetry is drawn only on wheels whose artwork has a screen. Rev lights still animate on LED wheels.
+- Android `versionCode` is 25, `versionName` is 1.0.01. The receiver status line reads 1.0.01.
+- The site download links and `/api/health` in this repository point at 1.0.01. The live site was not deployed with this commit.
+
+## [0.6.3] - 2026-11-25
+
+### Changed
+
+- The Windows receiver shows a command window again. A short status block stays in place: version, address and ports, whether the phone is connected, and vJoy or ViGEm. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. Closing the window or Ctrl+C exits. The status line reads 0.6.3 Beta 1002.
+- The receiver stays open if an older copy still holds `receiver.log`. The log opens shared, and a busy file falls back to `receiver-<pid>.log`. A second start asks before closing the other receiver. A busy UDP port is named in the window, which waits for a key instead of closing.
+- The wheel fills the open area between the brake and throttle panels, from under the top bar to above the bottom row, in both Drive and Edit. The picture keeps its shape and stays on screen.
+- Edit resizes the wheel with a two-finger pinch. The default is the v0.5.0 centre-column fit. The scale runs from 0.4 to 3, so a landscape phone can pinch past that fit. The larger wheel draws behind the pedals, the top bar, and the status row. Drive uses the same saved size.
+- The Edit panel is 300dp wide again, as in v0.4.0, with the slider label and value on one line.
+- Telemetry is drawn only on wheels whose artwork has a screen. Wheels that are a logo, buttons, or LEDs no longer get a display box. Rev lights still animate on their own. `versionName` is 0.6.3 Beta 1006. Android `versionCode` is 24.
+
+### Added
+
+- Master Wheel F1, a free formula wheel.
+
 ## [0.6.2] - 2026-11-25
 
 Stable release. Same features as 0.6.0, with the white Master Wheel icon.
@@ -213,7 +245,9 @@ First working release: an Android wheel and a Windows receiver.
 - Template generator (`tools/make_assets.py`) and UI preview renderer (`tools/render_previews.py`).
 - GPL-3.0 license, with the additional permissions from Touch Racer's `LICENSE_EXCEPTIONS` reproduced in this repository. Credit to Touch Racer by Vasiliy Shirkin (thelv).
 
-[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v1.0.01...HEAD
+[1.0.01]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.3...v1.0.01
+[0.6.3]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.2-preview...v0.6.2
 [0.6.2-preview]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0...v0.6.2-preview
 [0.6.0]: https://github.com/EarthQuakEmc2/RacingWheel_V1.0/compare/v0.6.0-preview...v0.6.0

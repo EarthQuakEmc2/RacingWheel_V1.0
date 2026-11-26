@@ -30,10 +30,10 @@
   },
   "outputButtons": 18,
   "display": {
-    "left": 0.3187,
-    "top": 0.33722,
-    "right": 0.68135,
-    "bottom": 0.45122
+    "left": 0.330,
+    "top": 0.345,
+    "right": 0.670,
+    "bottom": 0.445
   },
   "revLights": {
     "count": 12,

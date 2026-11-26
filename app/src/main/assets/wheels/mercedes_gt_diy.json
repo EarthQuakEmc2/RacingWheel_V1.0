@@ -29,12 +29,6 @@
     }
   },
   "outputButtons": 10,
-  "display": {
-    "left": 0.33693,
-    "top": 0.35898,
-    "right": 0.66309,
-    "bottom": 0.47866
-  },
   "controls": [
     {
       "id": "radio",

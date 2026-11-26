@@ -29,12 +29,6 @@
     }
   },
   "outputButtons": 9,
-  "display": {
-    "left": 0.35505,
-    "top": 0.35094,
-    "right": 0.64497,
-    "bottom": 0.51658
-  },
   "controls": [
     {
       "id": "back",

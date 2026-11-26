@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
@@ -78,6 +79,7 @@ import com.racingwheelpro.model.NormRect
 import com.racingwheelpro.model.RevLightSpec
 import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.input.PedalInsets
+import com.racingwheelpro.input.WheelPinch
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
@@ -87,6 +89,7 @@ import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
 import kotlinx.coroutines.delay
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -99,24 +102,35 @@ fun AppRoot(session: RaceSession) {
         }
     }
     var showSplash by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
-    Box(Modifier.fillMaxSize()) {
-    Column(Modifier.fillMaxSize().background(Carbon)) {
-        LedStrip(session.revLevel())
-        TopBar(session)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (session.screen) {
-                Screen.Drive -> DriveScreen(session)
-                Screen.Connect -> ConnectScreen(session)
-                Screen.Setup -> SetupScreen(session)
-                Screen.Editor -> EditorScreen(session)
-                Screen.Garage -> GarageScreen(session)
-                Screen.Logs -> LogsScreen(session)
-            }
-            if (session.paywall) {
-                PremiumDialog(session)
+    Box(Modifier.fillMaxSize().background(Carbon)) {
+        val onWheel = session.screen == Screen.Drive || session.screen == Screen.Editor
+        if (onWheel) {
+            Column(Modifier.fillMaxSize()) {
+                Spacer(Modifier.height(58.dp))
+                WheelFace(
+                    session,
+                    editor = session.screen == Screen.Editor,
+                    modifier = Modifier.weight(1f).fillMaxWidth().graphicsLayer { clip = false },
+                )
             }
         }
-    }
+        Column(Modifier.fillMaxSize()) {
+            LedStrip(session.revLevel())
+            TopBar(session)
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                when (session.screen) {
+                    Screen.Drive -> DriveScreen(session)
+                    Screen.Connect -> ConnectScreen(session)
+                    Screen.Setup -> SetupScreen(session)
+                    Screen.Editor -> EditorScreen(session)
+                    Screen.Garage -> GarageScreen(session)
+                    Screen.Logs -> LogsScreen(session)
+                }
+                if (session.paywall) {
+                    PremiumDialog(session)
+                }
+            }
+        }
         if (showSplash) {
             StartupSplash(session) { showSplash = false }
         }
@@ -215,13 +229,13 @@ private fun NavButton(label: String, active: Boolean, onClick: () -> Unit) {
 @Composable
 private fun DriveScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
-    BoxWithConstraints(Modifier.fillMaxSize().background(Carbon)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
         val pedals = session.profile.pedals
-        val zone = (maxWidth * pedals.zoneFraction).coerceIn(72.dp, 190.dp)
+        val zone = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp)
         val brakeGap = maxWidth * PedalInsets.clamp(pedals.brakeInset)
         val throttleGap = maxWidth * PedalInsets.clamp(pedals.throttleInset)
-        Column(Modifier.fillMaxSize()) {
-            Row(Modifier.weight(1f).fillMaxWidth()) {
+        Box(Modifier.fillMaxSize()) {
+            Row(Modifier.fillMaxSize()) {
                 if (brakeGap > 0.5.dp) Spacer(Modifier.width(brakeGap).fillMaxHeight())
                 PedalColumn(
                     title = "BRAKE",
@@ -229,20 +243,14 @@ private fun DriveScreen(session: RaceSession) {
                     color = SignalRed,
                     modifier = Modifier.width(zone).fillMaxHeight(),
                 ) { id, phase, y, h -> session.pedalPointer(id, phase, "brake", y, h) }
-                Column(Modifier.weight(1f).fillMaxHeight()) {
-                    WheelFace(
-                        session = session,
-                        editor = false,
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                    )
-                    if (pedals.clutchEnabled) {
-                        PedalColumn(
-                            title = "CLUTCH",
-                            value = session.clutchOut,
-                            color = SignalBlue,
-                            modifier = Modifier.fillMaxWidth().height(54.dp),
-                        ) { id, phase, y, h -> session.pedalPointer(id, phase, "clutch", y, h) }
-                    }
+                Spacer(Modifier.weight(1f))
+                if (pedals.clutchEnabled) {
+                    PedalColumn(
+                        title = "CLUTCH",
+                        value = session.clutchOut,
+                        color = SignalBlue,
+                        modifier = Modifier.width(72.dp).fillMaxHeight(),
+                    ) { id, phase, y, h -> session.pedalPointer(id, phase, "clutch", y, h) }
                 }
                 PedalColumn(
                     title = "THROTTLE",
@@ -253,7 +261,7 @@ private fun DriveScreen(session: RaceSession) {
                 if (throttleGap > 0.5.dp) Spacer(Modifier.width(throttleGap).fillMaxHeight())
             }
             Row(
-                Modifier.fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(28.dp).background(Panel).padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -394,6 +402,7 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val shiftUp = session.shiftUp
     val shiftDown = session.shiftDown
     val layoutTick = session.layoutRevision
+    val wheelScale = session.wheelScale
     val upSpec = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
     val downSpec = session.resolvedShifter(ShifterZones.Side.DOWN)
     val selectedShifter = session.selectedShifter
@@ -401,10 +410,48 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val dash = session.telemetry
     val dashOn = session.dashLive
     Box(
-        modifier.pointerInput(editor) {
+        modifier.pointerInput(editor, wheel.id) {
             awaitPointerEventScope {
+                val fingers = LinkedHashMap<Long, Offset>()
+                var pinchSpan = -1f
                 while (true) {
                     val event = awaitPointerEvent()
+                    event.changes.forEach { change ->
+                        if (change.pressed) fingers[change.id.value] = change.position
+                        else fingers.remove(change.id.value)
+                    }
+                    if (WheelPinch.allows(editor, fingers.size)) {
+                        val points = fingers.values.toList()
+                        val span = hypot(points[0].x - points[1].x, points[0].y - points[1].y).coerceAtLeast(1f)
+                        if (pinchSpan > 0f) {
+                            val art = bitmap
+                            val pedals = session.profile.pedals
+                            val sized = Geometry.sizeWheel(
+                                size.width.toFloat(),
+                                size.height.toFloat(),
+                                art?.width ?: 1,
+                                art?.height ?: 1,
+                                pedals.zoneFraction,
+                                pedals.brakeInset,
+                                pedals.throttleInset,
+                                density,
+                                session.wheelScale,
+                            )
+                            session.pinchWheel(span / pinchSpan, sized.scaleCap, sized.scaleFloor)
+                        }
+                        pinchSpan = span
+                        session.cancelEditorGesture()
+                        event.changes.forEach { it.consume() }
+                        continue
+                    }
+                    if (pinchSpan > 0f) {
+                        pinchSpan = -1f
+                        session.commitWheelScale()
+                        if (fingers.isNotEmpty()) {
+                            event.changes.forEach { it.consume() }
+                            continue
+                        }
+                    }
                     event.changes.forEach { change ->
                         val phase = when {
                             !change.previousPressed && change.pressed -> "down"
@@ -425,8 +472,19 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
             Text("Wheel image missing", color = SignalRed, modifier = Modifier.align(Alignment.Center))
             return@Box
         }
-        Canvas(Modifier.fillMaxSize()) {
-            val rect = Geometry.fitCenter(size.width, size.height, bitmap.width, bitmap.height)
+        Canvas(Modifier.fillMaxSize().graphicsLayer { clip = false }) {
+            val pedals = session.profile.pedals
+            val rect = Geometry.sizeWheel(
+                size.width,
+                size.height,
+                bitmap.width,
+                bitmap.height,
+                pedals.zoneFraction,
+                pedals.brakeInset,
+                pedals.throttleInset,
+                density,
+                wheelScale,
+            ).placed
             session.imageRect = rect
             drawLine(
                 Color.White.copy(alpha = 0.7f),
@@ -1118,11 +1176,14 @@ private fun ShifterSliders(
 @Composable
 private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
-    Row(Modifier.fillMaxSize()) {
-        WheelFace(session, editor = true, modifier = Modifier.weight(1f).fillMaxHeight())
-        Column(Modifier.width(300.dp).fillMaxHeight().background(Panel).verticalScroll(rememberScrollState()).padding(10.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // v0.4.0 used a 300dp column. A landscape phone around 850dp keeps that full width.
+        val panel = minOf(300.dp, maxWidth * 0.45f)
+        Column(
+            Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),
+        ) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
-            Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
+            Text("Drag a hotspot with one finger. Pinch the wheel with two fingers to resize it.", color = Muted, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))
             ShifterEditor(session, layoutTick)
             Spacer(Modifier.height(8.dp))
@@ -1147,6 +1208,10 @@ private fun EditorScreen(session: RaceSession) {
                 Spacer(Modifier.width(6.dp))
                 ActionChip("RESET") { session.resetLayout() }
                 Spacer(Modifier.width(6.dp))
+                ActionChip("RESET SIZE") { session.resetWheelSize() }
+            }
+            Spacer(Modifier.height(6.dp))
+            Row {
                 val context = LocalContext.current
                 ActionChip("COPY JSON") {
                     val json = session.exportLayoutJson()
@@ -1435,9 +1500,14 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun SliderRow(label: String, value: Float, range: ClosedFloatingPointRange<Float>, fmt: (Float) -> String, onChange: (Float) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, color = Ink, fontSize = 13.sp)
-            Text(fmt(value), color = SignalYellow, fontSize = 12.sp)
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, color = Ink, fontSize = 13.sp, maxLines = 1, softWrap = false)
+            Spacer(Modifier.weight(1f))
+            Text(fmt(value), color = SignalYellow, fontSize = 12.sp, maxLines = 1, softWrap = false)
         }
         Slider(
             value = value.coerceIn(range.start, range.endInclusive),
@@ -1496,6 +1566,8 @@ private fun ActionChip(label: String, onClick: () -> Unit) {
         color = Color.Black,
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        softWrap = false,
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
             .background(SignalYellow)

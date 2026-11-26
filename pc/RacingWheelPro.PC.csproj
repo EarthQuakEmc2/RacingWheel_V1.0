@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
+    <Version>1.0.01</Version>
+    <InformationalVersion>1.0.01</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -14,6 +17,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.256" />
+    <InternalsVisibleTo Include="RacingWheelPro.PC.Tests" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\community.json">

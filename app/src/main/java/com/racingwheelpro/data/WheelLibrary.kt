@@ -234,6 +234,15 @@ class ProfileStore(private val context: Context) {
         prefs.edit().putString("activeProfile", id).apply()
     }
 
+    fun wheelScale(): Float {
+        val raw = prefs.getFloat("wheelScale", 1f)
+        return if (raw.isFinite() && raw > 0f) raw else 1f
+    }
+
+    fun setWheelScale(scale: Float) {
+        prefs.edit().putFloat("wheelScale", scale).apply()
+    }
+
     fun save(profile: Profile) {
         val dir = File(context.filesDir, "profiles").apply { mkdirs() }
         File(dir, "${profile.id}.json").writeText(toJson(profile))

@@ -1,5 +1,5 @@
 const FREE = [
-  'Every wheel template in version 0.6.2',
+  'Every wheel template in version 1.0.01',
   'Steering, throttle, brake, and an optional clutch',
   'Every button, rotary, and the layout editor',
   'The Windows receiver, over Wi-Fi or USB',
@@ -26,7 +26,7 @@ export default function Pricing() {
           <article className="price-card">
             <p className="dl-kicker">Free</p>
             <h3>$0</h3>
-            <p>Version 0.6.2. The garage is open.</p>
+            <p>Version 1.0.01. The garage is open.</p>
             <ul>
               {FREE.map((item) => (
                 <li key={item}>{item}</li>
@@ -36,7 +36,7 @@ export default function Pricing() {
           <article className="price-card price-card-premium">
             <p className="dl-kicker">Paid build</p>
             <h3>Standby</h3>
-            <p>A Play purchase is not part of 0.6.2. Wheels are not behind it.</p>
+            <p>A Play purchase is not part of 1.0.01. Wheels are not behind it.</p>
             <ul>
               {PREMIUM.map((item) => (
                 <li key={item}>{item}</li>
