@@ -24,6 +24,7 @@ import com.racingwheelpro.input.Geometry
 import com.racingwheelpro.input.ImgRect
 import com.racingwheelpro.input.KnobMath
 import com.racingwheelpro.input.ShifterZones
+import com.racingwheelpro.input.WheelPinch
 import com.racingwheelpro.input.Smoother
 import com.racingwheelpro.input.SteeringSensor
 import com.racingwheelpro.input.Curves
@@ -60,6 +61,8 @@ class RaceSession(private val context: Context) {
     private val main = Handler(Looper.getMainLooper())
     private val library = WheelLibrary(context)
     private val profilesStore = ProfileStore(context)
+    var wheelScale by mutableFloatStateOf(profilesStore.wheelScale())
+    private val saveWheelScale = Runnable { profilesStore.setWheelScale(wheelScale) }
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
     private var autoAttempted = false
     private val ydpi = context.resources.displayMetrics.ydpi.coerceAtLeast(100f)
@@ -638,8 +641,43 @@ class RaceSession(private val context: Context) {
         notice = "Layout saved on this phone"
     }
 
+    fun pinchWheel(factor: Float, cap: Float, floor: Float) {
+        if (screen != Screen.Editor) return
+        val next = WheelPinch.nextScale(wheelScale, factor, cap, floor)
+        if (next == wheelScale) return
+        wheelScale = next
+        layoutRevision++
+        main.removeCallbacks(saveWheelScale)
+        main.postDelayed(saveWheelScale, 200)
+    }
+
+    fun commitWheelScale() {
+        main.removeCallbacks(saveWheelScale)
+        profilesStore.setWheelScale(wheelScale)
+    }
+
+    fun cancelEditorGesture() {
+        shifterDrag = null
+    }
+
+    fun resetWheelSize() {
+        restoreDefaultWheelScale()
+        notice = "Wheel size restored"
+    }
+
+    private fun restoreDefaultWheelScale() {
+        wheelScale = 1f
+        layoutRevision++
+        main.removeCallbacks(saveWheelScale)
+        profilesStore.setWheelScale(1f)
+    }
+
     fun resetLayout() {
-        val asset = library.assetTemplate(wheel.id) ?: return
+        restoreDefaultWheelScale()
+        val asset = library.assetTemplate(wheel.id) ?: run {
+            notice = "Wheel size restored"
+            return
+        }
         library.deleteOverride(wheel.id)
         wheel = asset
         templates = templates.map { if (it.id == asset.id) asset else it }

@@ -78,6 +78,7 @@ import com.racingwheelpro.model.NormRect
 import com.racingwheelpro.model.RevLightSpec
 import com.racingwheelpro.proto.DashTelemetry
 import com.racingwheelpro.input.PedalInsets
+import com.racingwheelpro.input.WheelPinch
 import com.racingwheelpro.input.ShifterZones
 import com.racingwheelpro.model.Binding
 import com.racingwheelpro.model.Control
@@ -87,6 +88,7 @@ import com.racingwheelpro.session.InputLog
 import com.racingwheelpro.session.RaceSession
 import kotlinx.coroutines.delay
 import kotlin.math.cos
+import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
@@ -389,6 +391,7 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val shiftUp = session.shiftUp
     val shiftDown = session.shiftDown
     val layoutTick = session.layoutRevision
+    val wheelScale = session.wheelScale
     val upSpec = if (layoutTick >= 0) session.resolvedShifter(ShifterZones.Side.UP) else ShifterSpec.DEFAULT
     val downSpec = session.resolvedShifter(ShifterZones.Side.DOWN)
     val selectedShifter = session.selectedShifter
@@ -396,10 +399,48 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     val dash = session.telemetry
     val dashOn = session.dashLive
     Box(
-        modifier.pointerInput(editor) {
+        modifier.pointerInput(editor, wheel.id) {
             awaitPointerEventScope {
+                val fingers = LinkedHashMap<Long, Offset>()
+                var pinchSpan = -1f
                 while (true) {
                     val event = awaitPointerEvent()
+                    event.changes.forEach { change ->
+                        if (change.pressed) fingers[change.id.value] = change.position
+                        else fingers.remove(change.id.value)
+                    }
+                    if (WheelPinch.allows(editor, fingers.size)) {
+                        val points = fingers.values.toList()
+                        val span = hypot(points[0].x - points[1].x, points[0].y - points[1].y).coerceAtLeast(1f)
+                        if (pinchSpan > 0f) {
+                            val art = bitmap
+                            val pedals = session.profile.pedals
+                            val sized = Geometry.sizeWheel(
+                                size.width.toFloat(),
+                                size.height.toFloat(),
+                                art?.width ?: 1,
+                                art?.height ?: 1,
+                                pedals.zoneFraction,
+                                pedals.brakeInset,
+                                pedals.throttleInset,
+                                density,
+                                session.wheelScale,
+                            )
+                            session.pinchWheel(span / pinchSpan, sized.scaleCap, sized.scaleFloor)
+                        }
+                        pinchSpan = span
+                        session.cancelEditorGesture()
+                        event.changes.forEach { it.consume() }
+                        continue
+                    }
+                    if (pinchSpan > 0f) {
+                        pinchSpan = -1f
+                        session.commitWheelScale()
+                        if (fingers.isNotEmpty()) {
+                            event.changes.forEach { it.consume() }
+                            continue
+                        }
+                    }
                     event.changes.forEach { change ->
                         val phase = when {
                             !change.previousPressed && change.pressed -> "down"
@@ -422,11 +463,17 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
         }
         Canvas(Modifier.fillMaxSize()) {
             val pedals = session.profile.pedals
-            val zone = (size.width * pedals.zoneFraction).coerceIn(56f * density, 120f * density)
-            val left = size.width * PedalInsets.clamp(pedals.brakeInset) + zone
-            val right = size.width - size.width * PedalInsets.clamp(pedals.throttleInset) - zone
-            val bottom = size.height - 28f * density
-            val rect = Geometry.fitWheel(left, 0f, right, bottom, bitmap.width, bitmap.height)
+            val rect = Geometry.sizeWheel(
+                size.width,
+                size.height,
+                bitmap.width,
+                bitmap.height,
+                pedals.zoneFraction,
+                pedals.brakeInset,
+                pedals.throttleInset,
+                density,
+                wheelScale,
+            ).placed
             session.imageRect = rect
             drawLine(
                 Color.White.copy(alpha = 0.7f),
@@ -1126,7 +1173,7 @@ private fun EditorScreen(session: RaceSession) {
             Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),
         ) {
             Text("LAYOUT EDITOR", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.2.sp, fontWeight = FontWeight.SemiBold)
-            Text("Drag a hotspot. Rings are the touch size before fingertip slop.", color = Muted, fontSize = 12.sp)
+            Text("Drag a hotspot with one finger. Pinch the wheel with two fingers to resize it.", color = Muted, fontSize = 12.sp)
             Spacer(Modifier.height(8.dp))
             ShifterEditor(session, layoutTick)
             Spacer(Modifier.height(8.dp))
@@ -1159,6 +1206,8 @@ private fun EditorScreen(session: RaceSession) {
                     session.notice = "Layout JSON copied"
                 }
             }
+            Spacer(Modifier.height(6.dp))
+            ActionChip("RESET SIZE") { session.resetWheelSize() }
             Spacer(Modifier.height(8.dp))
             session.wheel.controls.forEach { control ->
                 val selected = control.id == session.selectedControl

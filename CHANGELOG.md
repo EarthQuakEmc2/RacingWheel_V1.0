@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The Windows receiver shows a command window again. A short status block stays in place: version, address and ports, whether the phone is connected, and vJoy or ViGEm. The detail log stays in `%APPDATA%\RacingWheelPro\logs`. Closing the window or Ctrl+C exits. The status line reads 0.6.3 Beta 1002.
 - The receiver stays open if an older copy still holds `receiver.log`. The log opens shared, and a busy file falls back to `receiver-<pid>.log`. A second start asks before closing the other receiver. A busy UDP port is named in the window, which waits for a key instead of closing.
-- The wheel fills the open area between the brake and throttle panels, from under the top bar to above the bottom row, in both Drive and Edit. The picture keeps its shape and stays on screen. `versionName` is 0.6.3 Beta 1002. Android `versionCode` is 20.
+- The wheel fills the open area between the brake and throttle panels, from under the top bar to above the bottom row, in both Drive and Edit. The picture keeps its shape and stays on screen.
+- Edit resizes the wheel with a two-finger pinch. The default is the v0.5.0 centre-column fit. Pinch out stops at the fit between the pedals, and pinch in stops at half of that default. Drive uses the same saved size. `versionName` is 0.6.3 Beta 1003. Android `versionCode` is 21.
 
 ### Added
 

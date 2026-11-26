@@ -55,6 +55,65 @@ object Geometry {
     }
 
     /**
+     * v0.5.0 (tag v0.5.0, commit 45cce61) drew the wheel with [fitCenter] inside the
+     * centre column: between the brake and throttle, above the 28dp status row.
+     * Pedal columns were `(width * zoneFraction).coerceIn(72dp, 190dp)`.
+     * That rectangle is the default size. 1.0 means this size.
+     */
+    const val LEGACY_ZONE_MIN_DP = 72f
+    const val LEGACY_ZONE_MAX_DP = 190f
+    const val CURRENT_ZONE_MIN_DP = 56f
+    const val CURRENT_ZONE_MAX_DP = 120f
+    const val STATUS_ROW_DP = 28f
+    const val MIN_WHEEL_SCALE = 0.5f
+
+    fun sizeWheel(
+        screenW: Float,
+        screenH: Float,
+        imgW: Int,
+        imgH: Int,
+        zoneFraction: Float,
+        brakeInset: Float,
+        throttleInset: Float,
+        density: Float,
+        scale: Float,
+    ): WheelSizing {
+        val legacyZone = (screenW * zoneFraction).coerceIn(LEGACY_ZONE_MIN_DP * density, LEGACY_ZONE_MAX_DP * density)
+        val currentZone = (screenW * zoneFraction).coerceIn(CURRENT_ZONE_MIN_DP * density, CURRENT_ZONE_MAX_DP * density)
+        val legacy = fitInGap(screenW, screenH, imgW, imgH, legacyZone, brakeInset, throttleInset, density, margin = false)
+        val maxFit = fitInGap(screenW, screenH, imgW, imgH, currentZone, brakeInset, throttleInset, density, margin = true)
+        val cap = if (legacy.width <= 1f) 1f else maxFit.width / legacy.width
+        val limit = cap.coerceAtLeast(0.01f)
+        val floor = min(MIN_WHEEL_SCALE, limit)
+        val applied = scale.coerceIn(floor, limit)
+        val w = legacy.width * applied
+        val h = legacy.height * applied
+        val placed = ImgRect(maxFit.cx - w / 2f, maxFit.cy - h / 2f, w, h)
+        return WheelSizing(legacy, maxFit, placed, limit, floor)
+    }
+
+    private fun fitInGap(
+        screenW: Float,
+        screenH: Float,
+        imgW: Int,
+        imgH: Int,
+        zonePx: Float,
+        brakeInset: Float,
+        throttleInset: Float,
+        density: Float,
+        margin: Boolean,
+    ): ImgRect {
+        val left = screenW * PedalInsets.clamp(brakeInset) + zonePx
+        val right = screenW - screenW * PedalInsets.clamp(throttleInset) - zonePx
+        val bottom = screenH - STATUS_ROW_DP * density
+        if (!margin) {
+            val fitted = fitCenter((right - left).coerceAtLeast(1f), (bottom).coerceAtLeast(1f), imgW, imgH)
+            return ImgRect(left + fitted.left, fitted.top, fitted.width, fitted.height)
+        }
+        return fitWheel(left, 0f, right, bottom, imgW, imgH)
+    }
+
+    /**
      * Forward of Android's clockwise canvas rotation (Y grows downward):
      * x' = cx + dx cos θ − dy sin θ
      * y' = cy + dx sin θ + dy cos θ
@@ -113,5 +172,25 @@ object Geometry {
             }
         }
         return best
+    }
+}
+
+data class WheelSizing(
+    val legacy: ImgRect,
+    val maxFit: ImgRect,
+    val placed: ImgRect,
+    val scaleCap: Float,
+    val scaleFloor: Float,
+)
+
+object WheelPinch {
+    fun allows(editor: Boolean, pointers: Int): Boolean = editor && pointers >= 2
+
+    fun nextScale(current: Float, factor: Float, cap: Float, floor: Float): Float {
+        val limit = cap.coerceAtLeast(0.01f)
+        val low = min(floor, limit)
+        val base = if (current.isFinite()) current.coerceIn(low, limit) else 1f
+        val step = if (factor.isFinite() && factor > 0f) factor else 1f
+        return (base * step).coerceIn(low, limit)
     }
 }
