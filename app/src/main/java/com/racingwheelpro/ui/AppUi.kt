@@ -1177,8 +1177,8 @@ private fun ShifterSliders(
 private fun EditorScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        val pedals = session.profile.pedals
-        val panel = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp) + maxWidth * PedalInsets.clamp(pedals.throttleInset)
+        // v0.4.0 used a 300dp column. A landscape phone around 850dp keeps that full width.
+        val panel = minOf(300.dp, maxWidth * 0.45f)
         Column(
             Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),
         ) {
@@ -1208,6 +1208,10 @@ private fun EditorScreen(session: RaceSession) {
                 Spacer(Modifier.width(6.dp))
                 ActionChip("RESET") { session.resetLayout() }
                 Spacer(Modifier.width(6.dp))
+                ActionChip("RESET SIZE") { session.resetWheelSize() }
+            }
+            Spacer(Modifier.height(6.dp))
+            Row {
                 val context = LocalContext.current
                 ActionChip("COPY JSON") {
                     val json = session.exportLayoutJson()
@@ -1216,8 +1220,6 @@ private fun EditorScreen(session: RaceSession) {
                     session.notice = "Layout JSON copied"
                 }
             }
-            Spacer(Modifier.height(6.dp))
-            ActionChip("RESET SIZE") { session.resetWheelSize() }
             Spacer(Modifier.height(8.dp))
             session.wheel.controls.forEach { control ->
                 val selected = control.id == session.selectedControl
@@ -1498,9 +1500,14 @@ private fun SectionTitle(text: String) {
 @Composable
 private fun SliderRow(label: String, value: Float, range: ClosedFloatingPointRange<Float>, fmt: (Float) -> String, onChange: (Float) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(label, color = Ink, fontSize = 13.sp)
-            Text(fmt(value), color = SignalYellow, fontSize = 12.sp)
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(label, color = Ink, fontSize = 13.sp, maxLines = 1, softWrap = false)
+            Spacer(Modifier.weight(1f))
+            Text(fmt(value), color = SignalYellow, fontSize = 12.sp, maxLines = 1, softWrap = false)
         }
         Slider(
             value = value.coerceIn(range.start, range.endInclusive),
@@ -1559,6 +1566,8 @@ private fun ActionChip(label: String, onClick: () -> Unit) {
         color = Color.Black,
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        softWrap = false,
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
             .background(SignalYellow)
