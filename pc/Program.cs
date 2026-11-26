@@ -10,11 +10,38 @@ internal static class Program
 {
     public static int Main(string[] args)
     {
-        var opt = Options.Parse(args);
+        Options opt;
+        try
+        {
+            opt = Options.Parse(args);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unhandled exception. " + ex);
+            ConsolePause.Wait();
+            return 1;
+        }
         if (opt.SelfTest) return SelfTest();
-        FileLog.Open();
-        using var receiver = new Receiver(opt);
-        return receiver.Run();
+        try
+        {
+            if (!InstanceGuard.Claim()) return 1;
+            FileLog.Open();
+            using var receiver = new Receiver(opt);
+            return receiver.Run();
+        }
+        catch (UdpBusyException ex)
+        {
+            Console.WriteLine("UDP port " + ex.Port + " is already in use.");
+            Console.WriteLine("Another program is listening on it, so this receiver cannot take the port.");
+            ConsolePause.Wait();
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Unhandled exception. " + ex);
+            ConsolePause.Wait();
+            return 1;
+        }
     }
 
     private static int SelfTest()
@@ -193,6 +220,16 @@ internal static class Program
     }
 }
 
+sealed class UdpBusyException : Exception
+{
+    public int Port { get; }
+
+    public UdpBusyException(int port, Exception inner) : base("UDP port " + port + " is already in use.", inner)
+    {
+        Port = port;
+    }
+}
+
 internal sealed class Options
 {
     public bool SelfTest { get; init; }
@@ -273,10 +310,27 @@ internal sealed class Receiver : IDisposable
     {
         _opt = opt;
         _output = OutputFactory.Create(opt.Output, opt.Keyboard, opt.VjoyId, FileLog.Info);
-        _discovery = new UdpClient(opt.Discovery);
-        _telemetry = new UdpClient(opt.Udp);
-        _tcp = new TcpListener(IPAddress.Any, opt.Tcp);
-        _tcp.Start();
+        UdpClient? discovery = null;
+        UdpClient? telemetry = null;
+        TcpListener? tcp = null;
+        try
+        {
+            discovery = ListenUdp(opt.Discovery);
+            telemetry = ListenUdp(opt.Udp);
+            tcp = new TcpListener(IPAddress.Any, opt.Tcp);
+            tcp.Start();
+            _discovery = discovery;
+            _telemetry = telemetry;
+            _tcp = tcp;
+        }
+        catch
+        {
+            discovery?.Dispose();
+            telemetry?.Dispose();
+            try { tcp?.Stop(); } catch { /* not started */ }
+            try { _output.Dispose(); } catch { /* driver already gone */ }
+            throw;
+        }
         var root = string.IsNullOrWhiteSpace(opt.LogDir) ? SessionStore.DefaultRoot() : opt.LogDir;
         _store = new SessionStore(root);
         _account = new AccountLink(root);
@@ -505,7 +559,7 @@ internal sealed class Receiver : IDisposable
             "Listening  " + StatusBoard.LanAddress() + "   UDP " + _opt.Udp + "   TCP " + _opt.Tcp,
             phone ? "Phone  connected  " + peer : "Phone  not connected",
             "Output  " + _output.Name,
-            "Log  " + FileLog.DirectoryPath,
+            "Log  " + (FileLog.FilePath.Length > 0 ? FileLog.FilePath : FileLog.DirectoryPath),
             "Ctrl+C or close this window to exit",
         };
         StatusBoard.Draw(lines);
@@ -677,6 +731,18 @@ internal sealed class Receiver : IDisposable
             LogDir = _store.LogDir,
             Logs = _store.List().Take(20).ToList(),
         };
+    }
+
+    static UdpClient ListenUdp(int port)
+    {
+        try
+        {
+            return new UdpClient(port);
+        }
+        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.AddressAlreadyInUse)
+        {
+            throw new UdpBusyException(port, ex);
+        }
     }
 
     public void Dispose()
