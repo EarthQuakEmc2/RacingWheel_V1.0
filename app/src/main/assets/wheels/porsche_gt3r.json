@@ -29,19 +29,6 @@
     }
   },
   "outputButtons": 18,
-  "display": {
-    "left": 0.29983,
-    "top": 0.30626,
-    "right": 0.69717,
-    "bottom": 0.45269
-  },
-  "revLights": {
-    "count": 12,
-    "left": 0.24567,
-    "top": 0.22746,
-    "right": 0.75133,
-    "bottom": 0.2781
-  },
   "controls": [
     {
       "id": "ign",

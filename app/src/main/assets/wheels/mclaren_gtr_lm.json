@@ -29,19 +29,6 @@
     }
   },
   "outputButtons": 14,
-  "display": {
-    "left": 0.31785,
-    "top": 0.34192,
-    "right": 0.68111,
-    "bottom": 0.45311
-  },
-  "revLights": {
-    "count": 12,
-    "left": 0.24527,
-    "top": 0.27703,
-    "right": 0.75369,
-    "bottom": 0.31875
-  },
   "controls": [
     {
       "id": "talk",

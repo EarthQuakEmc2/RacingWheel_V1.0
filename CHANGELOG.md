@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The receiver stays open if an older copy still holds `receiver.log`. The log opens shared, and a busy file falls back to `receiver-<pid>.log`. A second start asks before closing the other receiver. A busy UDP port is named in the window, which waits for a key instead of closing.
 - The wheel fills the open area between the brake and throttle panels, from under the top bar to above the bottom row, in both Drive and Edit. The picture keeps its shape and stays on screen.
 - Edit resizes the wheel with a two-finger pinch. The default is the v0.5.0 centre-column fit. The scale runs from 0.4 to 3, so a landscape phone can pinch past that fit. The larger wheel draws behind the pedals, the top bar, and the status row. Drive uses the same saved size.
-- The Edit panel is 300dp wide again, as in v0.4.0, with the slider label and value on one line. `versionName` is 0.6.3 Beta 1005. Android `versionCode` is 23.
+- The Edit panel is 300dp wide again, as in v0.4.0, with the slider label and value on one line.
+- Telemetry is drawn only on wheels whose artwork has a screen. Wheels that are a logo, buttons, or LEDs no longer get a display box. Rev lights still animate on their own. `versionName` is 0.6.3 Beta 1006. Android `versionCode` is 24.
 
 ### Added
 

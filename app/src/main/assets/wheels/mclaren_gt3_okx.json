@@ -29,19 +29,6 @@
     }
   },
   "outputButtons": 16,
-  "display": {
-    "left": 0.33466,
-    "top": 0.33519,
-    "right": 0.65994,
-    "bottom": 0.44849
-  },
-  "revLights": {
-    "count": 12,
-    "left": 0.24425,
-    "top": 0.25283,
-    "right": 0.75034,
-    "bottom": 0.29917
-  },
   "controls": [
     {
       "id": "lsb",

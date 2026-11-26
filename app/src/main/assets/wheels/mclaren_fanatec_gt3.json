@@ -29,19 +29,6 @@
     }
   },
   "outputButtons": 18,
-  "display": {
-    "left": 0.33754,
-    "top": 0.3248,
-    "right": 0.66249,
-    "bottom": 0.44847
-  },
-  "revLights": {
-    "count": 12,
-    "left": 0.2474,
-    "top": 0.25259,
-    "right": 0.75263,
-    "bottom": 0.29901
-  },
   "controls": [
     {
       "id": "wiper",

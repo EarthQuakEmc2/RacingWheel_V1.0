@@ -29,17 +29,17 @@
     }
   },
   "display": {
-    "left": 0.37,
-    "top": 0.33,
-    "right": 0.63,
-    "bottom": 0.45
+    "left": 0.375,
+    "top": 0.335,
+    "right": 0.625,
+    "bottom": 0.445
   },
   "revLights": {
     "count": 15,
-    "left": 0.34,
-    "top": 0.275,
-    "right": 0.66,
-    "bottom": 0.312
+    "left": 0.360,
+    "top": 0.248,
+    "right": 0.640,
+    "bottom": 0.280
   },
   "controls": [
     {

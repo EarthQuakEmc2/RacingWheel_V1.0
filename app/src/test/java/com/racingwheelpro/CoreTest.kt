@@ -542,32 +542,68 @@ class CoreTest {
     }
 
     @Test
-    fun everyWheelHasAScreenAndThumbWheelsAreMarked() {
+    fun screensMatchTheArtworkAndRevLightsStayValid() {
         val templates = loadAssetTemplates()
         assertEquals(35, templates.size)
+        val noScreen = setOf(
+            "ferrari_458_black",
+            "ferrari_488_gt3",
+            "ferrari_f1_2012",
+            "ferrari_road_blue",
+            "ferrari_road_red",
+            "mclaren_ascher_dark",
+            "mclaren_fanatec_gt3",
+            "mclaren_gt3_diy",
+            "mclaren_gt3_okx",
+            "mclaren_gtr_lm",
+            "mercedes_cube_gt3",
+            "mercedes_f1_2014",
+            "mercedes_gt_diy",
+            "mercedes_road_carbon",
+            "mercedes_road_led",
+            "moza_gs",
+            "moza_ks",
+            "porsche_gt3_cup",
+            "porsche_gt3r",
+            "porsche_rsr_f",
+        )
         templates.forEach { wheel ->
             val screen = wheel.display
-            assertNotNull(wheel.id, screen)
-            screen!!
-            assertTrue(wheel.id, screen.right > screen.left + 0.05f)
-            assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            if (wheel.id in noScreen) {
+                assertNull(wheel.id, screen)
+            } else {
+                assertNotNull(wheel.id, screen)
+                screen!!
+                assertTrue(wheel.id, screen.right > screen.left + 0.05f)
+                assertTrue(wheel.id, screen.bottom > screen.top + 0.04f)
+            }
             if (wheel.revLights.count > 0) {
                 val row = wheel.revLights.rect
                 assertNotNull(wheel.id, row)
                 assertTrue(wheel.id, row!!.right > row.left)
+                assertTrue(wheel.id, row.bottom > row.top)
                 assertTrue(wheel.revLights.count in 4..24)
             }
         }
+        assertNull(templates.first { it.id == "ferrari_458_black" }.display)
+        assertNull(templates.first { it.id == "ferrari_488_gt3" }.display)
+        assertNull(templates.first { it.id == "mercedes_f1_2014" }.display)
+        assertTrue(templates.first { it.id == "ferrari_488_gt3" }.revLights.count > 0)
+        assertTrue(templates.first { it.id == "mercedes_f1_2014" }.revLights.count > 0)
         val ks = templates.first { it.id == "moza_ks" }
+        assertNull(ks.display)
         assertTrue(ks.revLights.count >= 8)
         assertEquals("dial", ks.controls.first { it.id == "turbo" }.gesture)
         val fsr = templates.first { it.id == "moza_fsr" }
+        assertNotNull(fsr.display)
         assertEquals("thumb", fsr.controls.first { it.id == "enc_l" }.gesture)
         assertEquals("thumb", fsr.controls.first { it.id == "enc_r" }.gesture)
         val again = WheelLibrary.parseTemplate(WheelLibrary.toJson(fsr))
         assertEquals(fsr.display!!.left, again.display!!.left, 0.0001f)
         assertEquals(fsr.revLights.count, again.revLights.count)
         assertEquals("thumb", again.controls.first { it.id == "enc_l" }.gesture)
+        val plain = templates.first { it.id == "ferrari_458_black" }
+        assertNull(WheelLibrary.parseTemplate(WheelLibrary.toJson(plain)).display)
     }
 
     @Test

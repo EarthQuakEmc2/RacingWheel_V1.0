@@ -29,12 +29,6 @@
     }
   },
   "outputButtons": 7,
-  "display": {
-    "left": 0.37197,
-    "top": 0.35771,
-    "right": 0.62587,
-    "bottom": 0.53412
-  },
   "controls": [
     {
       "id": "pad_l",
