@@ -65,7 +65,8 @@ object Geometry {
     const val CURRENT_ZONE_MIN_DP = 56f
     const val CURRENT_ZONE_MAX_DP = 120f
     const val STATUS_ROW_DP = 28f
-    const val MIN_WHEEL_SCALE = 0.5f
+    const val MIN_WHEEL_SCALE = 0.4f
+    const val MAX_WHEEL_SCALE = 3.0f
 
     fun sizeWheel(
         screenW: Float,
@@ -82,14 +83,11 @@ object Geometry {
         val currentZone = (screenW * zoneFraction).coerceIn(CURRENT_ZONE_MIN_DP * density, CURRENT_ZONE_MAX_DP * density)
         val legacy = fitInGap(screenW, screenH, imgW, imgH, legacyZone, brakeInset, throttleInset, density, margin = false)
         val maxFit = fitInGap(screenW, screenH, imgW, imgH, currentZone, brakeInset, throttleInset, density, margin = true)
-        val cap = if (legacy.width <= 1f) 1f else maxFit.width / legacy.width
-        val limit = cap.coerceAtLeast(0.01f)
-        val floor = min(MIN_WHEEL_SCALE, limit)
-        val applied = scale.coerceIn(floor, limit)
+        val applied = scale.coerceIn(MIN_WHEEL_SCALE, MAX_WHEEL_SCALE)
         val w = legacy.width * applied
         val h = legacy.height * applied
         val placed = ImgRect(maxFit.cx - w / 2f, maxFit.cy - h / 2f, w, h)
-        return WheelSizing(legacy, maxFit, placed, limit, floor)
+        return WheelSizing(legacy, maxFit, placed, MAX_WHEEL_SCALE, MIN_WHEEL_SCALE)
     }
 
     private fun fitInGap(

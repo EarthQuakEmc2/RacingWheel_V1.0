@@ -281,50 +281,39 @@ class CoreTest {
     }
 
     @Test
-    fun wheelScaleDefaultsToTheV050FitAndStaysInsideThePedals() {
-        // Tag v0.5.0 (45cce61): fitCenter of the centre column, zone coerceIn(72dp, 190dp),
-        // status row 28dp, no extra margin. Density 1, insets 0, zoneFraction 0.18, square art.
-        val wide = Geometry.sizeWheel(1000f, 2000f, 1100, 1100, 0.18f, 0f, 0f, 1f, 1f)
-        assertEquals(640f, wide.legacy.width, 0.1f)
-        assertEquals(729.6f, wide.maxFit.width, 0.1f)
-        assertEquals(640f, wide.placed.width, 0.1f)
-        assertEquals(wide.maxFit.cx, wide.placed.cx, 0.1f)
-        assertEquals(wide.maxFit.cy, wide.placed.cy, 0.1f)
-        assertTrue(wide.placed.left >= 120f && wide.placed.right <= 880f)
-
-        val grown = Geometry.sizeWheel(1000f, 2000f, 1100, 1100, 0.18f, 0f, 0f, 1f, 4f)
-        assertEquals(wide.maxFit.width, grown.placed.width, 0.1f)
-        assertTrue(grown.placed.left >= grown.maxFit.left - 0.1f)
-        assertTrue(grown.placed.right <= grown.maxFit.right + 0.1f)
-
-        val shrunk = Geometry.sizeWheel(1000f, 2000f, 1100, 1100, 0.18f, 0f, 0f, 1f, 0.5f)
-        assertEquals(320f, shrunk.placed.width, 0.1f)
-        assertEquals(wide.maxFit.cx, shrunk.placed.cx, 0.1f)
-
-        val phone = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 1f)
-        assertEquals(372f, phone.legacy.height, 0.1f)
-        assertEquals(phone.maxFit.width, phone.placed.width, 0.1f)
-        assertTrue(phone.placed.top >= 0f)
-        assertTrue(phone.placed.bottom <= 372f)
-        val half = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 0.5f)
-        assertEquals(phone.legacy.height * 0.5f, half.placed.height, 0.1f)
-        assertTrue(half.placed.top >= phone.maxFit.top - 0.1f)
-        assertTrue(half.placed.bottom <= phone.maxFit.bottom + 0.1f)
-
-        val drive = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 0.8f)
-        val edit = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 0.8f)
+    fun landscapeWheelGrowsPastTheV050Fit() {
+        // Tag v0.5.0 (45cce61): fitCenter of the centre column. Density 1, insets 0,
+        // zoneFraction 0.18, square art. Scale is not capped by the shorter fit-to-area rect.
+        assertLandscapeScale(1000f, 400f, 372f)
+        assertLandscapeScale(2400f, 1080f, 1052f)
+        val drive = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 2f)
+        val edit = Geometry.sizeWheel(1000f, 400f, 1100, 1100, 0.18f, 0f, 0f, 1f, 2f)
         assertEquals(drive.placed.width, edit.placed.width, 0.01f)
         assertEquals(drive.placed.height, edit.placed.height, 0.01f)
-
         assertFalse(WheelPinch.allows(false, 2))
         assertFalse(WheelPinch.allows(true, 1))
         assertTrue(WheelPinch.allows(true, 2))
-        val cap = wide.scaleCap
-        val bigger = WheelPinch.nextScale(1f, 1.2f, cap, wide.scaleFloor)
-        assertTrue(bigger > 1f && bigger <= cap + 0.0001f)
-        assertEquals(cap, WheelPinch.nextScale(cap, 1.5f, cap, wide.scaleFloor), 0.0001f)
-        assertEquals(0.8f, WheelPinch.nextScale(1f, 0.8f, cap, wide.scaleFloor), 0.0001f)
-        assertEquals(0.5f, WheelPinch.nextScale(0.5f, 0.2f, cap, 0.5f), 0.0001f)
+        val grown = WheelPinch.nextScale(1f, 1.25f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE)
+        assertEquals(1.25f, grown, 0.0001f)
+        assertTrue(grown > 1f)
+        assertEquals(3f, WheelPinch.nextScale(3f, 1.5f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE), 0.0001f)
+        assertEquals(0.4f, WheelPinch.nextScale(0.4f, 0.5f, Geometry.MAX_WHEEL_SCALE, Geometry.MIN_WHEEL_SCALE), 0.0001f)
+    }
+
+    private fun assertLandscapeScale(screenW: Float, screenH: Float, legacy: Float) {
+        val base = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, 1f)
+        assertEquals(legacy, base.legacy.width, 0.1f)
+        assertEquals(legacy, base.legacy.height, 0.1f)
+        assertTrue(base.legacy.height > base.maxFit.height)
+        for (scale in floatArrayOf(1f, 2f, 3f)) {
+            val sized = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, scale)
+            assertEquals(legacy * scale, sized.placed.width, 0.1f)
+            assertEquals(legacy * scale, sized.placed.height, 0.1f)
+            assertEquals(sized.maxFit.cx, sized.placed.cx, 0.1f)
+            assertEquals(sized.maxFit.cy, sized.placed.cy, 0.1f)
+        }
+        val capped = Geometry.sizeWheel(screenW, screenH, 1100, 1100, 0.18f, 0f, 0f, 1f, 9f)
+        assertEquals(legacy * 3f, capped.placed.width, 0.1f)
     }
 
     @Test

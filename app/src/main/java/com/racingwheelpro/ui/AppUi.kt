@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
@@ -101,24 +102,35 @@ fun AppRoot(session: RaceSession) {
         }
     }
     var showSplash by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
-    Box(Modifier.fillMaxSize()) {
-    Column(Modifier.fillMaxSize().background(Carbon)) {
-        LedStrip(session.revLevel())
-        TopBar(session)
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (session.screen) {
-                Screen.Drive -> DriveScreen(session)
-                Screen.Connect -> ConnectScreen(session)
-                Screen.Setup -> SetupScreen(session)
-                Screen.Editor -> EditorScreen(session)
-                Screen.Garage -> GarageScreen(session)
-                Screen.Logs -> LogsScreen(session)
-            }
-            if (session.paywall) {
-                PremiumDialog(session)
+    Box(Modifier.fillMaxSize().background(Carbon)) {
+        val onWheel = session.screen == Screen.Drive || session.screen == Screen.Editor
+        if (onWheel) {
+            Column(Modifier.fillMaxSize()) {
+                Spacer(Modifier.height(58.dp))
+                WheelFace(
+                    session,
+                    editor = session.screen == Screen.Editor,
+                    modifier = Modifier.weight(1f).fillMaxWidth().graphicsLayer { clip = false },
+                )
             }
         }
-    }
+        Column(Modifier.fillMaxSize()) {
+            LedStrip(session.revLevel())
+            TopBar(session)
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                when (session.screen) {
+                    Screen.Drive -> DriveScreen(session)
+                    Screen.Connect -> ConnectScreen(session)
+                    Screen.Setup -> SetupScreen(session)
+                    Screen.Editor -> EditorScreen(session)
+                    Screen.Garage -> GarageScreen(session)
+                    Screen.Logs -> LogsScreen(session)
+                }
+                if (session.paywall) {
+                    PremiumDialog(session)
+                }
+            }
+        }
         if (showSplash) {
             StartupSplash(session) { showSplash = false }
         }
@@ -217,13 +229,12 @@ private fun NavButton(label: String, active: Boolean, onClick: () -> Unit) {
 @Composable
 private fun DriveScreen(session: RaceSession) {
     val layoutTick = session.layoutRevision
-    BoxWithConstraints(Modifier.fillMaxSize().background(Carbon)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
         val pedals = session.profile.pedals
         val zone = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp)
         val brakeGap = maxWidth * PedalInsets.clamp(pedals.brakeInset)
         val throttleGap = maxWidth * PedalInsets.clamp(pedals.throttleInset)
         Box(Modifier.fillMaxSize()) {
-            WheelFace(session, editor = false, modifier = Modifier.fillMaxSize())
             Row(Modifier.fillMaxSize()) {
                 if (brakeGap > 0.5.dp) Spacer(Modifier.width(brakeGap).fillMaxHeight())
                 PedalColumn(
@@ -461,7 +472,7 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
             Text("Wheel image missing", color = SignalRed, modifier = Modifier.align(Alignment.Center))
             return@Box
         }
-        Canvas(Modifier.fillMaxSize()) {
+        Canvas(Modifier.fillMaxSize().graphicsLayer { clip = false }) {
             val pedals = session.profile.pedals
             val rect = Geometry.sizeWheel(
                 size.width,
@@ -1168,7 +1179,6 @@ private fun EditorScreen(session: RaceSession) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val pedals = session.profile.pedals
         val panel = (maxWidth * pedals.zoneFraction).coerceIn(56.dp, 120.dp) + maxWidth * PedalInsets.clamp(pedals.throttleInset)
-        WheelFace(session, editor = true, modifier = Modifier.fillMaxSize())
         Column(
             Modifier.width(panel).fillMaxHeight().align(Alignment.CenterEnd).background(Panel).verticalScroll(rememberScrollState()).padding(10.dp),
         ) {
