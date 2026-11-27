@@ -1002,6 +1002,201 @@ a { color: var(--yellow); }
 }
 .price-card ul { margin: 8px 0 18px; padding-left: 18px; }
 .price-card li { margin: 7px 0; color: var(--muted); }
+.price-more {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 20px;
+  margin-top: 8px;
+}
+.price-more p { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.pack-page { padding: 36px 0 72px; }
+.pack-page .lede { max-width: 62ch; }
+.pack-page h1 { font-size: clamp(40px, 6vw, 68px); }
+.pack-list { display: flex; flex-direction: column; gap: 18px; }
+.pack-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.28);
+}
+.pack-banner {
+  margin: 0;
+  background: #07080a;
+  line-height: 0;
+}
+.pack-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.pack-buy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "pill platforms"
+    "copy platforms"
+    "action action";
+  column-gap: 24px;
+  row-gap: 6px;
+  align-items: start;
+  padding: 16px 18px 0;
+  background:
+    linear-gradient(180deg, rgba(76, 157, 255, 0.06), transparent 46%),
+    var(--panel-2);
+  border-top: 1px solid var(--line);
+}
+.pack-pill {
+  grid-area: pill;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0;
+  padding: 6px 8px 5px;
+  background: var(--yellow);
+  color: #14120a;
+  font-family: var(--font-d);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.pack-pill::before {
+  content: '';
+  width: 9px;
+  height: 2px;
+  background: #14120a;
+  box-shadow: 0 3.5px 0 #14120a, 0 7px 0 #14120a;
+}
+.pack-copy { grid-area: copy; min-width: 0; padding-bottom: 4px; }
+.pack-copy h2 {
+  margin: 8px 0 0;
+  font-size: clamp(26px, 3vw, 34px);
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+.pack-sub { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.pack-promo {
+  margin: 4px 0 0;
+  color: var(--blue);
+  font-family: var(--font-m);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+}
+.pack-platforms {
+  grid-area: platforms;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 10px;
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-family: var(--font-d);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.pack-platform { display: inline-flex; align-items: center; gap: 6px; }
+.pack-platform svg { width: 16px; height: 16px; flex: none; }
+.pack-plus { color: var(--faint); }
+.pack-plat-rule { width: 1px; align-self: stretch; min-height: 16px; background: var(--line-strong); }
+.pack-compat { color: var(--muted); }
+.pack-action {
+  grid-area: action;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px -18px 0 0;
+  padding: 8px 8px 8px 16px;
+  background: #07080a;
+  border: 1px solid #000;
+  border-right: 0;
+  border-bottom: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 0 12px 18px rgba(0, 0, 0, 0.5);
+}
+.pack-discount {
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  margin: -8px 0 -8px -16px;
+  padding: 0 10px;
+  background: #102416;
+  color: var(--green);
+  font-family: var(--font-d);
+  font-size: 22px;
+  letter-spacing: 0.02em;
+}
+.pack-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 48px;
+  margin: 0;
+}
+.pack-price-now {
+  color: var(--ink);
+  font-family: var(--font-d);
+  font-size: 22px;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.pack-price-was {
+  margin-bottom: 4px;
+  color: var(--faint);
+  font-family: var(--font-d);
+  font-size: 13px;
+  line-height: 1;
+  text-decoration: line-through;
+}
+.pack-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  background: var(--green);
+  color: #06210c;
+  font-family: var(--font-d);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.pack-cart:hover { background: #6dff84; color: #06210c; }
+
+@media (max-width: 900px) {
+  .pack-buy {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "pill"
+      "copy"
+      "platforms"
+      "action";
+    row-gap: 10px;
+  }
+  .pack-platforms { justify-content: flex-start; }
+  .pack-action {
+    justify-self: stretch;
+    margin-right: -18px;
+    margin-left: -18px;
+  }
+  .pack-cart { flex: 1; }
+}
+@media (max-width: 720px) {
+  .pack-page { padding: 24px 0 56px; }
+  .pack-page h1 { font-size: 42px; }
+  .price-more .btn { width: 100%; }
+  .pack-buy { padding: 14px 14px 0; }
+  .pack-action { margin-right: -14px; margin-left: -14px; }
+}
 .privacy { padding: 36px 0 72px; }
 .privacy-article { max-width: 740px; }
 .privacy-article h1 {

@@ -3,6 +3,7 @@ import StartupSplash from './components/StartupSplash'
 import Marketing from './Marketing'
 import AccountPage from './pages/Account'
 import LeaderboardPage from './pages/Leaderboard'
+import PricingPage from './pages/Pricing'
 import Privacy from './pages/Privacy'
 import SessionPage from './pages/Session'
 
@@ -13,6 +14,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Marketing />} />
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/pricing" element={<PricingPage />} />
       <Route path="/account" element={<AccountPage />} />
       <Route path="/session/:id" element={<SessionPage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />

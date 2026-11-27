@@ -6,7 +6,7 @@ const LINKS = [
   { href: '/#drive', id: 'drive', label: 'Drive' },
   { href: '/#wheels', id: 'wheels', label: 'Wheels' },
   { href: '/#makers', id: 'makers', label: 'Makers' },
-  { href: '/#pricing', id: 'pricing', label: 'Pricing' },
+  { href: '/pricing', id: 'pricing', label: 'Pricing' },
   { href: '/#download', id: 'download', label: 'Download' },
   { href: '/#install', id: 'install', label: 'Install' },
   { href: '/leaderboard', id: 'leaderboard', label: 'Leaderboard' },
@@ -17,17 +17,10 @@ export default function Header() {
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('top')
   const location = useLocation()
-  const routeActive =
-    location.pathname === '/account'
-      ? 'account'
-      : location.pathname === '/leaderboard'
-        ? 'leaderboard'
-        : location.pathname === '/privacy'
-          ? 'privacy'
-          : ''
+  const routeActive = routeMark(location.pathname)
 
   useEffect(() => {
-    const ids = ['top', ...LINKS.map((l) => l.id), 'notes']
+    const ids = ['top', ...LINKS.filter((link) => link.href.startsWith('/#')).map((link) => link.id), 'notes']
     const nodes = ids
       .map((id) => document.getElementById(id))
       .filter((node): node is HTMLElement => node !== null)
@@ -94,6 +87,14 @@ export default function Header() {
       </header>
     </div>
   )
+}
+
+function routeMark(pathname: string) {
+  if (pathname === '/pricing') return 'pricing'
+  if (pathname === '/account') return 'account'
+  if (pathname === '/leaderboard') return 'leaderboard'
+  if (pathname === '/privacy') return 'privacy'
+  return ''
 }
 
 function WheelMark() {

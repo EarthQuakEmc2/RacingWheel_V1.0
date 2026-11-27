@@ -44,6 +44,15 @@ export default function Pricing() {
             </ul>
           </article>
         </div>
+        <div className="price-more">
+          <p>
+            Version 1.0.01 stays free, and every wheel template in that release is included. Optional Assetto Corsa
+            steering wheel packs are listed separately.
+          </p>
+          <a className="btn btn-red" href="/pricing">
+            Browse Steering Wheel Packs
+          </a>
+        </div>
         <p className="fine">
           The Play listing uses generic wheel names. Car makers and wheel makers have not endorsed this project, and
           their names are trademarks. The purchase is processed by Google Play. See the{' '}
