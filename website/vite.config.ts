@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Node built-ins are used only to copy dist/privacy/index.html after the build.
+// Node built-ins are used only to copy dist/privacy and dist/pricing index files after the build.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -10,15 +10,17 @@ const community = JSON.parse(
   fs.readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../community.json'), 'utf8'),
 )
 
-/** Static hosts can serve /privacy/ from a copied index without a rewrite rule. */
-function privacyRoute(): Plugin {
+/** Static hosts can serve these routes from a copied index without a rewrite rule. */
+function spaRoutes(): Plugin {
   return {
-    name: 'privacy-route',
+    name: 'spa-routes',
     closeBundle() {
       const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'dist')
-      const privacyDir = path.join(dist, 'privacy')
-      fs.mkdirSync(privacyDir, { recursive: true })
-      fs.copyFileSync(path.join(dist, 'index.html'), path.join(privacyDir, 'index.html'))
+      for (const route of ['privacy', 'pricing']) {
+        const dir = path.join(dist, route)
+        fs.mkdirSync(dir, { recursive: true })
+        fs.copyFileSync(path.join(dist, 'index.html'), path.join(dir, 'index.html'))
+      }
     },
   }
 }
@@ -32,7 +34,7 @@ export default defineConfig(() => ({
   define: {
     __TELEGRAM_URL__: JSON.stringify(community.telegram),
   },
-  plugins: [react(), privacyRoute()],
+  plugins: [react(), spaRoutes()],
   server: {
     fs: {
       allow: ['..'],
