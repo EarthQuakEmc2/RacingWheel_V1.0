@@ -8,6 +8,7 @@ import Install from './components/Install'
 import Manufacturers from './components/Manufacturers'
 import Pricing from './components/Pricing'
 import Screenshots from './components/Screenshots'
+import SteeringPromo from './components/SteeringPromo'
 
 export default function Marketing() {
   return (
@@ -22,6 +23,7 @@ export default function Marketing() {
         <Manufacturers />
         <Features />
         <Pricing />
+        <SteeringPromo />
         <Download />
         <Install />
         <Faq />

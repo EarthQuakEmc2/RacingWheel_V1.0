@@ -26,6 +26,7 @@ export default function AccountPage() {
   const [notice, setNotice] = useState('')
   const [devices, setDevices] = useState<Device[]>([])
   const [sessions, setSessions] = useState<SessionRow[]>([])
+  const [packages, setPackages] = useState<string[]>([])
 
   async function refresh() {
     const profile = await api<Me>('/api/auth/me')
@@ -36,6 +37,8 @@ export default function AccountPage() {
     setMe(profile)
     setDevices(deviceBody.devices)
     setSessions(sessionBody.sessions)
+    const owned = await api<{ packages: string[] }>('/api/entitlements').catch(() => ({ packages: [] as string[] }))
+    setPackages(owned.packages ?? [])
   }
 
   useEffect(() => {
@@ -120,6 +123,13 @@ export default function AccountPage() {
                   </button>
                 </section>
               </div>
+              <section className="panel">
+                <h2>Steering Packages</h2>
+                <p>
+                  {packages.length === 0 ? 'No packages on this account yet.' : `Owned: ${packages.join(', ')}.`} The signed
+                  licence is fetched by the app. <Link to="/packages">Catalogue</Link>
+                </p>
+              </section>
               <section className="panel">
                 <h2>Sessions</h2>
                 <table className="sheet">

@@ -46,8 +46,8 @@ export default function Pricing() {
         </div>
         <p className="fine">
           The Play listing uses generic wheel names. Car makers and wheel makers have not endorsed this project, and
-          their names are trademarks. The purchase is processed by Google Play. See the{' '}
-          <a href="/privacy">privacy policy</a>.
+          their names are trademarks. Manufacturer templates are also sold as{' '}
+          <a href="/packages">Steering Packages</a>. See the <a href="/privacy">privacy policy</a>.
         </p>
       </div>
     </section>

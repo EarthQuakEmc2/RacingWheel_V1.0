@@ -41,6 +41,8 @@ export default function Footer() {
             </a>
           </p>
           <p>
+            <a href="/packages">Steering Packages</a>
+            {' · '}
             <a href="/account">Account</a>
             {' · '}
             <a href="/leaderboard">Leaderboard</a>

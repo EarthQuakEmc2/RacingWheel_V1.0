@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -367,11 +368,10 @@ private fun PedalColumn(
 
 @Composable
 private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier) {
-    val context = LocalContext.current
     val wheel = session.wheel
-    val bitmap = remember(wheel.image) {
+    val bitmap = remember(wheel.image, session.packRevision) {
         runCatching {
-            context.assets.open("wheels/${wheel.image}").use { stream ->
+            session.openWheelImage(wheel.image)?.use { stream ->
                 BitmapFactory.decodeStream(stream)?.asImageBitmap()
             }
         }.getOrNull()
@@ -396,7 +396,7 @@ private fun WheelFace(session: RaceSession, editor: Boolean, modifier: Modifier)
     }
     val show = editor || session.showHotspots
     val selected = session.selectedControl
-    val overlay = session.gate.knobOverlay(wheel.id)
+    val overlay = session.knobOverlay(wheel.id)
     val knobRevision = session.knobRevision
     val showZones = editor || session.profile.showShifterZones
     val shiftUp = session.shiftUp
@@ -1247,7 +1247,7 @@ private fun GarageScreen(session: RaceSession) {
     var brand by remember { mutableStateOf(session.groupOf(session.wheel).let { if (it in tabs) it else tabs.first() }) }
     if (brand !in tabs && tabs.isNotEmpty()) brand = tabs.first()
     val inBrand = session.templates.filter { session.groupOf(it) == brand }
-    val unlocked = session.premiumUnlocked
+    val anyLocked = session.templates.any { !session.wheelUnlocked(it.id) }
     Column(Modifier.fillMaxSize().padding(12.dp)) {
         Text("WHEEL TEMPLATES", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.SemiBold)
         Text(
@@ -1275,7 +1275,7 @@ private fun GarageScreen(session: RaceSession) {
                 )
             }
         }
-        if (!unlocked) {
+        if (anyLocked) {
             Spacer(Modifier.height(8.dp))
             Row(
                 Modifier
@@ -1289,7 +1289,7 @@ private fun GarageScreen(session: RaceSession) {
                 LockMark()
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Unlock Racing Wheel Premium - ${WheelCatalog.PRICE_LABEL}",
+                    "Steering packages — a manufacturer’s wheels",
                     color = SignalYellow,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
@@ -1323,7 +1323,7 @@ private fun GarageScreen(session: RaceSession) {
             Row(Modifier.weight(1f).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 inBrand.forEach { template ->
                     val selected = template.id == session.wheel.id
-                    val locked = !session.gate.wheelUnlocked(template.id)
+                    val locked = !session.wheelUnlocked(template.id)
                     Column(
                         Modifier
                             .width(280.dp)
@@ -1337,7 +1337,7 @@ private fun GarageScreen(session: RaceSession) {
                             .padding(8.dp),
                     ) {
                         Box(Modifier.weight(1f).fillMaxWidth()) {
-                            TemplateArt(template.image, Modifier.fillMaxSize(), dimmed = locked)
+                            TemplateArt(session, template.image, Modifier.fillMaxSize(), dimmed = locked)
                             if (locked) {
                                 Column(Modifier.align(Alignment.TopEnd).padding(6.dp), horizontalAlignment = Alignment.End) {
                                     Row(
@@ -1349,7 +1349,7 @@ private fun GarageScreen(session: RaceSession) {
                                     ) {
                                         LockMark(small = true)
                                         Spacer(Modifier.width(4.dp))
-                                        Text("PREMIUM", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text("LOCKED", color = Color.Black, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -1357,7 +1357,7 @@ private fun GarageScreen(session: RaceSession) {
                         Text(session.displayName(template), color = Ink, fontWeight = FontWeight.SemiBold)
                         Text(session.displayBlurb(template), color = Muted, fontSize = 12.sp, maxLines = 2)
                         Text(
-                            if (locked) "Locked · Racing Wheel Premium"
+                            if (locked) "Locked · Steering Package"
                             else "${template.faceButtons} buttons · ${template.rotaries} rotaries",
                             color = if (locked) SignalYellow else SignalCyan,
                             fontSize = 12.sp,
@@ -1382,22 +1382,63 @@ private fun PremiumDialog(session: RaceSession) {
         Column(
             Modifier
                 .width(460.dp)
+                .heightIn(max = 340.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .background(Panel)
                 .border(1.dp, SignalYellow, RoundedCornerShape(12.dp))
+                .verticalScroll(rememberScrollState())
                 .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
                 .padding(18.dp),
         ) {
-            Text("RACING WHEEL PREMIUM", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.Bold)
+            Text("STEERING PACKAGES", color = SignalYellow, fontSize = 12.sp, letterSpacing = 1.4.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(6.dp))
-            Text("All wheels, and a pointer on every numbered dial.", color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Text("Buy a manufacturer. The phone installs the plates.", color = Ink, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(6.dp))
             Text(
-                "Steering, throttle, brake, buttons, the layout editor, and the PC receiver stay in the free version. " +
-                    "Premium is a one-time purchase of ${WheelCatalog.PRICE_LABEL}.",
+                "Each maker is ${WheelCatalog.PRICE_LABEL}. Bundles are cheaper. The server signs the licence. " +
+                    "Editing the licence file does not unlock a pack. Free wheels stay free, and driving does not check this lock.",
                 color = Muted,
                 fontSize = 13.sp,
             )
+            Spacer(Modifier.height(8.dp))
+            var email by remember { mutableStateOf("") }
+            var password by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Password") },
+                singleLine = true,
+                visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                if (session.packageBusy) "CHECKING…" else "REFRESH LICENCE",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(SignalYellow)
+                    .clickable {
+                        if (!session.packageBusy && email.isNotBlank() && password.length >= 8) {
+                            session.refreshSteering(email, password)
+                            password = ""
+                        }
+                    }
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+            )
+            if (session.packageDetail.isNotBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(session.packageDetail, color = Ink, fontSize = 13.sp)
+            }
             if (session.premiumDetail.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
                 Text(session.premiumDetail, color = Ink, fontSize = 13.sp)
@@ -1429,6 +1470,16 @@ private fun PremiumDialog(session: RaceSession) {
                 )
             }
             Spacer(Modifier.height(8.dp))
+            val browse = LocalContext.current
+            Text(
+                "OPEN CATALOGUE",
+                color = SignalYellow,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable {
+                    browse.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("${BuildConfig.API_BASE.trimEnd('/')}/packages")))
+                }.padding(vertical = 4.dp),
+            )
             Text(
                 "NOT NOW",
                 color = Muted,
@@ -1465,11 +1516,10 @@ private fun LockMark(small: Boolean = false) {
 }
 
 @Composable
-private fun TemplateArt(image: String, modifier: Modifier, dimmed: Boolean = false) {
-    val context = LocalContext.current
-    val bitmap = remember(image) {
+private fun TemplateArt(session: RaceSession, image: String, modifier: Modifier, dimmed: Boolean = false) {
+    val bitmap = remember(image, session.packRevision) {
         runCatching {
-            context.assets.open("wheels/$image").use { BitmapFactory.decodeStream(it)?.asImageBitmap() }
+            session.openWheelImage(image)?.use { BitmapFactory.decodeStream(it)?.asImageBitmap() }
         }.getOrNull()
     }
     if (bitmap == null) {

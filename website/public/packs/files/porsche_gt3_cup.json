@@ -1,0 +1,163 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "porsche_gt3_cup",
+  "name": "Porsche 911 GT3 Cup",
+  "maker": "Porsche",
+  "manufacturer": "Porsche",
+  "style": "cup",
+  "image": "porsche_gt3_cup.png",
+  "imageWidth": 626,
+  "imageHeight": 455,
+  "blurb": "Cup wheel. HS, RAD, DRK, PIT, and the two glowing encoders.",
+  "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0639, "top": 0.1560, "right": 0.9361, "bottom": 0.9495},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.436},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.442}
+  },
+  "outputButtons": 14,
+  "controls": [
+    {
+      "id": "hs",
+      "label": "HS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.16917,
+      "cy": 0.24044,
+      "r": 0.01917,
+      "color": "#2F80ED",
+      "defaultButton": 1
+    },
+    {
+      "id": "rad",
+      "label": "RAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.21757,
+      "cy": 0.28549,
+      "r": 0.01757,
+      "color": "#3DDC57",
+      "defaultButton": 2
+    },
+    {
+      "id": "drk_l",
+      "label": "DRK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.26534,
+      "cy": 0.33011,
+      "r": 0.01757,
+      "color": "#6C8CFF",
+      "defaultButton": 3
+    },
+    {
+      "id": "ack",
+      "label": "ACK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.30495,
+      "cy": 0.55758,
+      "r": 0.01757,
+      "color": "#E10600",
+      "defaultButton": 4
+    },
+    {
+      "id": "str",
+      "label": "STR",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.31278,
+      "cy": 0.63604,
+      "r": 0.01917,
+      "color": "#C040C8",
+      "defaultButton": 5
+    },
+    {
+      "id": "pit",
+      "label": "PIT",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.823,
+      "cy": 0.23912,
+      "r": 0.01757,
+      "color": "#E10600",
+      "defaultButton": 6
+    },
+    {
+      "id": "wip",
+      "label": "WIP",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.77684,
+      "cy": 0.28374,
+      "r": 0.01917,
+      "color": "#2F80ED",
+      "defaultButton": 7
+    },
+    {
+      "id": "yel",
+      "label": "YEL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.73067,
+      "cy": 0.32923,
+      "r": 0.01757,
+      "color": "#F5C400",
+      "defaultButton": 8
+    },
+    {
+      "id": "drk_r",
+      "label": "DRK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.69728,
+      "cy": 0.55385,
+      "r": 0.01757,
+      "color": "#6C8CFF",
+      "defaultButton": 9
+    },
+    {
+      "id": "exs",
+      "label": "EXS",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.69073,
+      "cy": 0.63363,
+      "r": 0.01917,
+      "color": "#C040C8",
+      "defaultButton": 10
+    },
+    {
+      "id": "tc",
+      "label": "TC",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.39313,
+      "cy": 0.37495,
+      "r": 0.04473,
+      "color": "#E10600",
+      "positions": 12,
+      "knobSlot": 0,
+      "decButton": 11,
+      "incButton": 12,
+      "startAngle": -90.0,
+      "clockwise": true
+    },
+    {
+      "id": "abs",
+      "label": "ABS",
+      "kind": "rotary",
+      "shape": "circle",
+      "cx": 0.60687,
+      "cy": 0.3778,
+      "r": 0.04473,
+      "color": "#2F80ED",
+      "positions": 12,
+      "knobSlot": 1,
+      "decButton": 13,
+      "incButton": 14,
+      "startAngle": -90.0,
+      "clockwise": true
+    }
+  ]
+}

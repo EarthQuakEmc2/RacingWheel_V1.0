@@ -2,6 +2,7 @@ package com.racingwheelpro
 
 import com.racingwheelpro.BuildConfig
 import com.racingwheelpro.catalog.EntitlementPolicy
+import com.racingwheelpro.catalog.LicenceCachePolicy
 import com.racingwheelpro.catalog.WheelCatalog
 import com.racingwheelpro.data.WheelLibrary
 import com.racingwheelpro.input.AngleUnwrapper
@@ -469,6 +470,14 @@ class CoreTest {
         assertFalse(EntitlementPolicy.resolve(EntitlementPolicy.Query.FAILED, false, false, false))
         assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.PENDING, false, true, false))
         assertTrue(EntitlementPolicy.resolve(EntitlementPolicy.Query.SUCCEEDED, false, false, true))
+    }
+
+    @Test
+    fun signedLicenceStaysWhenTheRefreshDoesNotFinish() {
+        val cached = "licence"
+        assertEquals(cached, LicenceCachePolicy.resolve(false, null, cached))
+        assertEquals("fresh", LicenceCachePolicy.resolve(true, "fresh", cached))
+        assertNull(LicenceCachePolicy.resolve(true, null, cached))
     }
 
     @Test

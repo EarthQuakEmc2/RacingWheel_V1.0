@@ -25,6 +25,8 @@ Version 0.6.0 includes every wheel template. Nothing in the garage is locked, an
 
 Gradle flavors are `free` and `premium`. The free flavor compiles with no Play Billing library. The premium flavor on this branch unlocks every wheel and every dial pointer, again with no billing library, which is what keeps the published source fully usable under [LICENSE_EXCEPTIONS](LICENSE_EXCEPTIONS). The Play Billing client for the one-time product `racing_wheel_premium` lives only on the `paid-version` branch and is not merged. The split is written out in [docs/BILLING.md](docs/BILLING.md).
 
+Steering Packages (manufacturer packs, bundles, and class packs) are a separate unmerged draft. Checkout is sandbox-only. See [docs/STEERING_PACKAGES.md](docs/STEERING_PACKAGES.md). Do not deploy that branch to `racingwheel-pro`.
+
 Package id is `site.myracingwheel.app`. `targetSdk` is 35. Release builds run R8.
 
 ### Store names

@@ -1,0 +1,331 @@
+{
+  "version": 1,
+  "templates": {
+    "ferrari_458_black": [
+      "ferrari_458_black.json",
+      "ferrari_458_black.png"
+    ],
+    "ferrari_488_gt3": [
+      "ferrari_488_gt3.json",
+      "ferrari_488_gt3.png"
+    ],
+    "ferrari_f1_2012": [
+      "ferrari_f1_2012.json",
+      "ferrari_f1_2012.png"
+    ],
+    "ferrari_road_blue": [
+      "ferrari_road_blue.json",
+      "ferrari_road_blue.png"
+    ],
+    "ferrari_road_red": [
+      "ferrari_road_red.json",
+      "ferrari_road_red.png"
+    ],
+    "ferrari_sf_f1": [
+      "ferrari_sf_f1.json",
+      "ferrari_sf_f1.png"
+    ],
+    "mclaren_artura": [
+      "mclaren_artura.json",
+      "mclaren_artura.png"
+    ],
+    "mclaren_f1_mcl": [
+      "mclaren_f1_mcl.json",
+      "mclaren_f1_mcl.png"
+    ],
+    "mclaren_f1_mcl_2": [
+      "mclaren_f1_mcl_2.json",
+      "mclaren_f1_mcl_2.png"
+    ],
+    "mclaren_fanatec_gt3": [
+      "mclaren_fanatec_gt3.json",
+      "mclaren_fanatec_gt3.png"
+    ],
+    "mclaren_gt3_diy": [
+      "mclaren_gt3_diy.json",
+      "mclaren_gt3_diy.png"
+    ],
+    "mclaren_gt3_okx": [
+      "mclaren_gt3_okx.json",
+      "mclaren_gt3_okx.png"
+    ],
+    "mclaren_gtr_lm": [
+      "mclaren_gtr_lm.json",
+      "mclaren_gtr_lm.png"
+    ],
+    "mercedes_cube_gt3": [
+      "mercedes_cube_gt3.json",
+      "mercedes_cube_gt3.png"
+    ],
+    "mercedes_f1_2014": [
+      "mercedes_f1_2014.json",
+      "mercedes_f1_2014.png"
+    ],
+    "mercedes_gt_diy": [
+      "mercedes_gt_diy.json",
+      "mercedes_gt_diy.png"
+    ],
+    "mercedes_road_carbon": [
+      "mercedes_road_carbon.json",
+      "mercedes_road_carbon.png"
+    ],
+    "mercedes_road_led": [
+      "mercedes_road_led.json",
+      "mercedes_road_led.png"
+    ],
+    "porsche_911_rsr": [
+      "porsche_911_rsr.json",
+      "porsche_911_rsr.png"
+    ],
+    "porsche_fanatec_gt3r": [
+      "porsche_fanatec_gt3r.json",
+      "porsche_fanatec_gt3r.png"
+    ],
+    "porsche_gt3_cup": [
+      "porsche_gt3_cup.json",
+      "porsche_gt3_cup.png"
+    ],
+    "porsche_gt3r": [
+      "porsche_gt3r.json",
+      "porsche_gt3r.png"
+    ],
+    "porsche_gt3r_color": [
+      "porsche_gt3r_color.json",
+      "porsche_gt3r_color.png"
+    ],
+    "porsche_gt3r_grid": [
+      "porsche_gt3r_grid.json",
+      "porsche_gt3r_grid.png"
+    ],
+    "porsche_gt3r_screen": [
+      "porsche_gt3r_screen.json",
+      "porsche_gt3r_screen.png"
+    ],
+    "porsche_gt_dash": [
+      "porsche_gt_dash.json",
+      "porsche_gt_dash.png"
+    ],
+    "porsche_rsr_f": [
+      "porsche_rsr_f.json",
+      "porsche_rsr_f.png"
+    ]
+  },
+  "files": {
+    "ferrari_458_black.json": {
+      "sha256": "1f0b81c6c6615be92987495df0d6d8d56da31f824e5e55ca5718e07e23328f9a",
+      "bytes": 2281
+    },
+    "ferrari_458_black.png": {
+      "sha256": "ca2e7b3c8fd0d734a7b2b95c55d9ab647fc663c79f285fde3643fcdf9e568f3a",
+      "bytes": 367068
+    },
+    "ferrari_488_gt3.json": {
+      "sha256": "9686214587ff202fbea39a3ec8bfaf6e67963606e464540d27e753a71377f3b3",
+      "bytes": 3462
+    },
+    "ferrari_488_gt3.png": {
+      "sha256": "036c70af39e576910c842a2bbbe1ca35e9c917ecc057fb1ac439c1a39a1e0a2c",
+      "bytes": 197387
+    },
+    "ferrari_f1_2012.json": {
+      "sha256": "af297045f47cf7dd2018b7cc9a1a1af4ce250e4f4e08ae92631b1e431fe98804",
+      "bytes": 3449
+    },
+    "ferrari_f1_2012.png": {
+      "sha256": "e8031e5c59f2bc5c6a6f83984d60e8f6ddced0341b3cef88501abfa878455c9b",
+      "bytes": 391624
+    },
+    "ferrari_road_blue.json": {
+      "sha256": "980b58146831d5882eef834072779e5a1e19d59f1846a3f19d81d6151c1ea412",
+      "bytes": 2282
+    },
+    "ferrari_road_blue.png": {
+      "sha256": "feb763c0efae3426f7176015f8ef15af64be13769dd43c71b554663e283289d0",
+      "bytes": 402236
+    },
+    "ferrari_road_red.json": {
+      "sha256": "40d98141148129464d29cda6237604e2d1d1f4fcc3e693f76f3b5a3182cfe364",
+      "bytes": 2504
+    },
+    "ferrari_road_red.png": {
+      "sha256": "6026300207c49afd5c7279b1c6622d40e4aa0e30d0e51c60e7c58ca129f2d663",
+      "bytes": 387802
+    },
+    "ferrari_sf_f1.json": {
+      "sha256": "07107ea93447bf9de47797c95cb06b4136f30358016276aa6c905a0bc034192e",
+      "bytes": 3113
+    },
+    "ferrari_sf_f1.png": {
+      "sha256": "621531cd4f21e68f04a708fd8d02cd718cebbc15435c7fabbb4c69b8523fa891",
+      "bytes": 362031
+    },
+    "mclaren_artura.json": {
+      "sha256": "8c13a105022be212689c78130781011c57a87d3578654352476db0369ededc15",
+      "bytes": 4321
+    },
+    "mclaren_artura.png": {
+      "sha256": "fc642fa5938253d203edffb4c64a305b15fc2ba2839bacca8dd6ea9d9d263370",
+      "bytes": 291869
+    },
+    "mclaren_f1_mcl.json": {
+      "sha256": "66766efbc64b12622d7ae8d6af1121f2a7a7ff37d2eaf9cc2badd5076a41c1f1",
+      "bytes": 3742
+    },
+    "mclaren_f1_mcl.png": {
+      "sha256": "2862ac842e74f65bb9f4b178cb82d6583e6564534b55fc67b7e0accb0696cba0",
+      "bytes": 248128
+    },
+    "mclaren_f1_mcl_2.json": {
+      "sha256": "a19e88be6a43bdde9d21d01816ea41979436ec621d2a7a9084e186dc1632e608",
+      "bytes": 3749
+    },
+    "mclaren_f1_mcl_2.png": {
+      "sha256": "41a58f5219319a010a559d50100fea82418d8219d7a83a7b6c6db48c37c32f3c",
+      "bytes": 553691
+    },
+    "mclaren_fanatec_gt3.json": {
+      "sha256": "5b1290cf04d9eda5b806d1e0976f37d4a9ca67c03da345f55bc0fabdccd2c510",
+      "bytes": 4225
+    },
+    "mclaren_fanatec_gt3.png": {
+      "sha256": "3f93854a72db5ca57eff7790611f3df4bea021b4815c3b67861d16b456f1f379",
+      "bytes": 314329
+    },
+    "mclaren_gt3_diy.json": {
+      "sha256": "16d40f74d42ad0280f83985ce24b6cd780c1409bcfb9f1e6bfe81bd095120494",
+      "bytes": 4116
+    },
+    "mclaren_gt3_diy.png": {
+      "sha256": "6917f6c1a65a9944964867091f7c0b73c4104fa7caf14291727967af35d06428",
+      "bytes": 774143
+    },
+    "mclaren_gt3_okx.json": {
+      "sha256": "406753adb862c00428547b9d34bc0939eec8249d5ddf255b3e0417dd421b6a00",
+      "bytes": 3748
+    },
+    "mclaren_gt3_okx.png": {
+      "sha256": "cac20a02b0f860e89613575be1119d44371e62f9b3d03c4462e36c90a7a2eb43",
+      "bytes": 231307
+    },
+    "mclaren_gtr_lm.json": {
+      "sha256": "54861db69a755c1b521ebdd7ce4cc2f4d6ea3e9d02b380fda43f8bccfd98d370",
+      "bytes": 3460
+    },
+    "mclaren_gtr_lm.png": {
+      "sha256": "43a9bc695be5c4d5213a9c6aea34c9ad2abcbfae8dc3dba58c8dab004909f889",
+      "bytes": 353998
+    },
+    "mercedes_cube_gt3.json": {
+      "sha256": "d0455f5bb1979909148c00033978c33941e45258d47d525148e1807d314efe96",
+      "bytes": 3902
+    },
+    "mercedes_cube_gt3.png": {
+      "sha256": "f3c72970dc8a437f266cde28107c535b05564b921682c62080c346e2eadc3105",
+      "bytes": 273298
+    },
+    "mercedes_f1_2014.json": {
+      "sha256": "a804594f97a4edbd798f57e61ecf40f20edf45e4393ea28dc74b025869cfd86e",
+      "bytes": 2621
+    },
+    "mercedes_f1_2014.png": {
+      "sha256": "f52d01105626c247e6ddd526671880aaacf0112fdd52d897e29073f8f0036ec3",
+      "bytes": 514591
+    },
+    "mercedes_gt_diy.json": {
+      "sha256": "bfd560d53b5f1f278173e467215fd17c85a3de175a5a8e51d3608613443f801f",
+      "bytes": 2610
+    },
+    "mercedes_gt_diy.png": {
+      "sha256": "a57d8cb70ffaf73177085bf9c292938b9f1335d977f9c0804125a89cfb7bbf94",
+      "bytes": 231639
+    },
+    "mercedes_road_carbon.json": {
+      "sha256": "636f7439b69dffa6f5bfeb349c3818839c3ec2d85307bb2e04debd8324260d12",
+      "bytes": 2188
+    },
+    "mercedes_road_carbon.png": {
+      "sha256": "5c8c6ea3b74db63c32a6face41aa65ad9b7817d23c7ffd14d86191efe2affbd5",
+      "bytes": 250701
+    },
+    "mercedes_road_led.json": {
+      "sha256": "0b56fedeea5a3cf8be638e29d434e59bbabfb9a75b7f71e985abf51fba644b67",
+      "bytes": 2160
+    },
+    "mercedes_road_led.png": {
+      "sha256": "81e02a299550747be55ca3036c3605d98d48a44e67d04bf5a6699bda03166613",
+      "bytes": 234545
+    },
+    "porsche_911_rsr.json": {
+      "sha256": "2b3d692121ca515bdfcc80d3da6a2d4d6839b10c13576da7ea0426cf204063e9",
+      "bytes": 3658
+    },
+    "porsche_911_rsr.png": {
+      "sha256": "12d002c715fbd43423702a70f2f18f5666b5e1563eb240b6ca9eb9fc02842123",
+      "bytes": 266097
+    },
+    "porsche_fanatec_gt3r.json": {
+      "sha256": "1fa722dfcb1872bd6e8094be6d3fdf9b0429497b9e50a8841ee17dbce77424a0",
+      "bytes": 4129
+    },
+    "porsche_fanatec_gt3r.png": {
+      "sha256": "6e7065fbadf406cddfb7d84915d13049d907bc18a746781ecfbdda635b67eb0a",
+      "bytes": 415882
+    },
+    "porsche_gt3_cup.json": {
+      "sha256": "9cccea7e12bd1ffc45b3967d5f156d0982b50ea53981c0077dacc16ef5692181",
+      "bytes": 3441
+    },
+    "porsche_gt3_cup.png": {
+      "sha256": "0957f41988a903c55d7e180228bb12d0db9c76f9bcfdceee8ba31cdedeffda23",
+      "bytes": 209120
+    },
+    "porsche_gt3r.json": {
+      "sha256": "0943d7943648bde5ad5809db2ff31865dac33bb0c3a47d04e7754581080e0a17",
+      "bytes": 4074
+    },
+    "porsche_gt3r.png": {
+      "sha256": "7f2faadcdcbdd3d337af09958f5d5af3d50058000a4e24f68d027d105c6a1b84",
+      "bytes": 350457
+    },
+    "porsche_gt3r_color.json": {
+      "sha256": "a7470a7a45717e1f5c4b3bf109ff7c56353452f0af3188b469c4dde1b5e8252b",
+      "bytes": 4124
+    },
+    "porsche_gt3r_color.png": {
+      "sha256": "debba5454b096ccf9322902efa89f93122610d4385edb763a28d4c7fa6f429a1",
+      "bytes": 317937
+    },
+    "porsche_gt3r_grid.json": {
+      "sha256": "50e206f3bb1bce1836c7daed0af4cbcaf4a8036f03a1554f654d0aaee60cc9a9",
+      "bytes": 4130
+    },
+    "porsche_gt3r_grid.png": {
+      "sha256": "e7155940c0669ca1eb68b32886d78d5dc53136cd94b8ca5170723cc659d64b73",
+      "bytes": 185861
+    },
+    "porsche_gt3r_screen.json": {
+      "sha256": "a462ab2e54f2405fb2cc28f1fe431f5338933d3e10c1ad44aa250c0d05a67506",
+      "bytes": 4135
+    },
+    "porsche_gt3r_screen.png": {
+      "sha256": "fb8fb8e6816e8f07afb5a5ce7492fb0cb6834f74d90876fa2f4726d5c19e9e2c",
+      "bytes": 201431
+    },
+    "porsche_gt_dash.json": {
+      "sha256": "e8fbf3c029a413b677596472fd3170e05db20f144c26109ed52e621a897612c8",
+      "bytes": 3693
+    },
+    "porsche_gt_dash.png": {
+      "sha256": "d831f93653df7794305976447e4680405051b8f2d8aa9c29ebcc912e37df0fcf",
+      "bytes": 674013
+    },
+    "porsche_rsr_f.json": {
+      "sha256": "b55aed5c6de6a27088747e0df36003bed57ab61b320f453b261ef7d7f6a60804",
+      "bytes": 4002
+    },
+    "porsche_rsr_f.png": {
+      "sha256": "c6355b1787e11b4997eb90a008a2733121ee44b77de08cfdd643b07c40f87007",
+      "bytes": 294875
+    }
+  }
+}

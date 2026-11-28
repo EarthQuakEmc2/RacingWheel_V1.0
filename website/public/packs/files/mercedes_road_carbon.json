@@ -1,0 +1,98 @@
+{
+  "schema": "racing-wheel-pro.template/v1",
+  "id": "mercedes_road_carbon",
+  "name": "Mercedes-AMG Road Carbon",
+  "maker": "Mercedes-AMG",
+  "manufacturer": "Mercedes",
+  "style": "road",
+  "image": "mercedes_road_carbon.png",
+  "imageWidth": 437,
+  "imageHeight": 437,
+  "blurb": "Carbon road wheel. Left and right spoke switches: pads, volume, voice, cruise.",
+  "hitSlop": 0.008,
+  "wheelBounds": {"left": 0.0481, "top": 0.0892, "right": 0.9703, "bottom": 0.9863},
+  "shifters": {
+    "up": {"width": 0.20, "height": 0.32, "centerY": 0.525},
+    "down": {"width": 0.20, "height": 0.32, "centerY": 0.524}
+  },
+  "outputButtons": 7,
+  "controls": [
+    {
+      "id": "pad_l",
+      "label": "PAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.28604,
+      "cy": 0.53776,
+      "r": 0.03204,
+      "color": "#1A1A1A",
+      "defaultButton": 1
+    },
+    {
+      "id": "ok_l",
+      "label": "OK",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.33181,
+      "cy": 0.58352,
+      "r": 0.02746,
+      "color": "#1A1A1A",
+      "defaultButton": 2
+    },
+    {
+      "id": "vol",
+      "label": "VOL",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.25172,
+      "cy": 0.62929,
+      "r": 0.02746,
+      "color": "#1A1A1A",
+      "defaultButton": 3
+    },
+    {
+      "id": "voice",
+      "label": "VOICE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.36613,
+      "cy": 0.61785,
+      "r": 0.02746,
+      "color": "#1A1A1A",
+      "defaultButton": 4
+    },
+    {
+      "id": "pad_r",
+      "label": "PAD",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.6865,
+      "cy": 0.53776,
+      "r": 0.03204,
+      "color": "#1A1A1A",
+      "defaultButton": 5
+    },
+    {
+      "id": "cruise",
+      "label": "CRUISE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.74371,
+      "cy": 0.59039,
+      "r": 0.02746,
+      "color": "#1A1A1A",
+      "defaultButton": 6
+    },
+    {
+      "id": "phone",
+      "label": "PHONE",
+      "kind": "button",
+      "shape": "circle",
+      "cx": 0.65217,
+      "cy": 0.62929,
+      "r": 0.02746,
+      "color": "#1A1A1A",
+      "defaultButton": 7
+    }
+  ]
+}

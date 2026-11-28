@@ -132,3 +132,15 @@ object EntitlementPolicy {
         }
     }
 }
+
+/**
+ * Same rule as [EntitlementPolicy], for a signed Steering Package licence.
+ * A refresh that finishes replaces the cached licence, including an empty one.
+ * A refresh that never finishes keeps the last licence that verified, so the
+ * pack keeps working offline.
+ */
+object LicenceCachePolicy {
+    fun <T> resolve(querySucceeded: Boolean, fresh: T?, cached: T?): T? {
+        return if (querySucceeded) fresh else cached
+    }
+}

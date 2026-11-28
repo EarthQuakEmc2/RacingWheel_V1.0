@@ -42,7 +42,12 @@ android {
         buildConfigField("boolean", "GENERIC_NAMES", genericNames.toString())
         buildConfigField("String", "PREMIUM_PRODUCT_ID", "\"racing_wheel_premium\"")
         buildConfigField("String", "TELEGRAM_URL", "\"$telegramUrl\"")
+        val apiBase = (findProperty("racingwheel.apiBase") as String?)?.takeIf { it.isNotBlank() }
+            ?: "https://myracingwheel.site"
+        buildConfigField("String", "API_BASE", "\"$apiBase\"")
     }
+
+    sourceSets.getByName("main").assets.srcDir(rootProject.file("catalogue"))
 
     flavorDimensions += "tier"
     productFlavors {
@@ -120,6 +125,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
+    // Pure-Java Ed25519. Android's JCA provider does not verify Ed25519 before API 33.
+    implementation("net.i2p.crypto:eddsa:0.3.0")
     testImplementation("junit:junit:4.13.2")
     // android.jar stubs org.json and throws. The real library lets unit tests parse templates.
     testImplementation("org.json:json:20240303")

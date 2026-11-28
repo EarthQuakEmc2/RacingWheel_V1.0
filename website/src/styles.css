@@ -1022,6 +1022,67 @@ a { color: var(--yellow); }
   .price-card h3 { font-size: 44px; }
 }
 
+.pack-bundle-row, .pack-grid, .pick-grid {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+}
+.pack-bundle-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pack-grid, .pick-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.pack-bundle, .pack-grid a, .pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 120px;
+  padding: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+}
+.pack-bundle strong, .pack-price {
+  font-family: var(--font-d);
+  font-size: 32px;
+  letter-spacing: 0.04em;
+}
+.pack-bundle em, .pack-grid span, .pick em { color: var(--faint); font-style: normal; font-size: 14px; }
+.pack-grid img { width: 100%; height: 110px; object-fit: contain; background: #0b0d10; }
+.pack-grid em, .pack-price { font-family: var(--font-d); font-style: normal; letter-spacing: 0.06em; }
+.pack-empty {
+  display: grid;
+  place-items: center;
+  height: 110px;
+  color: var(--faint);
+  background: #0b0d10;
+  font-family: var(--font-m);
+  font-size: 12px;
+}
+.is-todo { color: var(--yellow); }
+.pack-tools { margin: 0 0 18px; }
+.pack-detail-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; }
+.pack-detail img { width: 100%; }
+.pack-templates { columns: 2; padding-left: 18px; }
+.cart-lines { list-style: none; padding: 0; }
+.cart-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.cart-lines span, .pick em { color: var(--faint); }
+.pick { cursor: pointer; }
+.pick.on { border-color: var(--yellow); }
+.pick input { accent-color: var(--yellow); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+@media (max-width: 800px) {
+  .pack-bundle-row, .pack-detail-grid { grid-template-columns: 1fr; }
+  .pack-templates { columns: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

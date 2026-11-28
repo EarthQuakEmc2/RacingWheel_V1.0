@@ -15,3 +15,7 @@
 -keep class com.racingwheelpro.billing.FreePremiumGate { *; }
 -keep class com.racingwheelpro.billing.OpenPremiumGate { *; }
 -keep class com.racingwheelpro.billing.PlayPremiumGate { *; }
+-keep class com.racingwheelpro.catalog.LicenceVerifier { *; }
+-keep class com.racingwheelpro.catalog.LicenceCachePolicy { *; }
+-keep class net.i2p.crypto.eddsa.** { *; }
+-dontwarn net.i2p.crypto.eddsa.**
